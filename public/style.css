@@ -146,6 +146,55 @@ body {
 .square.selected {
     box-shadow: 0 0 0 2px #0078d7;
 }
+
+/* Thick borders for word boundaries */
+.square.border-top {
+    border-top: 4px solid #000 !important;
+}
+
+.square.border-bottom {
+    border-bottom: 4px solid #000 !important;
+}
+
+.square.border-left {
+    border-left: 4px solid #000 !important;
+}
+
+.square.border-right {
+    border-right: 4px solid #000 !important;
+}
+
+/* Arrow indicators for letter squares */
+.square .arrow {
+    position: absolute;
+    font-size: 24px;
+    font-weight: bold;
+    z-index: 5;
+    pointer-events: none;
+    color: #333;
+    line-height: 1;
+}
+
+/* Arrow from top to right (vertical → horizontal) - positioned in bottom-left */
+.square .arrow.top-to-right {
+    bottom: -2px;
+    left: 0px;
+}
+
+.square .arrow.top-to-right::before {
+    content: '↳';
+}
+
+/* Arrow from left to down (horizontal → vertical) - positioned in top-right */
+.square .arrow.left-to-down {
+    top: -5px;
+    right: 0px;
+}
+
+.square .arrow.left-to-down::before {
+    content: '↴';
+}
+
 .square .split-btn {
     position: absolute;
     bottom: 2px;
@@ -443,6 +492,39 @@ body {
         color: #000 !important;
         font-weight: bold !important;
         text-align: center !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    /* Ensure arrows are visible in print */
+    .square .arrow {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color: #000 !important;
+        font-weight: bold !important;
+    }
+    
+    /* Ensure thick borders are visible in print */
+    .square.border-top {
+        border-top: 4px solid #000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    .square.border-bottom {
+        border-bottom: 4px solid #000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    .square.border-left {
+        border-left: 4px solid #000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    .square.border-right {
+        border-right: 4px solid #000 !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }

@@ -31,7 +31,12 @@ let focusedSubSquare = null; // Track which sub-square is focused in split clues
  */
 function createEmptyGrid(r, c) {
     return Array.from({ length: r }, () =>
-        Array.from({ length: c }, () => ({ type: 'letter', value: '' }))
+        Array.from({ length: c }, () => ({ 
+            type: 'letter', 
+            value: '', 
+            arrow: null, // Can be 'top-to-right' or 'left-to-down'
+            borders: { top: false, bottom: false, left: false, right: false } // Thick borders for word boundaries
+        }))
     );
 }
 
@@ -129,6 +134,18 @@ function loadPuzzle(puzzleName) {
         currentLanguage = puzzle.language || 'sv';
         crosswordTitle = puzzle.title || '';
         currentPuzzleName = puzzleName;
+        
+        // Ensure all cells have arrow and borders properties for backward compatibility
+        grid.forEach(row => {
+            row.forEach(cell => {
+                if (cell.arrow === undefined) {
+                    cell.arrow = null;
+                }
+                if (cell.borders === undefined) {
+                    cell.borders = { top: false, bottom: false, left: false, right: false };
+                }
+            });
+        });
         
         // Update UI controls
         rowsInput.value = rows;
@@ -552,6 +569,14 @@ function renderGrid() {
             const square = document.createElement('div');
             square.className = `square ${cell.type}`;
             
+            // Apply thick borders for word boundaries
+            if (cell.borders) {
+                if (cell.borders.top) square.classList.add('border-top');
+                if (cell.borders.bottom) square.classList.add('border-bottom');
+                if (cell.borders.left) square.classList.add('border-left');
+                if (cell.borders.right) square.classList.add('border-right');
+            }
+            
             square.tabIndex = 0;
             square.oncontextmenu = (e) => showContextMenu(e, rIdx, cIdx);
             if (cell.type === 'letter') {
@@ -590,6 +615,13 @@ function renderGrid() {
                     }
                 };
                 square.appendChild(input);
+                
+                // Add arrow indicator if present
+                if (cell.arrow) {
+                    const arrow = document.createElement('div');
+                    arrow.className = `arrow ${cell.arrow}`;
+                    square.appendChild(arrow);
+                }
             } else if (cell.type === 'black') {
                 square.classList.add('black');
                 // Black squares have no input elements
@@ -705,6 +737,7 @@ function showContextMenu(e, r, c) {
         option.onclick = () => {
             cell.type = 'clue';
             cell.value = '';
+            cell.arrow = null; // Remove arrow when converting
             renderGrid();
             menu.remove();
             
@@ -720,6 +753,8 @@ function showContextMenu(e, r, c) {
         blackOption.onclick = () => {
             cell.type = 'black';
             cell.value = '';
+            cell.arrow = null; // Remove arrow when converting
+            cell.borders = { top: false, bottom: false, left: false, right: false }; // Remove borders when converting
             renderGrid();
             menu.remove();
             
@@ -727,6 +762,61 @@ function showContextMenu(e, r, c) {
             updateFocusedSquare(r, c, null);
         };
         menu.appendChild(blackOption);
+        
+        // Arrow options submenu
+        const arrowSubmenu = document.createElement('div');
+        arrowSubmenu.className = 'context-menu-item';
+        arrowSubmenu.textContent = cell.arrow ? 'Change Arrow' : 'Add Arrow';
+        arrowSubmenu.onclick = (e) => {
+            e.stopPropagation();
+            showArrowSubmenu(e, r, c, menu);
+        };
+        menu.appendChild(arrowSubmenu);
+        
+        // Remove arrow option if arrow exists
+        if (cell.arrow) {
+            const removeArrowOption = document.createElement('div');
+            removeArrowOption.className = 'context-menu-item';
+            removeArrowOption.textContent = 'Remove Arrow';
+            removeArrowOption.onclick = () => {
+                cell.arrow = null;
+                renderGrid();
+                menu.remove();
+                
+                // Restore focus
+                updateFocusedSquare(r, c, null);
+                setTimeout(() => focusSquare(r, c, null), 10);
+            };
+            menu.appendChild(removeArrowOption);
+        }
+        
+        // Border options submenu
+        const borderSubmenu = document.createElement('div');
+        borderSubmenu.className = 'context-menu-item';
+        const hasBorders = cell.borders && (cell.borders.top || cell.borders.bottom || cell.borders.left || cell.borders.right);
+        borderSubmenu.textContent = hasBorders ? 'Edit Borders' : 'Add Borders';
+        borderSubmenu.onclick = (e) => {
+            e.stopPropagation();
+            showBorderSubmenu(e, r, c, menu);
+        };
+        menu.appendChild(borderSubmenu);
+        
+        // Remove all borders option if borders exist
+        if (hasBorders) {
+            const removeBordersOption = document.createElement('div');
+            removeBordersOption.className = 'context-menu-item';
+            removeBordersOption.textContent = 'Remove All Borders';
+            removeBordersOption.onclick = () => {
+                cell.borders = { top: false, bottom: false, left: false, right: false };
+                renderGrid();
+                menu.remove();
+                
+                // Restore focus
+                updateFocusedSquare(r, c, null);
+                setTimeout(() => focusSquare(r, c, null), 10);
+            };
+            menu.appendChild(removeBordersOption);
+        }
     } else if (cell.type === 'clue') {
         const letterOption = document.createElement('div');
         letterOption.className = 'context-menu-item';
@@ -737,6 +827,8 @@ function showContextMenu(e, r, c) {
             cell.split = false;
             cell.value1 = '';
             cell.value2 = '';
+            cell.arrow = null; // Initialize arrow as null for converted squares
+            cell.borders = { top: false, bottom: false, left: false, right: false }; // Initialize borders
             renderGrid();
             menu.remove();
             
@@ -787,6 +879,8 @@ function showContextMenu(e, r, c) {
         letterOption.onclick = () => {
             cell.type = 'letter';
             cell.value = '';
+            cell.arrow = null; // Initialize arrow as null for converted squares
+            cell.borders = { top: false, bottom: false, left: false, right: false }; // Initialize borders
             renderGrid();
             menu.remove();
             
@@ -820,6 +914,158 @@ function showContextMenu(e, r, c) {
         document.removeEventListener('click', removeMenu);
     };
     setTimeout(() => document.addEventListener('click', removeMenu), 100);
+}
+
+/**
+ * Shows an arrow submenu for selecting arrow direction and position
+ * @param {MouseEvent} e - The click event
+ * @param {number} r - Row index of the square
+ * @param {number} c - Column index of the square
+ * @param {HTMLElement} parentMenu - The parent context menu element
+ */
+function showArrowSubmenu(e, r, c, parentMenu) {
+    // Remove any existing arrow submenu
+    const existingSubmenu = document.querySelector('.arrow-submenu');
+    if (existingSubmenu) {
+        existingSubmenu.remove();
+    }
+    
+    const submenu = document.createElement('div');
+    submenu.className = 'context-menu arrow-submenu';
+    submenu.style.position = 'absolute';
+    submenu.style.left = (e.pageX + 150) + 'px'; // Position to the right of main menu
+    submenu.style.top = e.pageY + 'px';
+    
+    const arrowOptions = [
+        { value: 'top-to-right', label: '↳' },
+        { value: 'left-to-down', label: '↴' }
+    ];
+    
+    arrowOptions.forEach(option => {
+        const item = document.createElement('div');
+        item.className = 'context-menu-item';
+        item.textContent = option.label;
+        item.onclick = () => {
+            grid[r][c].arrow = option.value;
+            renderGrid();
+            parentMenu.remove();
+            submenu.remove();
+            
+            // Restore focus
+            updateFocusedSquare(r, c, null);
+            setTimeout(() => focusSquare(r, c, null), 10);
+        };
+        submenu.appendChild(item);
+    });
+    
+    document.body.appendChild(submenu);
+    
+    // Remove submenu when clicking outside
+    const removeSubmenu = () => {
+        submenu.remove();
+        document.removeEventListener('click', removeSubmenu);
+    };
+    setTimeout(() => document.addEventListener('click', removeSubmenu), 100);
+}
+
+/**
+ * Shows a border submenu for selecting thick border positions
+ * @param {MouseEvent} e - The click event
+ * @param {number} r - Row index of the square
+ * @param {number} c - Column index of the square
+ * @param {HTMLElement} parentMenu - The parent context menu element
+ */
+function showBorderSubmenu(e, r, c, parentMenu) {
+    // Remove any existing border submenu
+    const existingSubmenu = document.querySelector('.border-submenu');
+    if (existingSubmenu) {
+        existingSubmenu.remove();
+    }
+    
+    const submenu = document.createElement('div');
+    submenu.className = 'context-menu border-submenu';
+    submenu.style.position = 'absolute';
+    submenu.style.left = (e.pageX + 150) + 'px'; // Position to the right of main menu
+    submenu.style.top = e.pageY + 'px';
+    
+    const borderOptions = [
+        { value: 'top', label: '■', description: 'Top border' },
+        { value: 'bottom', label: '■', description: 'Bottom border' },
+        { value: 'left', label: '■', description: 'Left border' },
+        { value: 'right', label: '■', description: 'Right border' }
+    ];
+    
+    borderOptions.forEach(option => {
+        const item = document.createElement('div');
+        item.className = 'context-menu-item border-option';
+        
+        // Create visual representation
+        const visual = document.createElement('div');
+        visual.className = 'border-visual';
+        visual.style.cssText = `
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 1px solid #ccc;
+            margin-right: 8px;
+            position: relative;
+            vertical-align: middle;
+        `;
+        
+        // Add thick border on the appropriate side
+        switch(option.value) {
+            case 'top':
+                visual.style.borderTop = '3px solid #000';
+                break;
+            case 'bottom':
+                visual.style.borderBottom = '3px solid #000';
+                break;
+            case 'left':
+                visual.style.borderLeft = '3px solid #000';
+                break;
+            case 'right':
+                visual.style.borderRight = '3px solid #000';
+                break;
+        }
+        
+        const label = document.createElement('span');
+        label.textContent = option.description;
+        
+        item.appendChild(visual);
+        item.appendChild(label);
+        
+        // Check if this border is already active
+        const cell = grid[r][c];
+        if (cell.borders && cell.borders[option.value]) {
+            item.style.backgroundColor = '#e3f2fd';
+        }
+        
+        item.onclick = () => {
+            // Toggle the border
+            if (!cell.borders) {
+                cell.borders = { top: false, bottom: false, left: false, right: false };
+            }
+            cell.borders[option.value] = !cell.borders[option.value];
+            
+            renderGrid();
+            parentMenu.remove();
+            submenu.remove();
+            
+            // Restore focus
+            updateFocusedSquare(r, c, null);
+            setTimeout(() => focusSquare(r, c, null), 10);
+        };
+        submenu.appendChild(item);
+    });
+    
+    document.body.appendChild(submenu);
+    
+    // Remove submenu when clicking outside
+    const removeSubmenu = () => {
+        submenu.remove();
+        document.removeEventListener('click', removeSubmenu);
+    };
+    setTimeout(() => document.addEventListener('click', removeSubmenu), 100);
 }
 
 /**
@@ -967,6 +1213,18 @@ uploadBtn.onclick = () => {
                 currentLanguage = puzzle.language || 'sv';
                 crosswordTitle = puzzle.title || '';
                 
+                // Ensure all cells have arrow and borders properties for backward compatibility
+                grid.forEach(row => {
+                    row.forEach(cell => {
+                        if (cell.arrow === undefined) {
+                            cell.arrow = null;
+                        }
+                        if (cell.borders === undefined) {
+                            cell.borders = { top: false, bottom: false, left: false, right: false };
+                        }
+                    });
+                });
+                
                 // Update UI controls
                 rowsInput.value = rows;
                 colsInput.value = cols;
@@ -1069,6 +1327,19 @@ if (currentPuzzle && localStorage.getItem(`crossword_${currentPuzzle}`)) {
             grid = saved.grid;
             currentLanguage = saved.language || 'sv';
             crosswordTitle = saved.title || 'Migrated Puzzle';
+            
+            // Ensure all cells have arrow and borders properties for migrated puzzles
+            grid.forEach(row => {
+                row.forEach(cell => {
+                    if (cell.arrow === undefined) {
+                        cell.arrow = null;
+                    }
+                    if (cell.borders === undefined) {
+                        cell.borders = { top: false, bottom: false, left: false, right: false };
+                    }
+                });
+            });
+            
             rowsInput.value = rows;
             colsInput.value = cols;
             languageSelect.value = currentLanguage;
