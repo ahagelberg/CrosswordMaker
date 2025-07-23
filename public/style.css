@@ -490,6 +490,16 @@ body {
         print-color-adjust: exact;
     }
     
+    /* Hide letter values when printing blank puzzle */
+    body.print-blank .square.letter input {
+        color: transparent !important;
+    }
+    
+    /* Show letter values when printing key */
+    body.print-with-letters .square.letter input {
+        color: #000 !important;
+    }
+    
     /* Ensure arrows are visible in print */
     .square .arrow {
         -webkit-print-color-adjust: exact;

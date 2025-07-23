@@ -9,6 +9,7 @@ const loadBtn = document.getElementById('loadPuzzle');
 const downloadBtn = document.getElementById('downloadPuzzle');
 const uploadBtn = document.getElementById('uploadPuzzle');
 const printBtn = document.getElementById('printPuzzle');
+const printKeyBtn = document.getElementById('printKey');
 
 let grid = [];
 let rows = parseInt(rowsInput.value);
@@ -1277,8 +1278,35 @@ uploadBtn.onclick = () => {
 };
 
 printBtn.onclick = () => {
+    printCrossword(false); // Print blank puzzle
+};
+
+printKeyBtn.onclick = () => {
+    printCrossword(true); // Print filled puzzle (key)
+};
+
+/**
+ * Prints the crossword puzzle with or without letter values
+ * @param {boolean} showLetters - Whether to show letter values (true for key, false for blank puzzle)
+ */
+function printCrossword(showLetters) {
+    // Set a flag to indicate this is a programmatic print call
+    window.isProgrammaticPrint = true;
+    
+    // Add class to body to control print styles
+    if (showLetters) {
+        document.body.classList.add('print-with-letters');
+        document.body.classList.remove('print-blank');
+    } else {
+        document.body.classList.add('print-blank');
+        document.body.classList.remove('print-with-letters');
+    }
+    
     // Show helpful tip about browser print settings
-    showToast('Tip: For cleanest printing, disable headers/footers in your browser\'s print settings', 'info', 4000);
+    const tipMessage = showLetters ? 
+        'Printing puzzle key with letters filled in...' : 
+        'Printing blank puzzle for solving...';
+    showToast(tipMessage, 'info', 2000);
     
     // Try to use advanced print options if available
     if ('print' in window) {
@@ -1286,26 +1314,41 @@ printBtn.onclick = () => {
         try {
             // Set a custom title for the print job
             const originalTitle = document.title;
-            document.title = crosswordTitle || 'Crossword Puzzle';
+            const printTitle = showLetters ? 
+                `${crosswordTitle || 'Crossword Puzzle'} - Answer Key` : 
+                `${crosswordTitle || 'Crossword Puzzle'}`;
+            document.title = printTitle;
             
             // Small delay to let the toast show before print dialog
             setTimeout(() => {
                 // Use window.print() with potential options
                 window.print();
                 
-                // Restore original title
+                // Clean up after printing
                 setTimeout(() => {
                     document.title = originalTitle;
+                    document.body.classList.remove('print-with-letters', 'print-blank');
+                    window.isProgrammaticPrint = false;
                 }, 100);
             }, 500);
         } catch (error) {
             console.log('Standard print fallback');
             window.print();
+            // Clean up after printing
+            setTimeout(() => {
+                document.body.classList.remove('print-with-letters', 'print-blank');
+                window.isProgrammaticPrint = false;
+            }, 100);
         }
     } else {
         window.print();
+        // Clean up after printing
+        setTimeout(() => {
+            document.body.classList.remove('print-with-letters', 'print-blank');
+            window.isProgrammaticPrint = false;
+        }, 100);
     }
-};
+}
 
 // Save when user leaves or closes the page
 window.addEventListener('beforeunload', (e) => {
@@ -1326,6 +1369,22 @@ window.addEventListener('blur', () => {
 
 // Add keyboard navigation
 document.addEventListener('keydown', handleKeyDown);
+
+// Handle browser's print menu and Ctrl+P
+window.addEventListener('beforeprint', () => {
+    // Only set up for blank puzzle printing if this is NOT a programmatic print call
+    if (!window.isProgrammaticPrint) {
+        document.body.classList.add('print-blank');
+        document.body.classList.remove('print-with-letters');
+    }
+});
+
+window.addEventListener('afterprint', () => {
+    // Clean up print classes after printing, but only if it wasn't a programmatic print
+    if (!window.isProgrammaticPrint) {
+        document.body.classList.remove('print-blank', 'print-with-letters');
+    }
+});
 
 // Initialize
 const currentPuzzle = localStorage.getItem('currentPuzzle');
