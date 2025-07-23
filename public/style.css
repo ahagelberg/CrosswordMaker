@@ -485,6 +485,9 @@ body {
     .square.focused {
         border: 1px solid #000 !important;
         box-shadow: none !important;
+        width: 50px !important;
+        height: 50px !important;
+        z-index: auto !important;
     }
     
     /* Style inputs for print */
