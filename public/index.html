@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picture Crossword Maker</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Indie+Flower&display=swap">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        // Hyphenopoly configuration for multiple languages
+        window.Hyphenopoly = {
+            require: {
+                "sv": "FORCEHYPHENOPOLY",
+                "en-us": "FORCEHYPHENOPOLY", 
+                "da": "FORCEHYPHENOPOLY",
+                "no": "FORCEHYPHENOPOLY",
+                "fi": "FORCEHYPHENOPOLY",
+                "de": "FORCEHYPHENOPOLY",
+                "fr": "FORCEHYPHENOPOLY",
+                "es": "FORCEHYPHENOPOLY",
+                "it": "FORCEHYPHENOPOLY",
+                "pt": "FORCEHYPHENOPOLY",
+                "nl": "FORCEHYPHENOPOLY"
+            },
+            setup: {
+                selectors: {
+                    ".square.clue textarea": {
+                        hyphen: "\u00AD"
+                    }
+                }
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/hyphenopoly@4.13.0/Hyphenopoly_Loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hyphenopoly@4.13.0/Hyphenopoly.js"></script>
+</head>
+<body>
+    <div class="toolbar">
+        <label>Language: 
+            <select id="language">
+                <option value="sv">Svenska (Swedish)</option>
+                <option value="en-us">English</option>
+                <option value="da">Dansk (Danish)</option>
+                <option value="no">Norsk (Norwegian)</option>
+                <option value="fi">Suomi (Finnish)</option>
+                <option value="de">Deutsch (German)</option>
+                <option value="fr">Français (French)</option>
+                <option value="es">Español (Spanish)</option>
+                <option value="it">Italiano (Italian)</option>
+                <option value="pt">Português (Portuguese)</option>
+                <option value="nl">Nederlands (Dutch)</option>
+            </select>
+        </label>
+        <label>Rows: <input type="number" id="rows" min="3" max="25" value="10"></label>
+        <label>Cols: <input type="number" id="cols" min="3" max="25" value="10"></label>
+        <button id="resizeGrid">Resize Grid</button>
+        <button id="savePuzzle">Save</button>
+        <button id="loadPuzzle">Load</button>
+        <button id="downloadPuzzle">Download</button>
+        <button id="uploadPuzzle">Upload</button>
+        <button id="printPuzzle">Print</button>
+    </div>
+    <div class="title-container">
+        <input type="text" id="crosswordTitle" placeholder="Enter crossword title..." maxlength="100">
+    </div>
+    <div id="crossword-container"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
