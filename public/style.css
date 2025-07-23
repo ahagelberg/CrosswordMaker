@@ -460,7 +460,6 @@ body {
     
     /* Make square borders visible */
     .square {
-        border: 1px solid #000 !important;
         background: white !important;
         box-sizing: border-box !important;
         -webkit-print-color-adjust: exact;
