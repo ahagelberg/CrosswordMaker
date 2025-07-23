@@ -571,9 +571,7 @@ function renderGrid() {
             
             // Apply thick borders for word boundaries
             if (cell.borders) {
-                if (cell.borders.top) square.classList.add('border-top');
                 if (cell.borders.bottom) square.classList.add('border-bottom');
-                if (cell.borders.left) square.classList.add('border-left');
                 if (cell.borders.right) square.classList.add('border-right');
             }
             
@@ -793,7 +791,7 @@ function showContextMenu(e, r, c) {
         // Border options submenu
         const borderSubmenu = document.createElement('div');
         borderSubmenu.className = 'context-menu-item';
-        const hasBorders = cell.borders && (cell.borders.top || cell.borders.bottom || cell.borders.left || cell.borders.right);
+        const hasBorders = cell.borders && (cell.borders.bottom || cell.borders.right);
         borderSubmenu.textContent = hasBorders ? 'Edit Borders' : 'Add Borders';
         borderSubmenu.onclick = (e) => {
             e.stopPropagation();
@@ -1009,9 +1007,7 @@ function showBorderSubmenu(e, r, c, parentMenu) {
     submenu.style.top = e.pageY + 'px';
     
     const borderOptions = [
-        { value: 'top', label: '■', description: 'Top border' },
         { value: 'bottom', label: '■', description: 'Bottom border' },
-        { value: 'left', label: '■', description: 'Left border' },
         { value: 'right', label: '■', description: 'Right border' }
     ];
     
@@ -1336,55 +1332,6 @@ const currentPuzzle = localStorage.getItem('currentPuzzle');
 if (currentPuzzle && localStorage.getItem(`crossword_${currentPuzzle}`)) {
     // Load the current puzzle
     loadPuzzle(currentPuzzle);
-} else {
-    // Check for old format puzzle and migrate it
-    const oldPuzzle = localStorage.getItem('crosswordPuzzle');
-    if (oldPuzzle) {
-        try {
-            const saved = JSON.parse(oldPuzzle);
-            rows = saved.rows;
-            cols = saved.cols;
-            grid = saved.grid;
-            currentLanguage = saved.language || 'sv';
-            crosswordTitle = saved.title || 'Migrated Puzzle';
-            
-            // Ensure all cells have arrow and borders properties for migrated puzzles
-            grid.forEach(row => {
-                row.forEach(cell => {
-                    if (cell.arrow === undefined) {
-                        cell.arrow = null;
-                    }
-                    if (cell.borders === undefined) {
-                        cell.borders = { top: false, bottom: false, left: false, right: false };
-                    }
-                });
-            });
-            
-            rowsInput.value = rows;
-            colsInput.value = cols;
-            languageSelect.value = currentLanguage;
-            titleInput.value = crosswordTitle;
-            document.documentElement.lang = currentLanguage;
-            
-            // Save it in the new format
-            autoSavePuzzle();
-            
-            // Remove old format
-            localStorage.removeItem('crosswordPuzzle');
-            
-            showToast('Migrated old puzzle to new format!', 'info');
-            
-            if (saved.lastSaved) {
-                console.log('Migrated puzzle last saved at', new Date(saved.lastSaved).toLocaleString());
-            }
-        } catch (e) {
-            console.error('Error migrating old puzzle:', e);
-            grid = createEmptyGrid(rows, cols);
-        }
-    } else {
-        // No saved puzzle, create empty grid
-        grid = createEmptyGrid(rows, cols);
-    }
 }
 
 renderGrid();

@@ -59,7 +59,7 @@ body {
     width: 50px;
     height: 50px;
     background: #fff;
-    border: none;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -71,8 +71,6 @@ body {
 .square.focused {
     border: 2px solid #007acc !important;
     box-shadow: 0 0 8px rgba(0, 122, 204, 0.3);
-    width: 48px;
-    height: 48px;
     z-index: 10;
 }
 .square.letter input {
@@ -151,16 +149,8 @@ body {
 }
 
 /* Thick borders for word boundaries */
-.square.border-top {
-    border-top: 4px solid #000 !important;
-}
-
 .square.border-bottom {
     border-bottom: 4px solid #000 !important;
-}
-
-.square.border-left {
-    border-left: 4px solid #000 !important;
 }
 
 .square.border-right {
@@ -472,6 +462,7 @@ body {
     .square {
         border: 1px solid #000 !important;
         background: white !important;
+        box-sizing: border-box !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
@@ -485,8 +476,6 @@ body {
     .square.focused {
         border: 1px solid #000 !important;
         box-shadow: none !important;
-        width: 50px !important;
-        height: 50px !important;
         z-index: auto !important;
     }
     
@@ -511,20 +500,8 @@ body {
     }
     
     /* Ensure thick borders are visible in print */
-    .square.border-top {
-        border-top: 4px solid #000 !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-    
     .square.border-bottom {
         border-bottom: 4px solid #000 !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-    
-    .square.border-left {
-        border-left: 4px solid #000 !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
