@@ -733,7 +733,7 @@ function showContextMenu(e, r, c) {
     if (cell.type === 'letter') {
         const option = document.createElement('div');
         option.className = 'context-menu-item';
-        option.textContent = 'Convert to Clue Square';
+        option.textContent = 'Change to Clue Square';
         option.onclick = () => {
             cell.type = 'clue';
             cell.value = '';
@@ -749,7 +749,7 @@ function showContextMenu(e, r, c) {
         
         const blackOption = document.createElement('div');
         blackOption.className = 'context-menu-item';
-        blackOption.textContent = 'Convert to Black Square';
+        blackOption.textContent = 'Change to Black Square';
         blackOption.onclick = () => {
             cell.type = 'black';
             cell.value = '';
@@ -820,7 +820,7 @@ function showContextMenu(e, r, c) {
     } else if (cell.type === 'clue') {
         const letterOption = document.createElement('div');
         letterOption.className = 'context-menu-item';
-        letterOption.textContent = 'Convert to Letter Square';
+        letterOption.textContent = 'Change to Letter Square';
         letterOption.onclick = () => {
             cell.type = 'letter';
             cell.value = '';
@@ -840,7 +840,7 @@ function showContextMenu(e, r, c) {
         
         const blackOption = document.createElement('div');
         blackOption.className = 'context-menu-item';
-        blackOption.textContent = 'Convert to Black Square';
+        blackOption.textContent = 'Change to Black Square';
         blackOption.onclick = () => {
             cell.type = 'black';
             cell.value = '';
@@ -871,6 +871,26 @@ function showContextMenu(e, r, c) {
                 setTimeout(() => focusSquare(r, c, 'first'), 10);
             };
             menu.appendChild(splitOption);
+        } else {
+            const unsplitOption = document.createElement('div');
+            unsplitOption.className = 'context-menu-item';
+            unsplitOption.textContent = 'Remove Split';
+            unsplitOption.onclick = () => {
+                // Combine the two values into the single value, with a space between them if both exist
+                const combinedValue = [cell.value1 || '', cell.value2 || ''].filter(v => v.trim()).join(' ');
+                
+                cell.split = false;
+                cell.value = combinedValue;
+                cell.value1 = '';
+                cell.value2 = '';
+                renderGrid();
+                menu.remove();
+                
+                // Restore focus to the converted square and focus the single textarea
+                updateFocusedSquare(r, c, null);
+                setTimeout(() => focusSquare(r, c, null), 10);
+            };
+            menu.appendChild(unsplitOption);
         }
     } else if (cell.type === 'black') {
         const letterOption = document.createElement('div');
