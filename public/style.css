@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&family=Patrick+Hand&family=Comic+Neue:wght@300;400;700&display=swap');
+
 body {
     font-family: Arial, sans-serif;
     background: #f7f7f7;
@@ -74,7 +76,7 @@ body {
     z-index: 10;
 }
 .square.letter input {
-    font-family: 'Indie Flower', cursive;
+    font-family: 'Patrick Hand', 'Comic Neue', 'Kalam', cursive;
     font-size: 2em;
     text-align: center;
     width: 90%;
@@ -82,6 +84,7 @@ body {
     border: none;
     background: transparent;
     outline: none;
+    font-weight: 400;
 }
 .square.black {
     background: #000;
