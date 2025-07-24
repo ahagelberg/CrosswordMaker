@@ -7,6 +7,7 @@ class CrosswordRenderer {
         this.navigationManager = navigationManager;
         this.container = document.getElementById('crossword-container');
         this.currentLanguage = 'sv';
+        this.highlightedWord = null;
     }
 
     /**
@@ -15,6 +16,37 @@ class CrosswordRenderer {
      */
     setLanguage(language) {
         this.currentLanguage = language;
+    }
+
+    /**
+     * Highlights a word in the grid
+     * @param {Object|null} word - Word object to highlight, or null to clear
+     */
+    highlightWord(word) {
+        // Clear previous highlighting
+        this.clearWordHighlight();
+        
+        if (word) {
+            this.highlightedWord = word;
+            word.squares.forEach(square => {
+                const squares = document.querySelectorAll('.square');
+                const index = square.row * this.crosswordGrid.cols + square.col;
+                if (squares[index]) {
+                    squares[index].classList.add('word-highlighted');
+                }
+            });
+        }
+    }
+
+    /**
+     * Clears word highlighting
+     */
+    clearWordHighlight() {
+        const highlightedSquares = document.querySelectorAll('.word-highlighted');
+        highlightedSquares.forEach(square => {
+            square.classList.remove('word-highlighted');
+        });
+        this.highlightedWord = null;
     }
 
     /**
@@ -60,6 +92,16 @@ class CrosswordRenderer {
             document.dispatchEvent(new CustomEvent('crossword:contextmenu', {
                 detail: { event: e, row: rIdx, col: cIdx }
             }));
+        };
+
+        // Handle word selection on click
+        square.onclick = (e) => {
+            // Only handle word selection for letter squares
+            if (cell.type === 'letter' && !cell.imageClue) {
+                document.dispatchEvent(new CustomEvent('crossword:wordclick', {
+                    detail: { row: rIdx, col: cIdx }
+                }));
+            }
         };
 
         // Handle image clues

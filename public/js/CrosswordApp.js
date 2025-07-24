@@ -49,15 +49,23 @@ class CrosswordApp {
         this.puzzleManager = new PuzzleManager();
         this.printManager = new PrintManager();
         this.toastManager = new ToastManager();
+        this.wordManager = new WordManager(this.grid);
+        this.wordDisplay = new WordDisplay();
         
         // Set up callbacks
         this.contextMenu.setOnGridChange(() => {
             this.renderer.render();
+            this.wordManager.updateWords();
             this.puzzleManager.autoSave(this.getPuzzleData());
         });
         
         this.puzzleManager.setOnPuzzleLoad((puzzle) => {
             this.loadPuzzleData(puzzle);
+        });
+
+        this.wordManager.setOnWordChange((word) => {
+            this.renderer.highlightWord(word);
+            this.wordDisplay.show(word);
         });
     }
 
@@ -125,6 +133,16 @@ class CrosswordApp {
 
         document.addEventListener('crossword:save', () => {
             this.savePuzzle();
+        });
+
+        document.addEventListener('crossword:wordclick', (e) => {
+            const { row, col } = e.detail;
+            this.wordManager.handleSquareClick(row, col);
+        });
+
+        document.addEventListener('crossword:clearWordSelection', () => {
+            this.renderer.clearWordHighlight();
+            this.wordDisplay.hide();
         });
     }
 
