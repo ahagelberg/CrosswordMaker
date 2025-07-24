@@ -940,6 +940,130 @@ body {
     background: var(--color-primary-dark);
 }
 
+/* Dictionary search in side panel styles */
+.dictionary-search-header {
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 15px;
+}
+
+.dictionary-search-title {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    color: var(--text-primary);
+}
+
+.dictionary-back-button-header {
+    padding: 6px 12px;
+    background: var(--background-light-gray);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+}
+
+.dictionary-back-button-header:hover {
+    background: var(--background-gray);
+}
+
+.dictionary-sources-container {
+    margin-bottom: 20px;
+}
+
+.dictionary-source-button {
+    display: block;
+    width: 100%;
+    margin: 8px 0;
+    padding: 12px 16px;
+    background: var(--background-white);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: left;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.dictionary-source-button:hover {
+    background: var(--color-primary);
+    color: var(--text-white);
+    border-color: var(--color-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px var(--shadow-light);
+}
+
+.dictionary-back-button-bottom {
+    width: 100%;
+    padding: 10px;
+    background: var(--background-light-gray);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.dictionary-back-button-bottom:hover {
+    background: var(--background-gray);
+}
+
+/* Dictionary links displayed directly in panel */
+.dictionary-links-container {
+    margin-top: 10px;
+}
+
+.dictionary-link-button {
+    display: block;
+    width: 100%;
+    margin: 8px 0;
+    padding: 12px 16px;
+    background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+    color: var(--text-primary);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    position: relative;
+}
+
+.dictionary-link-button::after {
+    content: '→';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    font-weight: bold;
+    opacity: 0.6;
+    transition: all 0.2s ease;
+}
+
+.dictionary-link-button:hover {
+    background: linear-gradient(145deg, var(--color-primary), var(--color-primary-dark));
+    color: var(--text-white);
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow-primary);
+}
+
+.dictionary-link-button:hover::after {
+    opacity: 1;
+    transform: translateY(-50%) translateX(2px);
+}
+
+.dictionary-link-button:active {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px var(--shadow-primary);
+}
+
 .search-button-container {
     margin: 15px 0;
 }

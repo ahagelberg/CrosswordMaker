@@ -165,7 +165,7 @@ class WordDisplay {
         definitionsContainer.appendChild(definitionsTitle);
         definitionsContainer.appendChild(definitionsContent);
 
-        // Search functionality
+        // Dictionary links functionality - show links directly
         const searchContainer = document.createElement('div');
         searchContainer.className = 'word-search';
 
@@ -173,17 +173,32 @@ class WordDisplay {
         searchTitle.textContent = 'External Dictionary Links:';
         searchTitle.className = 'word-search-title';
 
-        const searchBtn = document.createElement('button');
-        searchBtn.textContent = 'Search Online';
-        searchBtn.className = 'word-search-button';
-        searchBtn.onclick = () => this.searchWord(word.text);
-
         searchContainer.appendChild(searchTitle);
+
         if (word.text && !word.text.includes('?')) {
-            searchContainer.appendChild(searchBtn);
+            // Get dictionary sources for current language
+            const currentLang = this.getLanguage();
+            const sources = this.getLanguageSpecificSources(word.text, currentLang);
+            
+            // Create container for dictionary links
+            const linksContainer = document.createElement('div');
+            linksContainer.className = 'dictionary-links-container';
+            
+            // Add each dictionary source as a direct link
+            sources.forEach(source => {
+                const linkButton = document.createElement('button');
+                linkButton.className = 'dictionary-link-button';
+                linkButton.textContent = source.name;
+                linkButton.onclick = () => {
+                    window.open(source.url, '_blank');
+                };
+                linksContainer.appendChild(linkButton);
+            });
+            
+            searchContainer.appendChild(linksContainer);
         } else {
             const noSearchText = document.createElement('div');
-            noSearchText.textContent = 'Complete the word to search';
+            noSearchText.textContent = 'Complete the word to see dictionary links';
             noSearchText.className = 'word-search-disabled';
             searchContainer.appendChild(noSearchText);
         }
@@ -296,28 +311,113 @@ class WordDisplay {
      * @param {string} word - The word to look up
      * @param {HTMLElement} container - The container to display results in
      */
-    fetchDefinitions(word, container) {
+    async fetchDefinitions(word, container) {
         const cleanWord = word.toLowerCase().trim();
+        const currentLang = this.getLanguage();
         
-        // Try Free Dictionary API first
-        this.fetchFromFreeDictionary(cleanWord)
-            .then(definitions => {
-                if (definitions && definitions.length > 0) {
-                    this.displayDefinitions(definitions, container, 'Free Dictionary API');
-                } else {
-                    throw new Error('No definitions found');
-                }
-            })
-            .catch(error => {
-                console.log('Free Dictionary API failed:', error.message);
-                // Fallback to showing no definitions message
-                container.innerHTML = `
-                    <div class="word-display-no-definitions">
-                        <div class="word-display-no-definitions-title">📚 No definitions found</div>
-                        <div class="word-display-no-definitions-subtitle">Try the external dictionary links below</div>
-                    </div>
-                `;
-            });
+        // Show loading state
+        container.innerHTML = `
+            <div class="word-display-loading">
+                <div class="word-display-loading-title">🔍 Looking up definitions...</div>
+                <div class="word-display-loading-subtitle">Searching multiple sources</div>
+            </div>
+        `;
+
+        try {
+            // Try Free Dictionary API first for supported languages
+            const definitions = await this.fetchFromFreeDictionary(cleanWord);
+            if (definitions && definitions.length > 0) {
+                this.displayDefinitions(definitions, container, definitions[0].source);
+                return;
+            }
+        } catch (error) {
+            console.log('Free Dictionary API failed:', error.message);
+        }
+
+        // For unsupported languages, try alternative approaches
+        try {
+            const wiktionaryDef = await this.fetchFromWiktionary(cleanWord, currentLang);
+            if (wiktionaryDef && wiktionaryDef.length > 0) {
+                this.displayDefinitions(wiktionaryDef, container, `Wiktionary (${currentLang})`);
+                return;
+            }
+        } catch (error) {
+            console.log('Wiktionary API failed:', error.message);
+        }
+
+        // If all APIs fail, show helpful message with language-specific guidance
+        this.showNoDefinitionsMessage(container, currentLang, cleanWord);
+    }
+
+    /**
+     * Shows appropriate no definitions message based on language
+     * @param {HTMLElement} container - Container to show message in
+     * @param {string} language - Current language
+     * @param {string} word - Word that was searched
+     */
+    showNoDefinitionsMessage(container, language, word) {
+        const languageNames = DictionarySources.getLanguageNames();
+        const langDisplay = languageNames[language] || language;
+        
+        const supportedByFreeAPI = ['en-us', 'de', 'fr', 'es', 'it', 'pt'].includes(language);
+        
+        let message, subtitle;
+        
+        if (supportedByFreeAPI) {
+            message = `📚 No definitions found for "${word}"`;
+            subtitle = `Word not found in ${langDisplay} dictionaries. Check spelling or try the external dictionary links below.`;
+        } else {
+            message = `📚 No API definitions available for ${langDisplay}`;
+            subtitle = `Our automatic definition lookup doesn't support ${langDisplay} yet. Use the comprehensive dictionary links below for authoritative definitions.`;
+        }
+        
+        container.innerHTML = `
+            <div class="word-display-no-definitions">
+                <div class="word-display-no-definitions-title">${message}</div>
+                <div class="word-display-no-definitions-subtitle">${subtitle}</div>
+            </div>
+        `;
+    }
+
+    /**
+     * Attempts to fetch definitions from Wiktionary API (experimental)
+     * @param {string} word - The word to look up
+     * @param {string} language - Language code
+     * @returns {Promise<Array>} Array of definition objects
+     */
+    async fetchFromWiktionary(word, language) {
+        // Wiktionary API is complex and parsing would require significant work
+        // For now, this is a placeholder that could be implemented if needed
+        
+        // Map language codes to Wiktionary language codes
+        const wiktLangMap = {
+            'sv': 'sv',
+            'da': 'da', 
+            'no': 'no',
+            'fi': 'fi',
+            'nl': 'nl',
+            'en-us': 'en'
+        };
+        
+        const wiktLang = wiktLangMap[language];
+        if (!wiktLang) {
+            throw new Error(`Wiktionary not configured for ${language}`);
+        }
+
+        // This is a simplified example - real Wiktionary API parsing is much more complex
+        try {
+            const response = await fetch(`https://${wiktLang}.wiktionary.org/api/rest_v1/page/definition/${encodeURIComponent(word)}`);
+            if (!response.ok) {
+                throw new Error('Wiktionary API request failed');
+            }
+            
+            // Wiktionary API responses are complex and would need custom parsing
+            // For now, we'll just throw an error to fall back to external links
+            throw new Error('Wiktionary parsing not implemented yet');
+            
+        } catch (error) {
+            throw new Error(`Wiktionary lookup failed: ${error.message}`);
+        }
     }
 
     /**
@@ -327,29 +427,28 @@ class WordDisplay {
      */
     fetchFromFreeDictionary(word) {
         const currentLang = this.getLanguage();
-        let apiLang = 'en';
         
-        // Map language codes to API supported languages
+        // Map language codes to API supported languages - only use exact matches
         const langMap = {
-            'en-us': 'en',
-            'sv': 'en', // Swedish not supported by this API, fallback to English
-            'da': 'en', // Danish not supported, fallback to English
-            'no': 'en', // Norwegian not supported, fallback to English
-            'fi': 'en', // Finnish not supported, fallback to English
-            'de': 'de',
-            'fr': 'fr',
-            'es': 'es',
-            'it': 'it',
-            'pt': 'pt',
-            'nl': 'en'  // Dutch not supported, fallback to English
+            'en-us': { code: 'en', name: 'English' },
+            'de': { code: 'de', name: 'German' },
+            'fr': { code: 'fr', name: 'French' },
+            'es': { code: 'es', name: 'Spanish' },
+            'it': { code: 'it', name: 'Italian' },
+            'pt': { code: 'pt', name: 'Portuguese' }
         };
         
-        apiLang = langMap[currentLang] || 'en';
+        const apiLangInfo = langMap[currentLang];
         
-        return fetch(`https://api.dictionaryapi.dev/api/v2/entries/${apiLang}/${word}`)
+        // If language is not supported by the API, reject immediately
+        if (!apiLangInfo) {
+            return Promise.reject(new Error(`Free Dictionary API does not support ${currentLang}. Only English, German, French, Spanish, Italian, and Portuguese are supported.`));
+        }
+        
+        return fetch(`https://api.dictionaryapi.dev/api/v2/entries/${apiLangInfo.code}/${word}`)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('Word not found');
+                    throw new Error(`Word "${word}" not found in ${apiLangInfo.name}`);
                 }
                 return response.json();
             })
@@ -366,7 +465,7 @@ class WordDisplay {
                                             partOfSpeech: meaning.partOfSpeech,
                                             definition: def.definition,
                                             example: def.example,
-                                            source: 'Free Dictionary API'
+                                            source: `Free Dictionary API (${apiLangInfo.name})`
                                         });
                                     });
                                 }
@@ -390,7 +489,7 @@ class WordDisplay {
     }
 
     /**
-     * Opens a dictionary search for the word
+     * Opens a dictionary search for the word - displays options in the side panel
      * @param {string} wordText - Word to search for
      */
     searchWord(wordText) {
@@ -403,44 +502,63 @@ class WordDisplay {
 
         const currentLang = this.getLanguage();
         const sources = this.getLanguageSpecificSources(wordText, currentLang);
-        
-        // Create a selection dialog
-        const modal = document.createElement('div');
-        modal.className = 'dictionary-modal';
-
-        const dialog = document.createElement('div');
-        dialog.className = 'dictionary-modal-dialog';
-
-        let buttonsHtml = '';
-        sources.forEach(source => {
-            buttonsHtml += `
-                <button onclick="window.open('${source.url}', '_blank')" class="dictionary-button">
-                    ${source.name}
-                </button>
-            `;
-        });
-
         const languageNames = DictionarySources.getLanguageNames();
-
         const langDisplay = languageNames[currentLang] || currentLang;
 
-        dialog.innerHTML = `
-            <h3>Search "${wordText}" in ${langDisplay} dictionaries:</h3>
-            <div class="search-button-container">
-                ${buttonsHtml}
-            </div>
-            <button onclick="this.parentElement.parentElement.remove()" class="cancel-button">Cancel</button>
-        `;
+        // Clear current content and show dictionary sources in the panel
+        this.content.innerHTML = '';
 
-        modal.appendChild(dialog);
-        document.body.appendChild(modal);
-
-        // Close on outside click
-        modal.onclick = (e) => {
-            if (e.target === modal) {
-                modal.remove();
+        // Create header for dictionary search
+        const searchHeader = document.createElement('div');
+        searchHeader.className = 'dictionary-search-header';
+        
+        const headerTitle = document.createElement('h3');
+        headerTitle.textContent = `Search "${wordText}" in ${langDisplay} dictionaries`;
+        headerTitle.className = 'dictionary-search-title';
+        
+        const backButton = document.createElement('button');
+        backButton.className = 'dictionary-back-button-header';
+        backButton.textContent = '← Back to Word Details';
+        backButton.onclick = () => {
+            if (this.currentWord) {
+                this.show(this.currentWord);
             }
         };
+
+        searchHeader.appendChild(headerTitle);
+        searchHeader.appendChild(backButton);
+
+        // Create dictionary sources list
+        const sourcesContainer = document.createElement('div');
+        sourcesContainer.className = 'dictionary-sources-container';
+
+        sources.forEach(source => {
+            const sourceButton = document.createElement('button');
+            sourceButton.className = 'dictionary-source-button';
+            sourceButton.textContent = source.name;
+            sourceButton.onclick = () => {
+                window.open(source.url, '_blank');
+            };
+            sourcesContainer.appendChild(sourceButton);
+        });
+
+        // Add back button at the bottom as well
+        const bottomBackButton = document.createElement('button');
+        bottomBackButton.className = 'dictionary-back-button-bottom';
+        bottomBackButton.textContent = 'Back to Word Details';
+        bottomBackButton.onclick = () => {
+            if (this.currentWord) {
+                this.show(this.currentWord);
+            }
+        };
+
+        // Append all elements to content
+        this.content.appendChild(searchHeader);
+        this.content.appendChild(sourcesContainer);
+        this.content.appendChild(bottomBackButton);
+
+        // Make sure panel is visible
+        this.panel.style.display = 'block';
     }
 
     /**
