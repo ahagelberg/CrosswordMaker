@@ -137,7 +137,6 @@ class CrosswordApp {
 
         document.addEventListener('crossword:clearWordSelection', () => {
             this.renderer.clearWordHighlight();
-            this.wordDisplay.hide();
         });
     }
 
