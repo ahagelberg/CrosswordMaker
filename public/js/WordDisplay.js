@@ -79,6 +79,10 @@ class WordDisplay {
         this.content.innerHTML = '';
 
         // Word direction and position
+        const infoTitle = document.createElement('div');
+        infoTitle.textContent = 'Details:';
+        infoTitle.className = 'word-info-title';
+
         const info = document.createElement('div');
         info.className = 'word-info';
 
@@ -97,27 +101,6 @@ class WordDisplay {
         info.appendChild(direction);
         info.appendChild(position);
         info.appendChild(length);
-
-        // Word letters display
-        const lettersContainer = document.createElement('div');
-        lettersContainer.className = 'word-letters';
-
-        const lettersTitle = document.createElement('div');
-        lettersTitle.textContent = 'Letters:';
-        lettersTitle.className = 'word-letters-title';
-
-        const lettersGrid = document.createElement('div');
-        lettersGrid.className = 'word-letters-grid';
-
-        word.letters.forEach((letter, index) => {
-            const letterBox = document.createElement('div');
-            letterBox.className = letter ? 'word-letter-box filled' : 'word-letter-box empty';
-            letterBox.textContent = letter || '?';
-            lettersGrid.appendChild(letterBox);
-        });
-
-        lettersContainer.appendChild(lettersTitle);
-        lettersContainer.appendChild(lettersGrid);
 
         // Word text
         const wordText = document.createElement('div');
@@ -210,25 +193,15 @@ class WordDisplay {
             searchContainer.appendChild(noSearchText);
         }
 
-        // Word statistics
-        const stats = document.createElement('div');
-        stats.className = 'word-stats';
-
-        const completeness = word.letters.filter(l => l).length;
-        stats.innerHTML = `
-            <div>Completed: ${completeness}/${word.length} letters</div>
-            <div>Progress: ${Math.round((completeness / word.length) * 100)}%</div>
-        `;
-
         // Append all elements
-        this.content.appendChild(info);
-        this.content.appendChild(lettersContainer);
+        //this.content.appendChild(lettersContainer);
         this.content.appendChild(wordText);
+        this.content.appendChild(infoTitle);
+        this.content.appendChild(info);
         if (definitionsContainer) {
             this.content.appendChild(definitionsContainer);
         }
         this.content.appendChild(searchContainer);
-        this.content.appendChild(stats);
     }
 
     /**
