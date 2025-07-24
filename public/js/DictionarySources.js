@@ -36,7 +36,7 @@ class DictionarySources {
                     url: `https://www.synonymer.se/sv-syn/${encodedWord}`
                 },
                 {
-                    name: 'Wiktionary (Svenska)',
+                    name: 'Wiktionary',
                     url: `https://sv.wiktionary.org/wiki/${encodedWord}`
                 }
             ],
@@ -58,16 +58,16 @@ class DictionarySources {
                     url: `https://www.collinsdictionary.com/dictionary/english/${encodedWord}`
                 },
                 {
-                    name: 'Wiktionary (English)',
-                    url: `https://en.wiktionary.org/wiki/${encodedWord}`
-                },
-                {
                     name: 'Thesaurus.com',
                     url: `https://www.thesaurus.com/browse/${encodedWord}`
                 },
                 {
                     name: 'Etymology Online',
                     url: `https://www.etymonline.com/search?q=${encodedWord}`
+                },
+                {
+                    name: 'Wiktionary',
+                    url: `https://en.wiktionary.org/wiki/${encodedWord}`
                 }
             ],
             'da': [
@@ -76,7 +76,7 @@ class DictionarySources {
                     url: `https://ordnet.dk/ddo/ordbog?query=${encodedWord}`
                 },
                 {
-                    name: 'Wiktionary (Dansk)',
+                    name: 'Wiktionary',
                     url: `https://da.wiktionary.org/wiki/${encodedWord}`
                 }
             ],
@@ -98,7 +98,7 @@ class DictionarySources {
                     url: `https://ordbok.uib.no/perl/ordbok.cgi?OPP=${encodedWord}&ant_nynorsk=5`
                 },
                 {
-                    name: 'Wiktionary (Norsk)',
+                    name: 'Wiktionary',
                     url: `https://no.wiktionary.org/wiki/${encodedWord}`
                 }
             ],
@@ -112,12 +112,12 @@ class DictionarySources {
                     url: `https://www.suomisanakirja.fi/${encodedWord}`
                 },
                 {
-                    name: 'Wiktionary (Suomi)',
-                    url: `https://fi.wiktionary.org/wiki/${encodedWord}`
-                },
-                {
                     name: 'Kääntäjä.fi',
                     url: `https://www.kaantaja.fi/sanakirja/suomi-englanti/${encodedWord}`
+                },
+                {
+                    name: 'Wiktionary',
+                    url: `https://fi.wiktionary.org/wiki/${encodedWord}`
                 }
             ],
             'de': [
@@ -134,16 +134,16 @@ class DictionarySources {
                     url: `https://dict.leo.org/german-english/${encodedWord}`
                 },
                 {
-                    name: 'Wiktionary (Deutsch)',
-                    url: `https://de.wiktionary.org/wiki/${encodedWord}`
-                },
-                {
                     name: 'OpenThesaurus',
                     url: `https://www.openthesaurus.de/synonyme/${encodedWord}`
                 },
                 {
                     name: 'Linguee',
                     url: `https://www.linguee.com/german-english/search?source=german&query=${encodedWord}`
+                },
+                {
+                    name: 'Wiktionary',
+                    url: `https://de.wiktionary.org/wiki/${encodedWord}`
                 }
             ],
             'fr': [
@@ -160,16 +160,16 @@ class DictionarySources {
                     url: `https://www.cnrtl.fr/definition/${encodedWord}`
                 },
                 {
-                    name: 'Wiktionary (Français)',
-                    url: `https://fr.wiktionary.org/wiki/${encodedWord}`
-                },
-                {
                     name: 'Synonymes.com',
                     url: `https://www.synonymes.com/synonyme.php?mot=${encodedWord}`
                 },
                 {
                     name: 'Reverso',
                     url: `https://dictionnaire.reverso.net/francais-definition/${encodedWord}`
+                },
+                {
+                    name: 'Wiktionary',
+                    url: `https://fr.wiktionary.org/wiki/${encodedWord}`
                 }
             ],
             'es': [
@@ -182,13 +182,13 @@ class DictionarySources {
                     url: `https://www.wordreference.com/definicion/${encodedWord}`
                 },
                 {
-                    name: 'Wiktionary (Español)',
-                    url: `https://es.wiktionary.org/wiki/${encodedWord}`
-                },
-                {
                     name: 'SpanishDict',
                     url: `https://www.spanishdict.com/translate/${encodedWord}`
                 },
+                {
+                    name: 'Wiktionary',
+                    url: `https://es.wiktionary.org/wiki/${encodedWord}`
+                }
             ],
             'it': [
                 {
@@ -200,12 +200,12 @@ class DictionarySources {
                     url: `https://www.garzantilinguistica.it/ricerca/?q=${encodedWord}`
                 },
                 {
-                    name: 'Wiktionary (Italiano)',
-                    url: `https://it.wiktionary.org/wiki/${encodedWord}`
-                },
-                {
                     name: 'Sinonimi e Contrari',
                     url: `https://www.sinonimi-contrari.it/sinonimi/${encodedWord}`
+                },
+                {
+                    name: 'Wiktionary',
+                    url: `https://it.wiktionary.org/wiki/${encodedWord}`
                 }
             ],
             'pt': [
@@ -218,12 +218,12 @@ class DictionarySources {
                     url: `https://michaelis.uol.com.br/busca?r=0&f=0&t=0&palavra=${encodedWord}`
                 },
                 {
-                    name: 'Wiktionary (Português)',
-                    url: `https://pt.wiktionary.org/wiki/${encodedWord}`
-                },
-                {
                     name: 'Infopédia',
                     url: `https://www.infopedia.pt/dicionarios/lingua-portuguesa/${encodedWord}`
+                },
+                {
+                    name: 'Wiktionary',
+                    url: `https://pt.wiktionary.org/wiki/${encodedWord}`
                 }
             ],
             'nl': [
@@ -232,12 +232,12 @@ class DictionarySources {
                     url: `https://www.vandale.nl/gratis-woordenboek/nederlands/betekenis/${encodedWord}`
                 },
                 {
-                    name: 'Wiktionary (Nederlands)',
-                    url: `https://nl.wiktionary.org/wiki/${encodedWord}`
-                },
-                {
                     name: 'Woorden.org',
                     url: `https://www.woorden.org/woord/${encodedWord}`
+                },
+                {
+                    name: 'Wiktionary',
+                    url: `https://nl.wiktionary.org/wiki/${encodedWord}`
                 }
             ]
         };
@@ -245,10 +245,30 @@ class DictionarySources {
         // Get language-specific sources or fallback to English
         const languageSources = sources[language] || sources['en-us'];
         
-        // Add Google search as a universal option for all languages
+        // Add Google search as a universal option with language prioritization
+        const languageNames = this.getLanguageNames();
+        const languageName = languageNames[language] || 'English';
+        
+        // Map language codes to Google's language restriction codes
+        const googleLangCodes = {
+            'sv': 'lang_sv',        // Swedish
+            'en-us': 'lang_en',     // English
+            'da': 'lang_da',        // Danish
+            'no': 'lang_no',        // Norwegian
+            'fi': 'lang_fi',        // Finnish
+            'de': 'lang_de',        // German
+            'fr': 'lang_fr',        // French
+            'es': 'lang_es',        // Spanish
+            'it': 'lang_it',        // Italian
+            'pt': 'lang_pt',        // Portuguese
+            'nl': 'lang_nl',        // Dutch
+       };
+        
+        const googleLangCode = googleLangCodes[language] || 'lang_en';
+        
         const googleSearch = {
             name: 'Google Search',
-            url: `https://www.google.com/search?q=${encodedWord}+definition`
+            url: `https://www.google.com/search?q=${encodedWord}+definition+${encodeURIComponent(languageName)}&lr=${googleLangCode}&hl=${language.split('-')[0]}`
         };
         
         // Return sources with Google search added
