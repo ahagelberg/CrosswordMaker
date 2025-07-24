@@ -134,36 +134,43 @@ class WordDisplay {
         wordText.appendChild(textTitle);
         wordText.appendChild(textDisplay);
 
-        // Dictionary definitions section
-        const definitionsContainer = document.createElement('div');
-        definitionsContainer.className = 'word-definitions';
+        // Dictionary definitions section (only show for supported languages)
+        const currentLang = this.getLanguage();
+        const supportedDefinitionLanguages = ['en-us', 'de', 'fr', 'es', 'it', 'pt'];
+        const showDefinitions = supportedDefinitionLanguages.includes(currentLang);
+        
+        let definitionsContainer = null;
+        if (showDefinitions) {
+            definitionsContainer = document.createElement('div');
+            definitionsContainer.className = 'word-definitions';
 
-        const definitionsTitle = document.createElement('div');
-        definitionsTitle.textContent = 'Definitions:';
-        definitionsTitle.className = 'word-definitions-title';
+            const definitionsTitle = document.createElement('div');
+            definitionsTitle.textContent = 'Definitions:';
+            definitionsTitle.className = 'word-definitions-title';
 
-        const definitionsContent = document.createElement('div');
-        definitionsContent.className = 'definitions-content';
+            const definitionsContent = document.createElement('div');
+            definitionsContent.className = 'definitions-content';
 
-        // Show loading or fetch definitions
-        if (word.text && !word.text.includes('?') && word.text.length > 1) {
-            definitionsContent.innerHTML = `
-                <div class="word-display-loading">
-                    <div class="word-display-loading-title">🔍 Looking up definitions...</div>
-                    <div class="word-display-loading-subtitle">Searching multiple dictionaries</div>
-                </div>
-            `;
-            this.fetchDefinitions(word.text, definitionsContent);
-        } else {
-            definitionsContent.innerHTML = `
-                <div class="word-display-no-word">
-                    Complete the word to see definitions
-                </div>
-            `;
+            // Show loading or fetch definitions
+            if (word.text && !word.text.includes('?') && word.text.length > 1) {
+                definitionsContent.innerHTML = `
+                    <div class="word-display-loading">
+                        <div class="word-display-loading-title">🔍 Looking up definitions...</div>
+                        <div class="word-display-loading-subtitle">Searching multiple dictionaries</div>
+                    </div>
+                `;
+                this.fetchDefinitions(word.text, definitionsContent);
+            } else {
+                definitionsContent.innerHTML = `
+                    <div class="word-display-no-word">
+                        Complete the word to see definitions
+                    </div>
+                `;
+            }
+
+            definitionsContainer.appendChild(definitionsTitle);
+            definitionsContainer.appendChild(definitionsContent);
         }
-
-        definitionsContainer.appendChild(definitionsTitle);
-        definitionsContainer.appendChild(definitionsContent);
 
         // Dictionary links functionality - show links directly
         const searchContainer = document.createElement('div');
@@ -217,7 +224,9 @@ class WordDisplay {
         this.content.appendChild(info);
         this.content.appendChild(lettersContainer);
         this.content.appendChild(wordText);
-        this.content.appendChild(definitionsContainer);
+        if (definitionsContainer) {
+            this.content.appendChild(definitionsContainer);
+        }
         this.content.appendChild(searchContainer);
         this.content.appendChild(stats);
     }
