@@ -79,11 +79,6 @@ class CrosswordApp {
             document.documentElement.lang = this.currentLanguage;
             this.renderer.setLanguage(this.currentLanguage);
             this.renderer.render();
-            
-            // Update Hyphenopoly if it's loaded
-            if (window.Hyphenopoly && window.Hyphenopoly.hyphenators) {
-                window.Hyphenopoly.hyphenators.HTML.hyphenate();
-            }
         };
 
         // Title input
