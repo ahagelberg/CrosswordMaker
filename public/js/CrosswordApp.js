@@ -16,7 +16,7 @@ class CrosswordApp {
     initializeProperties() {
         this.currentLanguage = 'sv';
         this.crosswordTitle = '';
-        
+
         // Get DOM elements
         this.elements = {
             rowsInput: document.getElementById('rows'),
@@ -42,7 +42,7 @@ class CrosswordApp {
             parseInt(this.elements.rowsInput.value),
             parseInt(this.elements.colsInput.value)
         );
-        
+
         this.navigationManager = new NavigationManager(this.grid);
         this.renderer = new CrosswordRenderer(this.grid, this.navigationManager);
         this.contextMenu = new ContextMenu(this.grid, this.navigationManager);
@@ -51,14 +51,14 @@ class CrosswordApp {
         this.toastManager = new ToastManager();
         this.wordManager = new WordManager(this.grid);
         this.wordDisplay = new WordDisplay(() => this.currentLanguage);
-        
+
         // Set up callbacks
         this.contextMenu.setOnGridChange(() => {
             this.renderer.render();
             this.wordManager.updateWords();
             this.puzzleManager.autoSave(this.getPuzzleData());
         });
-        
+
         this.puzzleManager.setOnPuzzleLoad((puzzle) => {
             this.loadPuzzleData(puzzle);
         });
@@ -169,13 +169,13 @@ class CrosswordApp {
     initialize() {
         // Try to load the last opened puzzle
         const lastPuzzle = this.puzzleManager.loadLastPuzzle();
-        
+
         if (!lastPuzzle) {
             // No saved puzzle, start with fresh grid
             this.renderer.render();
             this.navigationManager.resetFocus();
         }
-        
+
         // Start auto-save
         this.puzzleManager.startAutoSave(() => this.getPuzzleData());
     }
@@ -202,25 +202,25 @@ class CrosswordApp {
     loadPuzzleData(puzzle) {
         // Update grid
         this.grid.import(puzzle);
-        
+
         // Update application state
         this.currentLanguage = puzzle.language || 'sv';
         this.crosswordTitle = puzzle.title || '';
-        
+
         // Update UI controls
         this.elements.rowsInput.value = this.grid.rows;
         this.elements.colsInput.value = this.grid.cols;
         this.elements.languageSelect.value = this.currentLanguage;
         this.elements.titleInput.value = this.crosswordTitle;
         document.documentElement.lang = this.currentLanguage;
-        
+
         // Update renderer and re-render
         this.renderer.setLanguage(this.currentLanguage);
         this.renderer.render();
-        
+
         // Reset focus
         this.navigationManager.resetFocus();
-        
+
         document.dispatchEvent(new CustomEvent('crossword:toast', {
             detail: { message: `Loaded puzzle: ${puzzle.title || 'Untitled'}`, type: 'success' }
         }));
@@ -232,17 +232,17 @@ class CrosswordApp {
     resizeGrid() {
         const newRows = parseInt(this.elements.rowsInput.value);
         const newCols = parseInt(this.elements.colsInput.value);
-        
+
         this.grid.resize(newRows, newCols);
         this.renderer.render();
-        
+
         // Auto-save the resized puzzle
         this.puzzleManager.autoSave(this.getPuzzleData());
-        
+
         document.dispatchEvent(new CustomEvent('crossword:toast', {
             detail: { message: `Grid resized to ${newRows}×${newCols}!`, type: 'success' }
         }));
-        
+
         // Reset focus after resize
         this.navigationManager.resetFocus();
     }
@@ -253,14 +253,14 @@ class CrosswordApp {
     savePuzzle() {
         const puzzleData = this.getPuzzleData();
         const savedName = this.puzzleManager.save(puzzleData);
-        
+
         if (savedName) {
             // Update title if it was changed during save
             if (savedName !== this.crosswordTitle) {
                 this.crosswordTitle = savedName;
                 this.elements.titleInput.value = savedName;
             }
-            
+
             document.dispatchEvent(new CustomEvent('crossword:toast', {
                 detail: { message: `Puzzle "${savedName}" saved!`, type: 'success' }
             }));
@@ -276,7 +276,7 @@ class CrosswordApp {
      */
     async loadPuzzle() {
         const selectedPuzzle = await this.puzzleManager.showPuzzleSelector();
-        
+
         if (selectedPuzzle) {
             const puzzle = this.puzzleManager.load(selectedPuzzle);
             if (!puzzle) {
@@ -294,24 +294,24 @@ class CrosswordApp {
         try {
             const puzzleData = this.getPuzzleData();
             console.log('Puzzle data to download:', puzzleData);
-            
+
             const exportData = this.puzzleManager.exportForDownload(puzzleData);
             console.log('Export data:', exportData);
-            
+
             const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
             console.log('Blob created:', blob);
-            
+
             const filename = this.puzzleManager.createFilename(this.crosswordTitle);
             console.log('Filename:', filename);
-            
+
             saveAs(blob, filename);
             console.log('saveAs called');
-            
+
             // Show success toast
             document.dispatchEvent(new CustomEvent('crossword:toast', {
                 detail: { message: `Downloading ${filename}...`, type: 'success' }
             }));
-            
+
         } catch (error) {
             console.error('Download error:', error);
             document.dispatchEvent(new CustomEvent('crossword:toast', {
@@ -329,30 +329,30 @@ class CrosswordApp {
         fileInput.type = 'file';
         fileInput.accept = '.json';
         fileInput.style.display = 'none';
-        
+
         fileInput.onchange = (e) => {
             const file = e.target.files[0];
             if (!file) return;
-            
+
             const reader = new FileReader();
             reader.onload = (event) => {
                 try {
                     const puzzle = JSON.parse(event.target.result);
-                    
+
                     // Validate the puzzle structure
                     if (!puzzle.rows || !puzzle.cols || !puzzle.grid) {
                         throw new Error('Invalid puzzle format');
                     }
-                    
+
                     this.loadPuzzleData(puzzle);
-                    
+
                     // Auto-save the loaded puzzle
                     this.puzzleManager.autoSave(this.getPuzzleData());
-                    
+
                     document.dispatchEvent(new CustomEvent('crossword:toast', {
                         detail: { message: 'Puzzle loaded successfully!', type: 'success' }
                     }));
-                    
+
                 } catch (error) {
                     console.error('Error loading puzzle:', error);
                     document.dispatchEvent(new CustomEvent('crossword:toast', {
@@ -360,10 +360,10 @@ class CrosswordApp {
                     }));
                 }
             };
-            
+
             reader.readAsText(file);
         };
-        
+
         // Trigger file selection
         document.body.appendChild(fileInput);
         fileInput.click();
