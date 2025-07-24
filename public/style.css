@@ -606,6 +606,359 @@ body {
     text-decoration: none;
 }
 
+/* WordDisplay styles */
+.word-display-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 320px;
+    background: var(--background-white);
+    border-left: 2px solid var(--border-light);
+    box-shadow: -4px 0 16px var(--shadow-medium);
+    padding: 20px;
+    z-index: 100;
+    font-family: Arial, sans-serif;
+    overflow-y: auto;
+}
+
+/* Always reserve space for the panel */
+body {
+    padding-right: 340px; /* Always leave space for the side panel */
+    transition: none; /* Remove transition since it's always there */
+}
+
+/* Responsive behavior for smaller screens */
+@media (max-width: 1200px) {
+    body {
+        padding-right: 320px; /* Smaller padding for medium screens */
+    }
+    
+    .word-display-panel {
+        width: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding-right: 300px; /* Even smaller padding for mobile */
+    }
+    
+    .word-display-panel {
+        width: 280px;
+    }
+}
+
+.word-display-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-dark-gray);
+}
+
+.word-display-title {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 16px;
+}
+
+.word-display-close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.word-display-close-btn:hover {
+    color: var(--text-primary);
+}
+
+.word-info {
+    margin-bottom: 15px;
+    padding: 10px;
+    background: var(--background-very-light-gray);
+    border-radius: 5px;
+}
+
+.word-info-direction {
+    font-weight: bold;
+    color: var(--color-primary);
+    margin-bottom: 5px;
+}
+
+.word-info-details {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+}
+
+.word-letters {
+    margin-bottom: 15px;
+}
+
+.word-letters-title {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.word-letters-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+}
+
+.word-letter-box {
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--border-medium);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.word-letter-box.filled {
+    background: var(--background-white);
+    color: var(--text-primary);
+}
+
+.word-letter-box.empty {
+    background: var(--background-light-gray);
+    color: var(--text-muted);
+}
+
+.word-text {
+    margin-bottom: 15px;
+}
+
+.word-text-title {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.word-text-display {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--color-primary);
+    letter-spacing: 2px;
+    padding: 8px;
+    background: var(--color-primary-background);
+    border-radius: 4px;
+    text-align: center;
+    min-height: 20px;
+}
+
+.word-definitions {
+    margin-bottom: 15px;
+}
+
+.word-definitions-title {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.definitions-content {
+    min-height: 60px;
+    padding: 8px;
+    background: var(--background-medium-gray);
+    border-radius: 4px;
+    border: 1px solid var(--border-light);
+}
+
+.word-search {
+    margin-bottom: 15px;
+}
+
+.word-search-title {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.word-search-button {
+    width: 100%;
+    padding: 8px;
+    background: var(--color-success);
+    color: var(--text-white);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.word-search-button:hover {
+    background: #218838;
+}
+
+.word-search-disabled {
+    color: var(--text-muted);
+    font-style: italic;
+    text-align: center;
+    padding: 8px;
+}
+
+.word-stats {
+    font-size: 12px;
+    color: var(--text-secondary);
+    padding-top: 10px;
+    border-top: 1px solid var(--border-dark-gray);
+}
+
+.dictionary-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--shadow-overlay);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.dictionary-modal-dialog {
+    background: var(--background-white);
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 400px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 16px var(--shadow-dark);
+}
+
+.word-display-loading {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 20px;
+}
+
+.word-display-loading-title {
+    margin-bottom: 8px;
+}
+
+.word-display-loading-subtitle {
+    font-size: 12px;
+}
+
+.word-display-no-word {
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+    padding: 20px;
+}
+
+.word-display-no-definitions {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 20px;
+}
+
+.word-display-no-definitions-title {
+    margin-bottom: 8px;
+}
+
+.word-display-no-definitions-subtitle {
+    font-size: 12px;
+}
+
+.definition-source {
+    margin-bottom: 10px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-align: right;
+}
+
+.definition-item {
+    margin-bottom: 12px;
+    padding: 8px;
+    border-left: 3px solid var(--color-primary);
+    border-radius: 0 4px 4px 0;
+}
+
+.definition-item:nth-child(even) {
+    background: var(--background-white);
+}
+
+.definition-item:nth-child(odd) {
+    background: var(--background-very-light-gray);
+}
+
+.definition-part-of-speech {
+    font-size: 11px;
+    color: var(--color-primary);
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.definition-text {
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.definition-example {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.dictionary-button {
+    display: block;
+    width: 100%;
+    margin: 5px 0;
+    padding: 10px;
+    background: var(--color-primary);
+    color: var(--text-white);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: left;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.dictionary-button:hover {
+    background: var(--color-primary-dark);
+}
+
+.search-button-container {
+    margin: 15px 0;
+}
+
+.cancel-button {
+    width: 100%;
+    padding: 8px;
+    background: #6c757d;
+    color: var(--text-white);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.cancel-button:hover {
+    background: #5a6268;
+}
+
 /* Print styles */
 @media print {
     /* Hide everything except the crossword container and title */
