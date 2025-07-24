@@ -1,18 +1,75 @@
 @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&family=Patrick+Hand&family=Comic+Neue:wght@300;400;700&display=swap');
 
+/* CSS Custom Properties - Color Variables */
+:root {
+    /* Primary Colors */
+    --color-primary: #007acc;
+    --color-primary-dark: #1976D2;
+    --color-primary-light: #2196F3;
+    --color-primary-background: #e3f2fd;
+    --color-primary-text: #1976d2;
+    
+    /* Background Colors */
+    --background-page: #f7f7f7;
+    --background-white: #fff;
+    --background-black: #000;
+    --background-light-gray: #f5f5f5;
+    --background-medium-gray: #f0f0f0;
+    --background-dark-gray: #eee;
+    --background-very-light-gray: #fafafa;
+    --background-hover: #e0e0e0;
+    --background-transparent: transparent;
+    
+    /* Border Colors */
+    --border-light: #ddd;
+    --border-medium: #ccc;
+    --border-dark: #000;
+    
+    /* Text Colors */
+    --text-primary: #333;
+    --text-secondary: #666;
+    --text-muted: #999;
+    --text-white: white;
+    --text-black: #000;
+    --text-transparent: transparent;
+    
+    /* State Colors */
+    --color-success: #4CAF50;
+    --color-error: #f44336;
+    --color-error-dark: #d32f2f;
+    --color-info: #2196F3;
+    --color-warning: #ffc107;
+    
+    /* Word Highlighting */
+    --word-highlight-background: #ffeb3b;
+    --word-highlight-border: #ffc107;
+    
+    /* Selection Colors */
+    --selection-border: #0078d7;
+    
+    /* Shadow Colors */
+    --shadow-light: rgba(0,0,0,0.05);
+    --shadow-medium: rgba(0,0,0,0.08);
+    --shadow-dark: rgba(0,0,0,0.15);
+    --shadow-modal: rgba(0,0,0,0.3);
+    --shadow-overlay: rgba(0, 0, 0, 0.5);
+    --shadow-primary: rgba(0, 122, 204, 0.2);
+    --shadow-primary-strong: rgba(0, 122, 204, 0.3);
+}
+
 body {
     font-family: Arial, sans-serif;
-    background: #f7f7f7;
+    background: var(--background-page);
     margin: 0;
     padding: 0;
 }
 .toolbar {
-    background: #fff;
+    background: var(--background-white);
     padding: 10px;
     display: flex;
     gap: 10px;
     align-items: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 4px var(--shadow-light);
 }
 .title-container {
     margin: 20px auto;
@@ -22,43 +79,43 @@ body {
 #crosswordTitle {
     width: 100%;
     padding: 12px 16px;
-    border: 2px solid #ddd;
+    border: 2px solid var(--border-light);
     border-radius: 6px;
     font-size: 1.2em;
     font-weight: bold;
     text-align: center;
-    background: #fff;
+    background: var(--background-white);
     transition: border-color 0.2s;
 }
 #crosswordTitle:focus {
     outline: none;
-    border-color: #007acc;
-    box-shadow: 0 0 8px rgba(0, 122, 204, 0.2);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 8px var(--shadow-primary);
 }
 #crosswordTitle::placeholder {
-    color: #999;
+    color: var(--text-muted);
     font-weight: normal;
 }
 #crossword-container {
     margin: 30px auto;
     width: fit-content;
-    background: #fff;
+    background: var(--background-white);
     border-radius: 8px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 16px var(--shadow-medium);
     padding: 20px;
 }
 .crossword-grid {
     display: grid;
     gap: 1px;
-    background: #000;
-    border: 2px solid #000;
+    background: var(--background-black);
+    border: 2px solid var(--border-dark);
     border-radius: 4px;
     padding: 1px;
 }
 .square {
     width: 50px;
     height: 50px;
-    background: #fff;
+    background: var(--background-white);
     box-sizing: border-box;
     display: flex;
     align-items: center;
@@ -69,8 +126,8 @@ body {
 }
 
 .square.focused {
-    border: 2px solid #007acc !important;
-    box-shadow: 0 0 8px rgba(0, 122, 204, 0.3);
+    border: 2px solid var(--color-primary) !important;
+    box-shadow: 0 0 8px var(--shadow-primary-strong);
     z-index: 10;
 }
 .square.letter input {
@@ -80,20 +137,20 @@ body {
     width: 90%;
     height: 90%;
     border: none;
-    background: transparent;
+    background: var(--background-transparent);
     outline: none;
     font-weight: 400;
 }
 .square.black {
-    background: #000;
-    border: 1px solid #000;
+    background: var(--background-black);
+    border: 1px solid var(--border-dark);
 }
 .square.clue input {
     font-size: 0.8em;
     width: 90%;
     height: 90%;
     border: none;
-    background: transparent;
+    background: var(--background-transparent);
     outline: none;
     text-align: center;
 }
@@ -102,7 +159,7 @@ body {
     width: 90%;
     height: 90%;
     border: none;
-    background: transparent;
+    background: var(--background-transparent);
     outline: none;
     text-align: center;
     resize: none;
@@ -130,7 +187,7 @@ body {
     right: 10%;
     top: 50%;
     height: 1px;
-    background: #333;
+    background: var(--text-primary);
     transform: translateY(-50%);
     z-index: 1;
 }
@@ -145,25 +202,25 @@ body {
     line-height: 1;
 }
 .square.selected {
-    box-shadow: 0 0 0 2px #0078d7;
+    box-shadow: 0 0 0 2px var(--selection-border);
 }
 
 .square.word-highlighted {
-    background-color: #ffeb3b !important;
-    box-shadow: 0 0 0 2px #ffc107;
+    background-color: var(--word-highlight-background) !important;
+    box-shadow: 0 0 0 2px var(--word-highlight-border);
 }
 
 .square.word-highlighted input {
-    background-color: transparent !important;
+    background-color: var(--background-transparent) !important;
 }
 
 /* Thick borders for word boundaries */
 .square.border-bottom {
-    border-bottom: 4px solid #000 !important;
+    border-bottom: 4px solid var(--border-dark) !important;
 }
 
 .square.border-right {
-    border-right: 4px solid #000 !important;
+    border-right: 4px solid var(--border-dark) !important;
 }
 
 /* Arrow indicators for letter squares */
@@ -173,7 +230,7 @@ body {
     font-weight: bold;
     z-index: 5;
     pointer-events: none;
-    color: #333;
+    color: var(--text-primary);
     line-height: 1;
 }
 
@@ -202,7 +259,7 @@ body {
     bottom: 2px;
     right: 2px;
     font-size: 0.7em;
-    background: #eee;
+    background: var(--background-dark-gray);
     border: none;
     border-radius: 2px;
     cursor: pointer;
@@ -210,10 +267,10 @@ body {
 }
 
 .context-menu {
-    background: white;
-    border: 1px solid #ccc;
+    background: var(--text-white);
+    border: 1px solid var(--border-medium);
     border-radius: 4px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px var(--shadow-dark);
     z-index: 1000;
     min-width: 150px;
 }
@@ -222,7 +279,7 @@ body {
     padding: 8px 12px;
     cursor: pointer;
     font-size: 0.9em;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--background-dark-gray);
 }
 
 .context-menu-item:last-child {
@@ -230,7 +287,7 @@ body {
 }
 
 .context-menu-item:hover {
-    background: #f0f0f0;
+    background: var(--background-medium-gray);
 }
 
 .color-option {
@@ -239,18 +296,18 @@ body {
 }
 
 .color-option:hover {
-    background: #f0f0f0 !important;
+    background: var(--background-medium-gray) !important;
 }
 
 .toast {
     position: fixed;
     top: 20px;
     right: 20px;
-    background: #333;
-    color: white;
+    background: var(--text-primary);
+    color: var(--text-white);
     padding: 12px 20px;
     border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 12px var(--shadow-modal);
     z-index: 1001;
     font-size: 0.9em;
     opacity: 0;
@@ -264,15 +321,15 @@ body {
 }
 
 .toast.success {
-    background: #4CAF50;
+    background: var(--color-success);
 }
 
 .toast.info {
-    background: #2196F3;
+    background: var(--color-info);
 }
 
 .toast.error {
-    background: #f44336;
+    background: var(--color-error);
 }
 
 /* Puzzle Selector Modal */
@@ -282,7 +339,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--shadow-overlay);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -290,20 +347,20 @@ body {
 }
 
 .puzzle-modal-content {
-    background: white;
+    background: var(--text-white);
     border-radius: 8px;
     padding: 20px;
     min-width: 400px;
     max-width: 600px;
     max-height: 80vh;
     overflow-y: auto;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 32px var(--shadow-modal);
 }
 
 .puzzle-modal h2 {
     margin-top: 0;
     margin-bottom: 20px;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .puzzle-list {
@@ -315,7 +372,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 12px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-light);
     border-radius: 4px;
     margin-bottom: 8px;
     cursor: pointer;
@@ -323,12 +380,12 @@ body {
 }
 
 .puzzle-item:hover {
-    background-color: #f5f5f5;
+    background-color: var(--background-light-gray);
 }
 
 .puzzle-item.selected {
-    background-color: #e3f2fd;
-    border-color: #2196F3;
+    background-color: var(--color-primary-background);
+    border-color: var(--color-primary-light);
 }
 
 .puzzle-info {
@@ -337,12 +394,12 @@ body {
 
 .puzzle-title {
     font-weight: bold;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .puzzle-details {
     font-size: 0.9em;
-    color: #666;
+    color: var(--text-secondary);
     margin-top: 4px;
 }
 
@@ -352,8 +409,8 @@ body {
 }
 
 .puzzle-delete {
-    background: #f44336;
-    color: white;
+    background: var(--color-error);
+    color: var(--text-white);
     border: none;
     padding: 4px 8px;
     border-radius: 4px;
@@ -362,7 +419,7 @@ body {
 }
 
 .puzzle-delete:hover {
-    background: #d32f2f;
+    background: var(--color-error-dark);
 }
 
 .modal-buttons {
@@ -381,21 +438,21 @@ body {
 }
 
 .modal-button.primary {
-    background: #2196F3;
-    color: white;
+    background: var(--color-primary-light);
+    color: var(--text-white);
 }
 
 .modal-button.primary:hover {
-    background: #1976D2;
+    background: var(--color-primary-dark);
 }
 
 .modal-button.secondary {
-    background: #ddd;
-    color: #333;
+    background: var(--border-light);
+    color: var(--text-primary);
 }
 
 .modal-button.secondary:hover {
-    background: #ccc;
+    background: var(--border-medium);
 }
 
 /* Word Display Panel */
@@ -406,10 +463,10 @@ body {
     transform: translateY(-50%);
     width: 300px;
     max-height: 80vh;
-    background: white;
-    border: 2px solid #ddd;
+    background: var(--text-white);
+    border: 2px solid var(--border-light);
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px var(--shadow-dark);
     display: none;
     z-index: 1000;
     overflow: hidden;
@@ -420,9 +477,9 @@ body {
 }
 
 .word-display-header {
-    background: #f5f5f5;
+    background: var(--background-light-gray);
     padding: 12px 16px;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--border-light);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -430,7 +487,7 @@ body {
 
 .word-display-title {
     font-weight: bold;
-    color: #333;
+    color: var(--text-primary);
     margin: 0;
 }
 
@@ -439,7 +496,7 @@ body {
     border: none;
     font-size: 18px;
     cursor: pointer;
-    color: #666;
+    color: var(--text-secondary);
     padding: 0;
     width: 24px;
     height: 24px;
@@ -450,8 +507,8 @@ body {
 }
 
 .word-display-close:hover {
-    background: #e0e0e0;
-    color: #333;
+    background: var(--background-hover);
+    color: var(--text-primary);
 }
 
 .word-display-content {
@@ -470,26 +527,26 @@ body {
 .word-letter {
     width: 30px;
     height: 30px;
-    border: 2px solid #ddd;
+    border: 2px solid var(--border-light);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
     font-size: 16px;
-    background: white;
+    background: var(--text-white);
     border-radius: 4px;
 }
 
 .word-letter.filled {
-    background: #e3f2fd;
-    border-color: #2196f3;
-    color: #1976d2;
+    background: var(--color-primary-background);
+    border-color: var(--color-primary-text);
+    color: var(--color-primary-text);
 }
 
 .word-letter.empty {
-    background: #fafafa;
-    border-color: #ddd;
-    color: #999;
+    background: var(--background-very-light-gray);
+    border-color: var(--border-light);
+    color: var(--text-muted);
 }
 
 .word-info {
@@ -505,11 +562,11 @@ body {
 
 .word-info span:first-child {
     font-weight: bold;
-    color: #666;
+    color: var(--text-secondary);
 }
 
 .word-info span:last-child {
-    color: #333;
+    color: var(--text-primary);
 }
 
 .word-search {
@@ -518,7 +575,7 @@ body {
 
 .word-search h4 {
     margin: 0 0 12px 0;
-    color: #333;
+    color: var(--text-primary);
     font-size: 14px;
     font-weight: bold;
 }
@@ -532,20 +589,20 @@ body {
 .search-link {
     display: inline-block;
     padding: 6px 12px;
-    background: #f0f0f0;
-    color: #333;
+    background: var(--background-medium-gray);
+    color: var(--text-primary);
     text-decoration: none;
     border-radius: 20px;
     font-size: 12px;
     font-weight: 500;
     transition: all 0.2s;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-light);
 }
 
 .search-link:hover {
-    background: #007acc;
-    color: white;
-    border-color: #007acc;
+    background: var(--color-primary);
+    color: var(--text-white);
+    border-color: var(--color-primary);
     text-decoration: none;
 }
 
@@ -560,7 +617,7 @@ body {
         margin: 0 auto 20px auto !important;
         width: fit-content !important;
         max-width: none !important;
-        background: white !important;
+        background: var(--text-white) !important;
         box-shadow: none !important;
         border: none !important;
     }
@@ -573,9 +630,9 @@ body {
         font-size: 1.5em !important;
         font-weight: bold !important;
         text-align: center !important;
-        background: white !important;
+        background: var(--text-white) !important;
         box-shadow: none !important;
-        color: #000 !important;
+        color: var(--text-black) !important;
         display: block !important;
     }
     
@@ -595,7 +652,7 @@ body {
     body {
         margin: 0;
         padding: 0;
-        background: white !important;
+        background: var(--text-white) !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
         /* Additional properties to minimize headers/footers */
@@ -611,7 +668,7 @@ body {
     
     #crossword-container {
         margin: 0 auto;
-        background: white !important;
+        background: var(--text-white) !important;
         box-shadow: none !important;
         border-radius: 0 !important;
         padding: 20px;
@@ -620,8 +677,8 @@ body {
     
     /* Ensure grid borders are visible */
     .crossword-grid {
-        border: 2px solid #000 !important;
-        background: #000 !important;
+        border: 2px solid var(--border-dark) !important;
+        background: var(--background-black) !important;
         gap: 1px !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
@@ -636,17 +693,17 @@ body {
     
     /* Set default white background only for squares without custom colors */
     .square:not([style*="background-color"]) {
-        background: white !important;
+        background: var(--text-white) !important;
     }
     
     .square.black {
-        background: #000 !important;
+        background: var(--background-black) !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
     
     .square.focused {
-        border: 1px solid #000 !important;
+        border: 1px solid var(--border-dark) !important;
         box-shadow: none !important;
         z-index: auto !important;
     }
@@ -655,8 +712,8 @@ body {
     .square input,
     .square textarea {
         border: none !important;
-        background: transparent !important;
-        color: #000 !important;
+        background: var(--background-transparent) !important;
+        color: var(--text-black) !important;
         font-weight: bold !important;
         text-align: center !important;
         -webkit-print-color-adjust: exact;
@@ -665,31 +722,31 @@ body {
     
     /* Hide letter values when printing blank puzzle */
     body.print-blank .square.letter input {
-        color: transparent !important;
+        color: var(--text-transparent) !important;
     }
     
     /* Show letter values when printing key */
     body.print-with-letters .square.letter input {
-        color: #000 !important;
+        color: var(--text-black) !important;
     }
     
     /* Ensure arrows are visible in print */
     .square .arrow {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
-        color: #000 !important;
+        color: var(--text-black) !important;
         font-weight: bold !important;
     }
     
     /* Ensure thick borders are visible in print */
     .square.border-bottom {
-        border-bottom: 4px solid #000 !important;
+        border-bottom: 4px solid var(--border-dark) !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
     
     .square.border-right {
-        border-right: 4px solid #000 !important;
+        border-right: 4px solid var(--border-dark) !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
@@ -708,7 +765,7 @@ body {
     
     /* Hide word highlighting when printing */
     .square.word-highlighted {
-        background-color: white !important;
+        background-color: var(--text-white) !important;
         box-shadow: none !important;
     }
 }
