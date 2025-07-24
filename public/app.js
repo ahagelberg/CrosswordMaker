@@ -36,7 +36,8 @@ function createEmptyGrid(r, c) {
             type: 'letter', 
             value: '', 
             arrow: null, // Can be 'top-to-right' or 'left-to-down'
-            borders: { top: false, bottom: false, left: false, right: false } // Thick borders for word boundaries
+            borders: { top: false, bottom: false, left: false, right: false }, // Thick borders for word boundaries
+            color: null // Background color for letter squares (null = default/white)
         }))
     );
 }
@@ -144,6 +145,9 @@ function loadPuzzle(puzzleName) {
                 }
                 if (cell.borders === undefined) {
                     cell.borders = { top: false, bottom: false, left: false, right: false };
+                }
+                if (cell.color === undefined) {
+                    cell.color = null;
                 }
             });
         });
@@ -583,6 +587,12 @@ function renderGrid() {
                 input.maxLength = 1;
                 input.value = cell.value;
                 input.pattern = '[A-Za-zÅÄÖåäö]';
+                
+                // Apply background color if set
+                if (cell.color) {
+                    square.style.backgroundColor = cell.color;
+                }
+                
                 input.onfocus = () => {
                     detectDirection(rIdx, cIdx);
                     lastEnteredPosition = { row: rIdx, col: cIdx };
@@ -816,6 +826,33 @@ function showContextMenu(e, r, c) {
             };
             menu.appendChild(removeBordersOption);
         }
+        
+        // Color options submenu
+        const colorSubmenu = document.createElement('div');
+        colorSubmenu.className = 'context-menu-item';
+        colorSubmenu.textContent = 'Change Color';
+        colorSubmenu.onclick = (e) => {
+            e.stopPropagation();
+            showColorSubmenu(e, r, c, menu);
+        };
+        menu.appendChild(colorSubmenu);
+        
+        // Remove color option if color is set
+        if (cell.color) {
+            const removeColorOption = document.createElement('div');
+            removeColorOption.className = 'context-menu-item';
+            removeColorOption.textContent = 'Remove Color';
+            removeColorOption.onclick = () => {
+                cell.color = null;
+                renderGrid();
+                menu.remove();
+                
+                // Restore focus
+                updateFocusedSquare(r, c, null);
+                setTimeout(() => focusSquare(r, c, null), 10);
+            };
+            menu.appendChild(removeColorOption);
+        }
     } else if (cell.type === 'clue') {
         const letterOption = document.createElement('div');
         letterOption.className = 'context-menu-item';
@@ -828,6 +865,7 @@ function showContextMenu(e, r, c) {
             cell.value2 = '';
             cell.arrow = null; // Initialize arrow as null for converted squares
             cell.borders = { top: false, bottom: false, left: false, right: false }; // Initialize borders
+            cell.color = null; // Initialize color as null for converted squares
             renderGrid();
             menu.remove();
             
@@ -900,6 +938,7 @@ function showContextMenu(e, r, c) {
             cell.value = '';
             cell.arrow = null; // Initialize arrow as null for converted squares
             cell.borders = { top: false, bottom: false, left: false, right: false }; // Initialize borders
+            cell.color = null; // Initialize color as null for converted squares
             renderGrid();
             menu.remove();
             
@@ -1086,6 +1125,88 @@ function showBorderSubmenu(e, r, c, parentMenu) {
 }
 
 /**
+ * Shows a color submenu for selecting background colors
+ * @param {MouseEvent} e - The click event
+ * @param {number} r - Row index of the square
+ * @param {number} c - Column index of the square
+ * @param {HTMLElement} parentMenu - The parent context menu element
+ */
+function showColorSubmenu(e, r, c, parentMenu) {
+    // Remove any existing color submenu
+    const existingSubmenu = document.querySelector('.color-submenu');
+    if (existingSubmenu) {
+        existingSubmenu.remove();
+    }
+    
+    const submenu = document.createElement('div');
+    submenu.className = 'context-menu color-submenu';
+    submenu.style.position = 'absolute';
+    submenu.style.left = (e.pageX + 150) + 'px'; // Position to the right of main menu
+    submenu.style.top = e.pageY + 'px';
+    
+    const colorOptions = [
+        { value: null, name: 'Default (White)', color: '#ffffff' },
+        { value: '#FFE4E1', name: 'Pink', color: '#FFE4E1' },
+        { value: '#E0F6FF', name: 'Blue', color: '#E0F6FF' },
+        { value: '#E4F5E4', name: 'Green', color: '#E4F5E4' },
+        { value: '#FFF8DC', name: 'Yellow', color: '#FFF8DC' },
+        { value: '#F0E6FF', name: 'Purple', color: '#F0E6FF' },
+        { value: '#FFE4CC', name: 'Orange', color: '#FFE4CC' }
+    ];
+    
+    colorOptions.forEach(option => {
+        const item = document.createElement('div');
+        item.className = 'context-menu-item color-option';
+        item.style.display = 'flex';
+        item.style.alignItems = 'center';
+        
+        // Create color swatch
+        const colorSwatch = document.createElement('div');
+        colorSwatch.style.cssText = `
+            width: 20px;
+            height: 20px;
+            border: 1px solid #ccc;
+            margin-right: 8px;
+            border-radius: 3px;
+            background-color: ${option.color};
+        `;
+        
+        const label = document.createElement('span');
+        label.textContent = option.name;
+        
+        item.appendChild(colorSwatch);
+        item.appendChild(label);
+        
+        // Check if this color is currently active
+        const cell = grid[r][c];
+        if (cell.color === option.value) {
+            item.style.backgroundColor = '#e3f2fd';
+        }
+        
+        item.onclick = () => {
+            cell.color = option.value;
+            renderGrid();
+            parentMenu.remove();
+            submenu.remove();
+            
+            // Restore focus
+            updateFocusedSquare(r, c, null);
+            setTimeout(() => focusSquare(r, c, null), 10);
+        };
+        submenu.appendChild(item);
+    });
+    
+    document.body.appendChild(submenu);
+    
+    // Remove submenu when clicking outside
+    const removeSubmenu = () => {
+        submenu.remove();
+        document.removeEventListener('click', removeSubmenu);
+    };
+    setTimeout(() => document.addEventListener('click', removeSubmenu), 100);
+}
+
+/**
  * Legacy function for square selection - currently unused
  * @param {number} r - Row index
  * @param {number} c - Column index
@@ -1238,6 +1359,9 @@ uploadBtn.onclick = () => {
                         }
                         if (cell.borders === undefined) {
                             cell.borders = { top: false, bottom: false, left: false, right: false };
+                        }
+                        if (cell.color === undefined) {
+                            cell.color = null;
                         }
                     });
                 });

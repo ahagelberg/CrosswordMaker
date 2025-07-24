@@ -224,6 +224,15 @@ body {
     background: #f0f0f0;
 }
 
+.color-option {
+    display: flex !important;
+    align-items: center !important;
+}
+
+.color-option:hover {
+    background: #f0f0f0 !important;
+}
+
 .toast {
     position: fixed;
     top: 20px;
@@ -460,10 +469,14 @@ body {
     
     /* Make square borders visible */
     .square {
-        background: white !important;
         box-sizing: border-box !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
+    }
+    
+    /* Set default white background only for squares without custom colors */
+    .square:not([style*="background-color"]) {
+        background: white !important;
     }
     
     .square.black {
