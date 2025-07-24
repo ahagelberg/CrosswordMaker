@@ -99,6 +99,199 @@ class WordManager {
     }
 
     /**
+     * Finds a word that follows bent arrows, changing direction as needed
+     * @param {number} startRow - Starting row
+     * @param {number} startCol - Starting column
+     * @param {string} initialDirection - Initial direction ('horizontal' or 'vertical')
+     * @returns {Object|null} Word object with squares and text, including direction changes
+     */
+    findBentWord(startRow, startCol, initialDirection) {
+        // Try to trace forward from this position
+        const forwardWord = this.traceBentWordFromStart(startRow, startCol, initialDirection);
+        
+        // Try to find the actual start by going backward and then forward
+        const backwardStart = this.findWordStartWithArrows(startRow, startCol, initialDirection);
+        const backwardWord = backwardStart ? this.traceBentWordFromStart(backwardStart.row, backwardStart.col, backwardStart.direction) : null;
+        
+        // Return the bent word that has direction changes and contains our position
+        if (backwardWord && backwardWord.directionChanges.length > 0 && 
+            backwardWord.squares.some(sq => sq.row === startRow && sq.col === startCol)) {
+            return backwardWord;
+        }
+        
+        if (forwardWord && forwardWord.directionChanges.length > 0) {
+            return forwardWord;
+        }
+        
+        return null; // No bent word found
+    }
+
+    /**
+     * Finds the actual start of a word by going backwards, considering arrows
+     * @param {number} row - Starting row
+     * @param {number} col - Starting column
+     * @param {string} direction - Initial direction
+     * @returns {Object|null} {row, col, direction} of word start or null
+     */
+    findWordStartWithArrows(row, col, direction) {
+        let currentRow = row;
+        let currentCol = col;
+        let currentDirection = direction;
+        
+        // Keep track of visited positions to avoid infinite loops
+        const visited = new Set();
+        let attempts = 0;
+        const maxAttempts = 50; // Safety limit
+        
+        while (attempts < maxAttempts) {
+            attempts++;
+            const key = `${currentRow}-${currentCol}-${currentDirection}`;
+            if (visited.has(key)) {
+                break;
+            }
+            visited.add(key);
+            
+            // Try to go backward in current direction
+            const [prevRow, prevCol] = this.getPrevPosition(currentRow, currentCol, currentDirection);
+            
+            // If no letter in that direction, we might have found the start
+            if (!this.isLetterSquare(prevRow, prevCol)) {
+                return { row: currentRow, col: currentCol, direction: currentDirection };
+            }
+            
+            // Move to previous position
+            currentRow = prevRow;
+            currentCol = prevCol;
+            
+            // Check if this previous position has an arrow that would have led us here
+            const prevCell = this.crosswordGrid.getCell(currentRow, currentCol);
+            if (prevCell && prevCell.arrow) {
+                // Adjust direction based on arrow
+                if (prevCell.arrow === 'top-to-right' && currentDirection === 'horizontal') {
+                    currentDirection = 'vertical';
+                } else if (prevCell.arrow === 'left-to-down' && currentDirection === 'vertical') {
+                    currentDirection = 'horizontal';
+                }
+            }
+        }
+        
+        return { row: currentRow, col: currentCol, direction: currentDirection };
+    }
+
+    /**
+     * Traces a bent word from a starting position
+     * @param {number} startRow - Starting row
+     * @param {number} startCol - Starting column
+     * @param {string} initialDirection - Initial direction
+     * @returns {Object|null} Bent word object or null
+     */
+    traceBentWordFromStart(startRow, startCol, initialDirection) {
+        const squares = [];
+        const letters = [];
+        let currentRow = startRow;
+        let currentCol = startCol;
+        let currentDirection = initialDirection;
+        const directionChanges = [];
+        const visited = new Set();
+        
+        while (true) {
+            const cell = this.crosswordGrid.getCell(currentRow, currentCol);
+            
+            // Stop if we've reached an invalid position, visited this cell, or it's not a letter square with content
+            if (!cell || visited.has(`${currentRow}-${currentCol}`) || 
+                !this.isLetterSquare(currentRow, currentCol)) {
+                break;
+            }
+            
+            visited.add(`${currentRow}-${currentCol}`);
+            squares.push({ row: currentRow, col: currentCol });
+            letters.push(cell.value || '');
+            
+            // Check for direction change arrows
+            let nextDirection = currentDirection;
+            if (cell.arrow === 'top-to-right' && currentDirection === 'vertical') {
+                nextDirection = 'horizontal';
+                directionChanges.push({
+                    position: squares.length - 1,
+                    from: 'vertical',
+                    to: 'horizontal',
+                    row: currentRow,
+                    col: currentCol
+                });
+            } else if (cell.arrow === 'left-to-down' && currentDirection === 'horizontal') {
+                nextDirection = 'vertical';
+                directionChanges.push({
+                    position: squares.length - 1,
+                    from: 'horizontal',
+                    to: 'vertical',
+                    row: currentRow,
+                    col: currentCol
+                });
+            }
+            
+            // Move to next position based on current direction
+            const [nextRow, nextCol] = this.getNextPosition(currentRow, currentCol, nextDirection);
+            
+            // Update direction if it changed
+            currentDirection = nextDirection;
+            currentRow = nextRow;
+            currentCol = nextCol;
+        }
+        
+        if (squares.length < 2) {
+            return null;
+        }
+
+        // Create a unique ID that includes direction changes
+        const wordId = `${squares[0].row}-${squares[0].col}-bent-${initialDirection}-${directionChanges.length}`;
+        
+        return {
+            id: wordId,
+            startRow: squares[0].row,
+            startCol: squares[0].col,
+            endRow: squares[squares.length - 1].row,
+            endCol: squares[squares.length - 1].col,
+            direction: initialDirection,
+            length: squares.length,
+            squares: squares,
+            letters: letters,
+            text: letters.join(''),
+            isBent: true,
+            directionChanges: directionChanges
+        };
+    }
+
+    /**
+     * Gets the previous position based on direction (opposite of getNextPosition)
+     * @param {number} row - Current row
+     * @param {number} col - Current column
+     * @param {string} direction - Direction we're moving in
+     * @returns {Array} [prevRow, prevCol]
+     */
+    getPrevPosition(row, col, direction) {
+        if (direction === 'horizontal') {
+            return [row, col - 1];
+        } else { // vertical
+            return [row - 1, col];
+        }
+    }
+
+    /**
+     * Gets the next position based on direction
+     * @param {number} row - Current row
+     * @param {number} col - Current column
+     * @param {string} direction - Direction to move
+     * @returns {Array} [nextRow, nextCol]
+     */
+    getNextPosition(row, col, direction) {
+        if (direction === 'horizontal') {
+            return [row, col + 1];
+        } else { // vertical
+            return [row + 1, col];
+        }
+    }
+
+    /**
      * Checks if a square is a letter square with content (not black, clue, or empty)
      * @param {number} row - Row index
      * @param {number} col - Column index
@@ -128,11 +321,17 @@ class WordManager {
         const words = [];
         const processedWords = new Set();
         
-        // Scan for horizontal words
+        // Scan for horizontal words (both straight and bent)
         for (let row = 0; row < this.crosswordGrid.rows; row++) {
             for (let col = 0; col < this.crosswordGrid.cols; col++) {
                 if (this.isLetterSquare(row, col)) {
-                    const word = this.findWord(row, col, 'horizontal');
+                    // Try bent word first, then straight word
+                    const bentWord = this.findBentWord(row, col, 'horizontal');
+                    const straightWord = this.findWord(row, col, 'horizontal');
+                    
+                    // Prefer bent word if it exists and is different from straight word
+                    const word = (bentWord && bentWord.isBent) ? bentWord : straightWord;
+                    
                     if (word && !processedWords.has(word.id)) {
                         words.push(word);
                         processedWords.add(word.id);
@@ -141,11 +340,17 @@ class WordManager {
             }
         }
         
-        // Scan for vertical words
+        // Scan for vertical words (both straight and bent) 
         for (let row = 0; row < this.crosswordGrid.rows; row++) {
             for (let col = 0; col < this.crosswordGrid.cols; col++) {
                 if (this.isLetterSquare(row, col)) {
-                    const word = this.findWord(row, col, 'vertical');
+                    // Try bent word first, then straight word
+                    const bentWord = this.findBentWord(row, col, 'vertical');
+                    const straightWord = this.findWord(row, col, 'vertical');
+                    
+                    // Prefer bent word if it exists and is different from straight word
+                    const word = (bentWord && bentWord.isBent) ? bentWord : straightWord;
+                    
                     if (word && !processedWords.has(word.id)) {
                         words.push(word);
                         processedWords.add(word.id);
@@ -171,8 +376,9 @@ class WordManager {
         }
 
         // Find both horizontal and vertical words at this position
-        const horizontalWord = this.findWord(row, col, 'horizontal');
-        const verticalWord = this.findWord(row, col, 'vertical');
+        // Try bent words first, then fall back to straight words
+        const horizontalWord = this.findBentWord(row, col, 'horizontal') || this.findWord(row, col, 'horizontal');
+        const verticalWord = this.findBentWord(row, col, 'vertical') || this.findWord(row, col, 'vertical');
         
         // Determine which word to select based on current state
         let selectedWord = null;
@@ -253,8 +459,21 @@ class WordManager {
         if (!this.currentWordId) return null;
         
         // Since words can change dynamically, we need to find the current word again
-        const [startRow, startCol, direction] = this.currentWordId.split('-');
-        return this.findWord(parseInt(startRow), parseInt(startCol), direction);
+        if (this.currentWordId.includes('-bent-')) {
+            // Handle bent word IDs: "row-col-bent-direction-changes"
+            const parts = this.currentWordId.split('-');
+            const startRow = parseInt(parts[0]);
+            const startCol = parseInt(parts[1]);
+            const direction = parts[3];
+            return this.findBentWord(startRow, startCol, direction) || this.findWord(startRow, startCol, direction);
+        } else {
+            // Handle straight word IDs: "row-col-direction"
+            const parts = this.currentWordId.split('-');
+            const startRow = parseInt(parts[0]);
+            const startCol = parseInt(parts[1]);
+            const direction = parts[2];
+            return this.findBentWord(startRow, startCol, direction) || this.findWord(startRow, startCol, direction);
+        }
     }
 
     /**
