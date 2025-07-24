@@ -76,24 +76,8 @@ class DictionarySources {
                     url: `https://ordnet.dk/ddo/ordbog?query=${encodedWord}`
                 },
                 {
-                    name: 'Retskrivningsordbogen',
-                    url: `https://dsn.dk/retskrivning/om-retskrivningsordbogen/soeg-i-retskrivningsordbogen?SearchTerm=${encodedWord}`
-                },
-                {
-                    name: 'Synonymordbogen',
-                    url: `https://www.synonymordbogen.dk/?query=${encodedWord}`
-                },
-                {
                     name: 'Wiktionary (Dansk)',
                     url: `https://da.wiktionary.org/wiki/${encodedWord}`
-                },
-                {
-                    name: 'Ordnet.dk',
-                    url: `https://ordnet.dk/ods/opslag?query=${encodedWord}`
-                },
-                {
-                    name: 'Gyldendal',
-                    url: `https://ordboeger.gyldendal.dk/search?query=${encodedWord}`
                 }
             ],
             'no': [
@@ -116,10 +100,6 @@ class DictionarySources {
                 {
                     name: 'Wiktionary (Norsk)',
                     url: `https://no.wiktionary.org/wiki/${encodedWord}`
-                },
-                {
-                    name: 'Synonymer.no',
-                    url: `https://www.synonymer.no/?q=${encodedWord}`
                 }
             ],
             'fi': [
@@ -128,20 +108,12 @@ class DictionarySources {
                     url: `https://www.kielitoimistonsanakirja.fi/#/${encodedWord}`
                 },
                 {
-                    name: 'MOT Sanakirjat',
-                    url: `https://mot.kielikone.fi/mot/aineistot/haku?haku=${encodedWord}`
-                },
-                {
                     name: 'Suomisanakirja',
                     url: `https://www.suomisanakirja.fi/${encodedWord}`
                 },
                 {
                     name: 'Wiktionary (Suomi)',
                     url: `https://fi.wiktionary.org/wiki/${encodedWord}`
-                },
-                {
-                    name: 'Synonymit.fi',
-                    url: `https://www.synonymit.fi/synonyymit/${encodedWord}`
                 },
                 {
                     name: 'Kääntäjä.fi',
@@ -170,10 +142,6 @@ class DictionarySources {
                     url: `https://www.openthesaurus.de/synonyme/${encodedWord}`
                 },
                 {
-                    name: 'Canoo.net',
-                    url: `https://www.canoo.net/services/OnlineGrammar/Wort/Bedeutung/?Lookup=CaseSensitive&Query=${encodedWord}`
-                },
-                {
                     name: 'Linguee',
                     url: `https://www.linguee.com/german-english/search?source=german&query=${encodedWord}`
                 }
@@ -186,10 +154,6 @@ class DictionarySources {
                 {
                     name: 'Le Robert',
                     url: `https://dictionnaire.lerobert.com/definition/${encodedWord}`
-                },
-                {
-                    name: 'Académie française',
-                    url: `https://www.dictionnaire-academie.fr/article/${encodedWord}`
                 },
                 {
                     name: 'CNRTL (Centre National)',
@@ -218,34 +182,18 @@ class DictionarySources {
                     url: `https://www.wordreference.com/definicion/${encodedWord}`
                 },
                 {
-                    name: 'Fundéu',
-                    url: `https://www.fundeu.es/?s=${encodedWord}`
-                },
-                {
                     name: 'Wiktionary (Español)',
                     url: `https://es.wiktionary.org/wiki/${encodedWord}`
-                },
-                {
-                    name: 'Sinónimos.es',
-                    url: `https://www.sinonimos.es/${encodedWord}`
                 },
                 {
                     name: 'SpanishDict',
                     url: `https://www.spanishdict.com/translate/${encodedWord}`
                 },
-                {
-                    name: 'Conjugador',
-                    url: `https://www.conjugador.es/conjugacion/verbo/${encodedWord}.html`
-                }
             ],
             'it': [
                 {
                     name: 'Treccani',
                     url: `https://www.treccani.it/vocabolario/${encodedWord}`
-                },
-                {
-                    name: 'Corriere della Sera',
-                    url: `https://dizionari.corriere.it/dizionario_italiano/${encodedWord}.shtml`
                 },
                 {
                     name: 'Garzanti',
@@ -258,10 +206,6 @@ class DictionarySources {
                 {
                     name: 'Sinonimi e Contrari',
                     url: `https://www.sinonimi-contrari.it/sinonimi/${encodedWord}`
-                },
-                {
-                    name: 'Sapere.it',
-                    url: `https://www.sapere.it/sapere/dizionari/dizionari/Italiano/cerca.do?q=${encodedWord}`
                 }
             ],
             'pt': [
@@ -274,24 +218,12 @@ class DictionarySources {
                     url: `https://michaelis.uol.com.br/busca?r=0&f=0&t=0&palavra=${encodedWord}`
                 },
                 {
-                    name: 'Aurélio',
-                    url: `https://www.dicio.com.br/${encodedWord}`
-                },
-                {
                     name: 'Wiktionary (Português)',
                     url: `https://pt.wiktionary.org/wiki/${encodedWord}`
                 },
                 {
-                    name: 'Sinônimos',
-                    url: `https://www.sinonimos.com.br/${encodedWord}`
-                },
-                {
                     name: 'Infopédia',
                     url: `https://www.infopedia.pt/dicionarios/lingua-portuguesa/${encodedWord}`
-                },
-                {
-                    name: 'Conjugação',
-                    url: `https://www.conjugacao.com.br/verbo-${encodedWord}`
                 }
             ],
             'nl': [
@@ -304,82 +236,8 @@ class DictionarySources {
                     url: `https://nl.wiktionary.org/wiki/${encodedWord}`
                 },
                 {
-                    name: 'Synoniemen.net',
-                    url: `https://synoniemen.net/${encodedWord}`
-                },
-                {
                     name: 'Woorden.org',
                     url: `https://www.woorden.org/woord/${encodedWord}`
-                },
-                {
-                    name: 'OpenTaal',
-                    url: `https://www.opentaal.org/zoeken/woord/${encodedWord}`
-                },
-                {
-                    name: 'WoordenBoek.nl',
-                    url: `https://www.woordenboek.nl/vertaling/nederlands/engels/${encodedWord}`
-                }
-            ],
-            'ru': [
-                {
-                    name: 'Академик',
-                    url: `https://dic.academic.ru/searchall.php?SWord=${encodedWord}`
-                },
-                {
-                    name: 'Викисловарь',
-                    url: `https://ru.wiktionary.org/wiki/${encodedWord}`
-                },
-                {
-                    name: 'Грамота.ру',
-                    url: `http://gramota.ru/slovari/dic/?word=${encodedWord}`
-                },
-                {
-                    name: 'Ефремова',
-                    url: `https://www.efremova.info/${encodedWord}`
-                },
-                {
-                    name: 'Синонимы',
-                    url: `https://synonyms.su/${encodedWord}`
-                }
-            ],
-            'pl': [
-                {
-                    name: 'PWN (Słownik języka polskiego)',
-                    url: `https://sjp.pwn.pl/szukaj/${encodedWord}.html`
-                },
-                {
-                    name: 'Wikisłownik',
-                    url: `https://pl.wiktionary.org/wiki/${encodedWord}`
-                },
-                {
-                    name: 'Słownik Języka Polskiego',
-                    url: `https://www.slownik-online.pl/kopalinski/${encodedWord}.html`
-                },
-                {
-                    name: 'Synonim.net',
-                    url: `https://synonim.net/synonim/${encodedWord}`
-                },
-                {
-                    name: 'WSJP (Wielki Słownik)',
-                    url: `https://www.wsjp.pl/index.php?szukaj=${encodedWord}`
-                }
-            ],
-            'cs': [
-                {
-                    name: 'Slovník češtiny',
-                    url: `https://www.nechybujte.cz/slovnik-ceske-terminologie/${encodedWord}`
-                },
-                {
-                    name: 'Wikislovník',
-                    url: `https://cs.wiktionary.org/wiki/${encodedWord}`
-                },
-                {
-                    name: 'Slovník.cz',
-                    url: `https://www.slovnik.cz/preklad/cesky_cesky/${encodedWord}`
-                },
-                {
-                    name: 'Synonyma.cz',
-                    url: `https://www.synonyma.cz/synonymum/?q=${encodedWord}`
                 }
             ]
         };
@@ -413,10 +271,7 @@ class DictionarySources {
             'es': 'Español',
             'it': 'Italiano',
             'pt': 'Português',
-            'nl': 'Nederlands',
-            'ru': 'Русский',
-            'pl': 'Polski',
-            'cs': 'Čeština'
+            'nl': 'Nederlands'
         };
     }
 
