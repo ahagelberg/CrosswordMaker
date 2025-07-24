@@ -50,7 +50,7 @@ class CrosswordApp {
         this.printManager = new PrintManager();
         this.toastManager = new ToastManager();
         this.wordManager = new WordManager(this.grid);
-        this.wordDisplay = new WordDisplay();
+        this.wordDisplay = new WordDisplay(() => this.currentLanguage);
         
         // Set up callbacks
         this.contextMenu.setOnGridChange(() => {
