@@ -209,6 +209,10 @@ class CrosswordRenderer {
                 textarea1.setSelectionRange(length, length);
             }, 1);
         };
+        textarea1.onblur = () => {
+            // Exit clue editing mode when textarea loses focus
+            this.navigationManager.exitClueEditingMode();
+        };
         
         const textarea2 = this.createTextarea(cell.value2 || '', 1, 50);
         textarea2.oninput = (e) => {
@@ -220,6 +224,10 @@ class CrosswordRenderer {
                 const length = textarea2.value.length;
                 textarea2.setSelectionRange(length, length);
             }, 1);
+        };
+        textarea2.onblur = () => {
+            // Exit clue editing mode when textarea loses focus
+            this.navigationManager.exitClueEditingMode();
         };
         
         square.appendChild(textarea1);
@@ -244,6 +252,10 @@ class CrosswordRenderer {
                 const length = textarea.value.length;
                 textarea.setSelectionRange(length, length);
             }, 1);
+        };
+        textarea.onblur = () => {
+            // Exit clue editing mode when textarea loses focus
+            this.navigationManager.exitClueEditingMode();
         };
         
         square.appendChild(textarea);

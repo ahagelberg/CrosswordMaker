@@ -9,6 +9,7 @@ class NavigationManager {
         this.entryDirection = 'horizontal';
         this.lastEnteredPosition = null;
         this.lastChangedPosition = null;
+        this.isEditingClue = false; // Track if we're actively editing a clue
         
         this.setupEventListeners();
     }
@@ -18,6 +19,14 @@ class NavigationManager {
      */
     setupEventListeners() {
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
+        
+        // Handle clicks to exit clue editing mode when clicking elsewhere
+        document.addEventListener('click', (e) => {
+            // If we're editing a clue and click outside the current clue square, exit editing mode
+            if (this.isEditingClue && !e.target.closest('.square.clue.editing')) {
+                this.exitClueEditingMode();
+            }
+        });
     }
 
     /**
@@ -30,6 +39,18 @@ class NavigationManager {
             e.preventDefault();
             // Dispatch custom event for save
             document.dispatchEvent(new CustomEvent('crossword:save'));
+            return;
+        }
+        
+        // Handle Escape key to exit clue editing mode
+        if (e.key === 'Escape' && this.isEditingClue) {
+            e.preventDefault();
+            this.exitClueEditingMode();
+            return;
+        }
+        
+        // Don't intercept arrow keys when actively editing a clue
+        if (this.isEditingClue) {
             return;
         }
         
@@ -60,6 +81,9 @@ class NavigationManager {
      * @param {string} direction - Direction to move ('up', 'down', 'left', 'right')
      */
     moveArrowKeys(direction) {
+        // Exit clue editing mode when navigating with arrow keys
+        this.exitClueEditingMode();
+        
         let newRow = this.focusedSquare.row;
         let newCol = this.focusedSquare.col;
         let newSubSquare = this.focusedSubSquare;
@@ -123,10 +147,16 @@ class NavigationManager {
             const input = square.querySelector('input');
             const textareas = square.querySelectorAll('textarea');
             
+            // Determine if this will be a clue editing focus
+            const cell = this.crosswordGrid.getCell(row, col);
+            const willEditClue = cell && cell.type === 'clue' && (textareas.length > 0);
+            
             if (input) {
                 // For letter squares, select all text so it can be overwritten
                 input.focus();
                 input.select();
+                // Exit clue editing since this is not a clue
+                this.exitClueEditingMode();
             } else if (textareas.length > 1) {
                 // For split clue squares, focus the specified sub-square
                 const targetTextarea = subSquare === 'second' ? textareas[1] : textareas[0];
@@ -240,6 +270,15 @@ class NavigationManager {
         this.detectDirection(row, col);
         this.lastEnteredPosition = { row, col };
         this.updateFocusedSquare(row, col, subSquare);
+        
+        // Check if this is a clue square and enter editing mode
+        const cell = this.crosswordGrid.getCell(row, col);
+        if (cell && cell.type === 'clue') {
+            this.enterClueEditingMode();
+        } else {
+            // Exit clue editing mode if we're on a non-clue square
+            this.exitClueEditingMode();
+        }
     }
 
     /**
@@ -289,5 +328,33 @@ class NavigationManager {
             col: this.focusedSquare.col,
             subSquare: this.focusedSubSquare
         };
+    }
+
+    /**
+     * Enters clue editing mode with magnified view
+     */
+    enterClueEditingMode() {
+        this.isEditingClue = true;
+        
+        // Add magnified styling to the current square
+        const squares = document.querySelectorAll('.square');
+        const index = this.focusedSquare.row * this.crosswordGrid.cols + this.focusedSquare.col;
+        const square = squares[index];
+        
+        if (square && square.classList.contains('clue')) {
+            square.classList.add('editing');
+        }
+    }
+
+    /**
+     * Exits clue editing mode and returns to normal view
+     */
+    exitClueEditingMode() {
+        this.isEditingClue = false;
+        
+        // Remove magnified styling from all squares
+        document.querySelectorAll('.square.clue.editing').forEach(square => {
+            square.classList.remove('editing');
+        });
     }
 }

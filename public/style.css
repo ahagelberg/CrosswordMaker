@@ -130,6 +130,19 @@ body {
     box-shadow: 0 0 8px var(--shadow-primary-strong);
     z-index: 10;
 }
+
+/* Magnified state for clue editing */
+.square.clue.editing {
+    transform: scale(1.5);
+    transform-origin: center;
+    z-index: 100;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.square.clue {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
 .square.letter input {
     font-family: 'Patrick Hand', 'Comic Neue', 'Kalam', cursive;
     font-size: 2em;
