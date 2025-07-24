@@ -32,10 +32,6 @@ class DictionarySources {
                     url: `https://svenska.se/tre/?sok=${encodedWord}&pz=1`
                 },
                 {
-                    name: 'SAOL (Svenska Akademien)',
-                    url: `https://www.svenskaakademien.se/svenska-spraket/svenska-akademiens-ordlista-saol/sok-i-ordlistan?sok=${encodedWord}`
-                },
-                {
                     name: 'Synonymer.se',
                     url: `https://www.synonymer.se/sv-syn/${encodedWord}`
                 },
