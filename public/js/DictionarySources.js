@@ -38,10 +38,6 @@ class DictionarySources {
                 {
                     name: 'Wiktionary (Svenska)',
                     url: `https://sv.wiktionary.org/wiki/${encodedWord}`
-                },
-                {
-                    name: 'Folkets lexikon',
-                    url: `https://folkets-lexikon.csc.kth.se/folkets/folkets.en.html#lookup&${encodedWord}&0`
                 }
             ],
             'en-us': [
