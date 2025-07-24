@@ -65,7 +65,26 @@
         <input type="text" id="crosswordTitle" placeholder="Enter crossword title..." maxlength="100">
     </div>
     <div id="crossword-container"></div>
+    
+    <!-- FileSaver.js library - Load first -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <script src="app.js"></script>
+    
+    <!-- Include all class files -->
+    <script src="js/CrosswordGrid.js"></script>
+    <script src="js/NavigationManager.js"></script>
+    <script src="js/CrosswordRenderer.js"></script>
+    <script src="js/ContextMenu.js"></script>
+    <script src="js/PuzzleManager.js"></script>
+    <script src="js/PrintManager.js"></script>
+    <script src="js/ToastManager.js"></script>
+    <script src="js/CrosswordApp.js"></script>
+    
+    <!-- Initialize the application -->
+    <script>
+        // Initialize the CrosswordApp when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            window.crosswordApp = new CrosswordApp();
+        });
+    </script>
 </body>
 </html>

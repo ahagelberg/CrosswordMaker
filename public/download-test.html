@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            max-width: 600px; 
+            margin: 0 auto; 
+        }
+        button { 
+            padding: 10px 20px; 
+            margin: 10px; 
+            background: #007acc; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+        }
+        button:hover { background: #005999; }
+        .result { 
+            margin: 10px 0; 
+            padding: 10px; 
+            border-radius: 3px; 
+            background: #f0f0f0; 
+        }
+    </style>
+</head>
+<body>
+    <h1>Download Functionality Test</h1>
+    
+    <div>
+        <button onclick="testSaveAs()">Test saveAs Function</button>
+        <button onclick="testFileSaver()">Test FileSaver.js</button>
+        <button onclick="testFallback()">Test Fallback Method</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <!-- Load FileSaver.js first -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
+    <!-- Load our ToastManager with saveAs function -->
+    <script src="js/ToastManager.js"></script>
+
+    <script>
+        function addResult(message, success = true) {
+            const results = document.getElementById('results');
+            const result = document.createElement('div');
+            result.className = 'result';
+            result.style.backgroundColor = success ? '#d4edda' : '#f8d7da';
+            result.style.color = success ? '#155724' : '#721c24';
+            result.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            results.appendChild(result);
+        }
+
+        function testSaveAs() {
+            try {
+                const testData = { test: "This is a test download", timestamp: new Date().toISOString() };
+                const blob = new Blob([JSON.stringify(testData, null, 2)], { type: 'application/json' });
+                saveAs(blob, 'test-download.json');
+                addResult('saveAs function called successfully', true);
+            } catch (error) {
+                addResult('saveAs function failed: ' + error.message, false);
+            }
+        }
+
+        function testFileSaver() {
+            try {
+                if (typeof window.saveAs === 'function') {
+                    const testData = { test: "This is a FileSaver.js test", timestamp: new Date().toISOString() };
+                    const blob = new Blob([JSON.stringify(testData, null, 2)], { type: 'application/json' });
+                    window.saveAs(blob, 'filesaver-test.json');
+                    addResult('FileSaver.js called successfully', true);
+                } else {
+                    addResult('FileSaver.js not available', false);
+                }
+            } catch (error) {
+                addResult('FileSaver.js failed: ' + error.message, false);
+            }
+        }
+
+        function testFallback() {
+            try {
+                const testData = { test: "This is a fallback test", timestamp: new Date().toISOString() };
+                const blob = new Blob([JSON.stringify(testData, null, 2)], { type: 'application/json' });
+                
+                // Direct fallback implementation
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'fallback-test.json';
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                addResult('Fallback method called successfully', true);
+            } catch (error) {
+                addResult('Fallback method failed: ' + error.message, false);
+            }
+        }
+
+        // Check what's available on page load
+        window.addEventListener('load', () => {
+            addResult('Page loaded. FileSaver.js available: ' + (typeof window.saveAs === 'function'));
+            addResult('Custom saveAs available: ' + (typeof saveAs === 'function'));
+        });
+    </script>
+</body>
+</html>

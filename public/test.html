@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crossword Maker Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 3px;
+        }
+        .pass { background-color: #d4edda; color: #155724; }
+        .fail { background-color: #f8d7da; color: #721c24; }
+        button {
+            margin: 5px;
+            padding: 8px 16px;
+            background: #007acc;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover { background: #005999; }
+    </style>
+</head>
+<body>
+    <h1>Crossword Maker - OOP Refactor Test</h1>
+    
+    <div class="test-section">
+        <h2>Class Loading Tests</h2>
+        <div id="class-loading-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Functionality Tests</h2>
+        <button onclick="testGrid()">Test Grid Operations</button>
+        <button onclick="testNavigation()">Test Navigation</button>
+        <button onclick="testContextMenu()">Test Context Menu</button>
+        <button onclick="testPuzzleManager()">Test Puzzle Manager</button>
+        <div id="functionality-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Integration Test</h2>
+        <button onclick="runIntegrationTest()">Run Full Integration Test</button>
+        <div id="integration-results"></div>
+    </div>
+
+    <!-- Include all class files -->
+    <script src="js/CrosswordGrid.js"></script>
+    <script src="js/NavigationManager.js"></script>
+    <script src="js/CrosswordRenderer.js"></script>
+    <script src="js/ContextMenu.js"></script>
+    <script src="js/PuzzleManager.js"></script>
+    <script src="js/PrintManager.js"></script>
+    <script src="js/ToastManager.js"></script>
+    <script src="js/CrosswordApp.js"></script>
+
+    <script>
+        // Test Results Helper
+        function addResult(containerId, test, passed, message) {
+            const container = document.getElementById(containerId);
+            const result = document.createElement('div');
+            result.className = `test-result ${passed ? 'pass' : 'fail'}`;
+            result.innerHTML = `<strong>${test}:</strong> ${passed ? 'PASS' : 'FAIL'} - ${message}`;
+            container.appendChild(result);
+        }
+
+        // Test class loading
+        function testClassLoading() {
+            const classes = [
+                'CrosswordGrid', 'NavigationManager', 'CrosswordRenderer', 
+                'ContextMenu', 'PuzzleManager', 'PrintManager', 'ToastManager', 'CrosswordApp'
+            ];
+            
+            classes.forEach(className => {
+                try {
+                    const exists = typeof window[className] === 'function';
+                    addResult('class-loading-results', `${className} Class`, exists, 
+                        exists ? 'Class loaded successfully' : 'Class not found');
+                } catch (e) {
+                    addResult('class-loading-results', `${className} Class`, false, e.message);
+                }
+            });
+        }
+
+        // Test Grid operations
+        function testGrid() {
+            try {
+                const grid = new CrosswordGrid(5, 5);
+                const passed1 = grid.rows === 5 && grid.cols === 5;
+                addResult('functionality-results', 'Grid Creation', passed1, 
+                    passed1 ? 'Grid created with correct dimensions' : 'Grid dimensions incorrect');
+
+                grid.setCellValue(0, 0, 'A');
+                const cell = grid.getCell(0, 0);
+                const passed2 = cell && cell.value === 'A';
+                addResult('functionality-results', 'Cell Operations', passed2,
+                    passed2 ? 'Cell value set and retrieved correctly' : 'Cell operations failed');
+
+                grid.resize(3, 3);
+                const passed3 = grid.rows === 3 && grid.cols === 3;
+                addResult('functionality-results', 'Grid Resize', passed3,
+                    passed3 ? 'Grid resized successfully' : 'Grid resize failed');
+
+            } catch (e) {
+                addResult('functionality-results', 'Grid Operations', false, e.message);
+            }
+        }
+
+        // Test Navigation
+        function testNavigation() {
+            try {
+                const grid = new CrosswordGrid(3, 3);
+                const nav = new NavigationManager(grid);
+                const passed = nav.focusedSquare.row === 0 && nav.focusedSquare.col === 0;
+                addResult('functionality-results', 'Navigation Manager', passed,
+                    passed ? 'Navigation manager initialized correctly' : 'Navigation initialization failed');
+            } catch (e) {
+                addResult('functionality-results', 'Navigation Manager', false, e.message);
+            }
+        }
+
+        // Test Context Menu
+        function testContextMenu() {
+            try {
+                const grid = new CrosswordGrid(3, 3);
+                const nav = new NavigationManager(grid);
+                const contextMenu = new ContextMenu(grid, nav);
+                const passed = typeof contextMenu.show === 'function';
+                addResult('functionality-results', 'Context Menu', passed,
+                    passed ? 'Context menu created successfully' : 'Context menu creation failed');
+            } catch (e) {
+                addResult('functionality-results', 'Context Menu', false, e.message);
+            }
+        }
+
+        // Test Puzzle Manager
+        function testPuzzleManager() {
+            try {
+                const puzzleManager = new PuzzleManager();
+                const testData = { rows: 3, cols: 3, grid: [], title: 'Test', language: 'en' };
+                puzzleManager.autoSave(testData);
+                const puzzles = puzzleManager.getAllPuzzles();
+                const passed = Array.isArray(puzzles);
+                addResult('functionality-results', 'Puzzle Manager', passed,
+                    passed ? 'Puzzle manager working correctly' : 'Puzzle manager failed');
+            } catch (e) {
+                addResult('functionality-results', 'Puzzle Manager', false, e.message);
+            }
+        }
+
+        // Integration test
+        function runIntegrationTest() {
+            try {
+                // Create a minimal DOM for testing
+                if (!document.getElementById('crossword-container')) {
+                    const container = document.createElement('div');
+                    container.id = 'crossword-container';
+                    document.body.appendChild(container);
+                }
+
+                // Create required input elements
+                const inputs = ['rows', 'cols', 'language', 'crosswordTitle', 'resizeGrid', 
+                              'savePuzzle', 'loadPuzzle', 'downloadPuzzle', 'uploadPuzzle', 
+                              'printPuzzle', 'printKey'];
+                
+                inputs.forEach(id => {
+                    if (!document.getElementById(id)) {
+                        const element = document.createElement(id.includes('Button') || id.includes('Grid') || id.includes('Puzzle') || id.includes('Key') ? 'button' : 'input');
+                        element.id = id;
+                        if (id === 'rows') element.value = '15';
+                        if (id === 'cols') element.value = '15';
+                        if (id === 'language') element.value = 'sv';
+                        document.body.appendChild(element);
+                    }
+                });
+
+                // Test full app initialization
+                const app = new CrosswordApp();
+                const passed = app && app.grid && app.renderer && app.navigationManager;
+                addResult('integration-results', 'Full App Integration', passed,
+                    passed ? 'All components integrated successfully' : 'Integration failed');
+
+                // Test basic operations
+                app.grid.setCellValue(0, 0, 'T');
+                app.grid.setCellValue(0, 1, 'E');
+                app.grid.setCellValue(0, 2, 'S');
+                app.grid.setCellValue(0, 3, 'T');
+                
+                const testWord = app.grid.getCell(0, 0).value + app.grid.getCell(0, 1).value + 
+                               app.grid.getCell(0, 2).value + app.grid.getCell(0, 3).value;
+                const passed2 = testWord === 'TEST';
+                addResult('integration-results', 'Word Entry Test', passed2,
+                    passed2 ? 'Word entry working correctly' : 'Word entry failed');
+
+            } catch (e) {
+                addResult('integration-results', 'Integration Test', false, e.message);
+            }
+        }
+
+        // Run class loading tests on page load
+        document.addEventListener('DOMContentLoaded', testClassLoading);
+    </script>
+</body>
+</html>
