@@ -7,7 +7,6 @@
     --color-primary-dark: #1976D2;
     --color-primary-light: #2196F3;
     --color-primary-background: #e3f2fd;
-    --color-primary-text: #1976d2;
     
     /* Background Colors */
     --background-page: #f7f7f7;
@@ -18,7 +17,6 @@
     --background-dark-gray: #eee;
     --background-very-light-gray: #fafafa;
     --background-hover: #e0e0e0;
-    --background-transparent: transparent;
     
     /* Border Colors */
     --border-light: #ddd;
@@ -31,30 +29,86 @@
     --text-muted: #999;
     --text-white: white;
     --text-black: #000;
-    --text-transparent: transparent;
     
     /* State Colors */
     --color-success: #4CAF50;
     --color-error: #f44336;
     --color-error-dark: #d32f2f;
-    --color-info: #2196F3;
     --color-warning: #ffc107;
     
-    /* Word Highlighting */
+    /* Highlighting & Selection */
     --word-highlight-background: #ffeb3b;
     --word-highlight-border: #ffc107;
-    
-    /* Selection Colors */
     --selection-border: #0078d7;
     
-    /* Shadow Colors */
+    /* Shadows */
     --shadow-light: rgba(0,0,0,0.05);
     --shadow-medium: rgba(0,0,0,0.08);
     --shadow-dark: rgba(0,0,0,0.15);
     --shadow-modal: rgba(0,0,0,0.3);
     --shadow-overlay: rgba(0, 0, 0, 0.5);
     --shadow-primary: rgba(0, 122, 204, 0.2);
-    --shadow-primary-strong: rgba(0, 122, 204, 0.3);
+    
+    /* Size Variables */
+    --size-xs: 2px;
+    --size-sm: 4px;
+    --size-md: 8px;
+    --size-lg: 12px;
+    --size-xl: 16px;
+    --size-xxl: 20px;
+    
+    /* Spacing */
+    --spacing-xs: 5px;
+    --spacing-sm: 8px;
+    --spacing-md: 10px;
+    --spacing-lg: 15px;
+    --spacing-xl: 20px;
+    --spacing-xxl: 30px;
+    
+    /* Layout Sizes */
+    --square-size: 50px;
+    --grid-border-width: 3px;
+    --square-border-width: 1px;
+    --square-border-thick: 4px;
+    --square-focus-border: 2px;
+    
+    /* Panel & Modal Widths */
+    --panel-width-sm: 280px;
+    --panel-width-md: 300px;
+    --panel-width-lg: 320px;
+    --panel-width-xl: 340px;
+    --modal-width-sm: 400px;
+    --modal-width-lg: 600px;
+    
+    /* Border Radius */
+    --radius-sm: 2px;
+    --radius-md: 4px;
+    --radius-lg: 6px;
+    --radius-xl: 8px;
+    --radius-round: 20px;
+    
+    /* Font Sizes */
+    --font-xs: 0.5em;
+    --font-sm: 0.7em;
+    --font-md: 0.8em;
+    --font-lg: 0.9em;
+    --font-xl: 1.2em;
+    --font-input-large: 2em;
+    --font-icon: 18px;
+    --font-icon-lg: 20px;
+    
+    /* Z-Index Layers */
+    --z-base: 1;
+    --z-tooltip: 5;
+    --z-square-focus: 10;
+    --z-panel: 100;
+    --z-modal: 1000;
+    --z-toast: 1001;
+    
+    /* Animation */
+    --transition-fast: 0.2s;
+    --transition-normal: 0.3s;
+    --scale-magnify: 1.5;
 }
 
 body {
@@ -62,59 +116,56 @@ body {
     background: var(--background-page);
     margin: 0;
     padding: 0;
+    padding-right: var(--panel-width-xl); /* Always leave space for the side panel */
 }
 .toolbar {
     background: var(--background-white);
-    padding: 10px;
+    padding: var(--spacing-md);
     display: flex;
-    gap: 10px;
+    gap: var(--spacing-md);
     align-items: center;
-    box-shadow: 0 2px 4px var(--shadow-light);
+    box-shadow: 0 var(--size-xs) var(--size-sm) var(--shadow-light);
 }
 .title-container {
-    margin: 20px auto;
+    margin: var(--spacing-xl) auto;
     width: fit-content;
-    max-width: 600px;
+    max-width: var(--modal-width-lg);
 }
 #crosswordTitle {
     width: 100%;
-    padding: 12px 16px;
-    border: 2px solid var(--border-light);
-    border-radius: 6px;
-    font-size: 1.2em;
+    padding: var(--size-lg) var(--size-xl);
+    border: var(--size-xs) solid var(--border-light);
+    border-radius: var(--radius-lg);
+    font-size: var(--font-xl);
     font-weight: bold;
     text-align: center;
     background: var(--background-white);
-    transition: border-color 0.2s;
+    transition: border-color var(--transition-fast);
 }
 #crosswordTitle:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 8px var(--shadow-primary);
+    box-shadow: 0 0 var(--size-md) var(--shadow-primary);
 }
 #crosswordTitle::placeholder {
     color: var(--text-muted);
     font-weight: normal;
 }
 #crossword-container {
-    margin: 30px auto;
+    margin: var(--spacing-xxl) auto;
     width: fit-content;
     background: var(--background-white);
-    border-radius: 8px;
-    box-shadow: 0 4px 16px var(--shadow-medium);
-    padding: 20px;
+    border-radius: var(--radius-xl);
+    box-shadow: 0 var(--size-sm) var(--size-xl) var(--shadow-medium);
+    padding: var(--spacing-xl);
 }
 .crossword-grid {
     display: grid;
-    gap: 1px;
-    background: var(--background-black);
-    border: 2px solid var(--border-dark);
-    border-radius: 4px;
-    padding: 1px;
+    border: var(--grid-border-width) solid var(--border-dark);
 }
 .square {
-    width: 50px;
-    height: 50px;
+    width: var(--square-size);
+    height: var(--square-size);
     background: var(--background-white);
     box-sizing: border-box;
     display: flex;
@@ -122,30 +173,41 @@ body {
     justify-content: center;
     position: relative;
     cursor: pointer;
-    transition: box-shadow 0.2s;
+    transition: box-shadow var(--transition-fast);
+    border-right: var(--square-border-width) solid var(--border-dark);
+    border-bottom: var(--square-border-width) solid var(--border-dark);
+}
+
+/* Remove borders from edge squares to avoid double borders */
+.square.last-column {
+    border-right: none;
+}
+
+.square.last-row {
+    border-bottom: none;
 }
 
 .square.focused {
-    border: 2px solid var(--color-primary) !important;
-    box-shadow: 0 0 8px var(--shadow-primary-strong);
-    z-index: 10;
+    border: var(--square-focus-border) solid var(--color-primary) !important;
+    box-shadow: 0 0 var(--size-md) var(--shadow-primary-strong);
+    z-index: var(--z-square-focus);
 }
 
 /* Magnified state for clue editing */
 .square.clue.editing {
-    transform: scale(1.5);
+    transform: scale(var(--scale-magnify));
     transform-origin: center;
-    z-index: 100;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    z-index: var(--z-square-editing);
+    box-shadow: 0 0 var(--spacing-xl) rgba(0, 0, 0, 0.5);
+    transition: transform var(--transition-fast) ease-in-out, box-shadow var(--transition-fast) ease-in-out;
 }
 
 .square.clue {
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    transition: transform var(--transition-fast) ease-in-out, box-shadow var(--transition-fast) ease-in-out;
 }
 .square.letter input {
     font-family: 'Patrick Hand', 'Comic Neue', 'Kalam', cursive;
-    font-size: 2em;
+    font-size: var(--font-input-large);
     text-align: center;
     width: 90%;
     height: 90%;
@@ -156,10 +218,9 @@ body {
 }
 .square.black {
     background: var(--background-black);
-    border: 1px solid var(--border-dark);
 }
 .square.clue input {
-    font-size: 0.8em;
+    font-size: var(--font-md);
     width: 90%;
     height: 90%;
     border: none;
@@ -168,7 +229,7 @@ body {
     text-align: center;
 }
 .square.clue textarea {
-    font-size: 0.7em;
+    font-size: var(--font-xs);
     width: 90%;
     height: 90%;
     border: none;
@@ -199,49 +260,49 @@ body {
     left: 10%;
     right: 10%;
     top: 50%;
-    height: 1px;
+    height: var(--square-border-width);
     background: var(--text-primary);
     transform: translateY(-50%);
-    z-index: 1;
+    z-index: var(--z-base);
 }
 
 .square.clue.split input {
-    font-size: 0.7em;
+    font-size: var(--font-sm);
     height: 45%;
 }
 .square.clue.split textarea {
-    font-size: 0.6em;
+    font-size: var(--font-xs);
     height: 45%;
     line-height: 1;
 }
 .square.selected {
-    box-shadow: 0 0 0 2px var(--selection-border);
+    box-shadow: 0 0 0 var(--size-xs) var(--selection-border);
 }
 
 .square.word-highlighted {
     background-color: var(--word-highlight-background) !important;
-    box-shadow: 0 0 0 2px var(--word-highlight-border);
+    box-shadow: 0 0 0 var(--size-xs) var(--word-highlight-border);
 }
 
 .square.word-highlighted input {
-    background-color: var(--background-transparent) !important;
+    background-color: transparent !important;
 }
 
 /* Thick borders for word boundaries */
 .square.border-bottom {
-    border-bottom: 4px solid var(--border-dark) !important;
+    border-bottom: var(--square-border-thick) solid var(--border-dark) !important;
 }
 
 .square.border-right {
-    border-right: 4px solid var(--border-dark) !important;
+    border-right: var(--square-border-thick) solid var(--border-dark) !important;
 }
 
 /* Arrow indicators for letter squares */
 .square .arrow {
     position: absolute;
-    font-size: 24px;
+    font-size: var(--font-icon-xl);
     font-weight: bold;
-    z-index: 5;
+    z-index: var(--z-tooltip);
     pointer-events: none;
     color: var(--text-primary);
     line-height: 1;
@@ -249,7 +310,7 @@ body {
 
 /* Arrow from top to right (vertical → horizontal) - positioned in bottom-left */
 .square .arrow.top-to-right {
-    bottom: -2px;
+    bottom: calc(-1 * var(--size-xs));
     left: 0px;
 }
 
@@ -259,7 +320,7 @@ body {
 
 /* Arrow from left to down (horizontal → vertical) - positioned in top-right */
 .square .arrow.left-to-down {
-    top: -5px;
+    top: calc(-1 * var(--spacing-xs));
     right: 0px;
 }
 
@@ -269,30 +330,30 @@ body {
 
 .square .split-btn {
     position: absolute;
-    bottom: 2px;
-    right: 2px;
-    font-size: 0.7em;
+    bottom: var(--size-xs);
+    right: var(--size-xs);
+    font-size: var(--font-sm);
     background: var(--background-dark-gray);
     border: none;
-    border-radius: 2px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
-    padding: 2px 4px;
+    padding: var(--size-xs) var(--size-sm);
 }
 
 .context-menu {
     background: var(--text-white);
-    border: 1px solid var(--border-medium);
-    border-radius: 4px;
-    box-shadow: 0 4px 12px var(--shadow-dark);
-    z-index: 1000;
+    border: var(--square-border-width) solid var(--border-medium);
+    border-radius: var(--radius-md);
+    box-shadow: 0 var(--size-sm) var(--size-lg) var(--shadow-dark);
+    z-index: var(--z-modal);
     min-width: 150px;
 }
 
 .context-menu-item {
-    padding: 8px 12px;
+    padding: var(--size-md) var(--size-lg);
     cursor: pointer;
-    font-size: 0.9em;
-    border-bottom: 1px solid var(--background-dark-gray);
+    font-size: var(--font-lg);
+    border-bottom: var(--square-border-width) solid var(--background-dark-gray);
 }
 
 .context-menu-item:last-child {
@@ -314,18 +375,18 @@ body {
 
 .toast {
     position: fixed;
-    top: 20px;
-    right: 20px;
+    top: var(--spacing-xl);
+    right: var(--spacing-xl);
     background: var(--text-primary);
     color: var(--text-white);
-    padding: 12px 20px;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px var(--shadow-modal);
-    z-index: 1001;
-    font-size: 0.9em;
+    padding: var(--size-lg) var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 var(--size-sm) var(--size-lg) var(--shadow-modal);
+    z-index: var(--z-toast);
+    font-size: var(--font-lg);
     opacity: 0;
     transform: translateX(100%);
-    transition: all 0.3s ease;
+    transition: all var(--transition-normal) ease;
 }
 
 .toast.show {
@@ -356,40 +417,40 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: var(--z-modal);
 }
 
 .puzzle-modal-content {
     background: var(--text-white);
-    border-radius: 8px;
-    padding: 20px;
-    min-width: 400px;
-    max-width: 600px;
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    min-width: var(--modal-width-sm);
+    max-width: var(--modal-width-lg);
     max-height: 80vh;
     overflow-y: auto;
-    box-shadow: 0 8px 32px var(--shadow-modal);
+    box-shadow: 0 var(--size-md) 32px var(--shadow-modal);
 }
 
 .puzzle-modal h2 {
     margin-top: 0;
-    margin-bottom: 20px;
+    margin-bottom: var(--spacing-xl);
     color: var(--text-primary);
 }
 
 .puzzle-list {
-    margin-bottom: 20px;
+    margin-bottom: var(--spacing-xl);
 }
 
 .puzzle-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px;
-    border: 1px solid var(--border-light);
-    border-radius: 4px;
-    margin-bottom: 8px;
+    padding: var(--size-lg);
+    border: var(--square-border-width) solid var(--border-light);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--size-md);
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color var(--transition-fast);
 }
 
 .puzzle-item:hover {
@@ -411,24 +472,24 @@ body {
 }
 
 .puzzle-details {
-    font-size: 0.9em;
+    font-size: var(--font-lg);
     color: var(--text-secondary);
-    margin-top: 4px;
+    margin-top: var(--size-sm);
 }
 
 .puzzle-actions {
     display: flex;
-    gap: 8px;
+    gap: var(--size-md);
 }
 
 .puzzle-delete {
     background: var(--color-error);
     color: var(--text-white);
     border: none;
-    padding: 4px 8px;
-    border-radius: 4px;
+    padding: var(--size-sm) var(--size-md);
+    border-radius: var(--radius-md);
     cursor: pointer;
-    font-size: 0.8em;
+    font-size: var(--font-md);
 }
 
 .puzzle-delete:hover {
@@ -437,17 +498,17 @@ body {
 
 .modal-buttons {
     display: flex;
-    gap: 10px;
+    gap: var(--spacing-md);
     justify-content: flex-end;
-    margin-top: 20px;
+    margin-top: var(--spacing-xl);
 }
 
 .modal-button {
-    padding: 8px 16px;
+    padding: var(--size-md) var(--size-xl);
     border: none;
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     cursor: pointer;
-    font-size: 0.9em;
+    font-size: var(--font-lg);
 }
 
 .modal-button.primary {
@@ -472,16 +533,16 @@ body {
 .word-display {
     position: fixed;
     top: 50%;
-    right: 20px;
+    right: var(--spacing-xl);
     transform: translateY(-50%);
-    width: 300px;
+    width: var(--panel-width-md);
     max-height: 80vh;
     background: var(--text-white);
-    border: 2px solid var(--border-light);
-    border-radius: 8px;
-    box-shadow: 0 4px 12px var(--shadow-dark);
+    border: var(--size-xs) solid var(--border-light);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 var(--size-sm) var(--size-lg) var(--shadow-dark);
     display: none;
-    z-index: 1000;
+    z-index: var(--z-modal);
     overflow: hidden;
 }
 
@@ -491,8 +552,8 @@ body {
 
 .word-display-header {
     background: var(--background-light-gray);
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border-light);
+    padding: var(--size-lg) var(--size-xl);
+    border-bottom: var(--square-border-width) solid var(--border-light);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -507,16 +568,16 @@ body {
 .word-display-close {
     background: none;
     border: none;
-    font-size: 18px;
+    font-size: var(--font-icon);
     cursor: pointer;
     color: var(--text-secondary);
     padding: 0;
-    width: 24px;
-    height: 24px;
+    width: var(--font-icon-xl);
+    height: var(--font-icon-xl);
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
+    border-radius: var(--radius-md);
 }
 
 .word-display-close:hover {
@@ -525,17 +586,17 @@ body {
 }
 
 .word-display-content {
-    padding: 16px;
+    padding: var(--size-xl);
     max-height: 60vh;
     overflow-y: auto;
 }
 
 .word-info {
-    margin-bottom: 16px;
+    margin-bottom: var(--size-xl);
 }
 
 .word-info div {
-    margin-bottom: 8px;
+    margin-bottom: var(--size-md);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -551,11 +612,11 @@ body {
 }
 
 .word-search {
-    margin-top: 16px;
+    margin-top: var(--size-xl);
 }
 
 .word-search h4 {
-    margin: 0 0 12px 0;
+    margin: 0 0 var(--size-lg) 0;
     color: var(--text-primary);
     font-size: 14px;
     font-weight: bold;
@@ -564,20 +625,20 @@ body {
 .search-links {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: var(--size-md);
 }
 
 .search-link {
     display: inline-block;
-    padding: 6px 12px;
+    padding: var(--spacing-xs) var(--size-lg);
     background: var(--background-medium-gray);
     color: var(--text-primary);
     text-decoration: none;
-    border-radius: 20px;
-    font-size: 12px;
+    border-radius: var(--radius-round);
+    font-size: var(--size-lg);
     font-weight: 500;
-    transition: all 0.2s;
-    border: 1px solid var(--border-light);
+    transition: all var(--transition-fast);
+    border: var(--square-border-width) solid var(--border-light);
 }
 
 .search-link:hover {
@@ -593,40 +654,34 @@ body {
     top: 0;
     right: 0;
     bottom: 0;
-    width: 320px;
+    width: var(--panel-width-lg);
     background: var(--background-white);
-    border-left: 2px solid var(--border-light);
-    box-shadow: -4px 0 16px var(--shadow-medium);
-    padding: 20px;
-    z-index: 100;
+    border-left: var(--size-xs) solid var(--border-light);
+    box-shadow: calc(-1 * var(--size-sm)) 0 var(--size-xl) var(--shadow-medium);
+    padding: var(--spacing-xl);
+    z-index: var(--z-panel);
     font-family: Arial, sans-serif;
     overflow-y: auto;
-}
-
-/* Always reserve space for the panel */
-body {
-    padding-right: 340px; /* Always leave space for the side panel */
-    transition: none; /* Remove transition since it's always there */
 }
 
 /* Responsive behavior for smaller screens */
 @media (max-width: 1200px) {
     body {
-        padding-right: 320px; /* Smaller padding for medium screens */
+        padding-right: var(--panel-width-lg); /* Smaller padding for medium screens */
     }
     
     .word-display-panel {
-        width: 300px;
+        width: var(--panel-width-md);
     }
 }
 
 @media (max-width: 768px) {
     body {
-        padding-right: 300px; /* Even smaller padding for mobile */
+        padding-right: var(--panel-width-md); /* Even smaller padding for mobile */
     }
     
     .word-display-panel {
-        width: 280px;
+        width: var(--panel-width-sm);
     }
 }
 
@@ -634,30 +689,30 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-dark-gray);
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: var(--square-border-width) solid var(--border-dark-gray);
 }
 
 .word-display-title {
     margin: 0;
     color: var(--text-primary);
-    font-size: 16px;
+    font-size: var(--size-xl);
 }
 
 .word-display-close-btn {
     background: none;
     border: none;
-    font-size: 20px;
+    font-size: var(--font-icon-lg);
     cursor: pointer;
     color: var(--text-secondary);
     padding: 0;
-    width: 24px;
-    height: 24px;
+    width: var(--font-icon-xl);
+    height: var(--font-icon-xl);
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: color 0.2s;
+    transition: color var(--transition-fast);
 }
 
 .word-display-close-btn:hover {
@@ -665,90 +720,90 @@ body {
 }
 
 .word-info {
-    margin-bottom: 15px;
-    padding: 10px;
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-md);
     background: var(--background-very-light-gray);
-    border-radius: 5px;
+    border-radius: var(--radius-md);
 }
 
 .word-info-direction {
     font-weight: bold;
     color: var(--color-primary);
-    margin-bottom: 5px;
+    margin-bottom: var(--spacing-xs);
 }
 
 .word-info-details {
-    font-size: 12px;
+    font-size: var(--size-lg);
     color: var(--text-secondary);
-    margin-bottom: 5px;
+    margin-bottom: var(--spacing-xs);
 }
 
 .word-text {
-    margin-bottom: 15px;
+    margin-bottom: var(--spacing-lg);
 }
 
 .word-text-title {
     font-weight: bold;
-    margin-bottom: 8px;
+    margin-bottom: var(--size-md);
     color: var(--text-primary);
 }
 
 .word-info-title {
     font-weight: bold;
-    margin-bottom: 8px;
+    margin-bottom: var(--size-md);
     color: var(--text-primary);
 }
 
 .word-text-display {
-    font-size: 18px;
+    font-size: var(--font-icon);
     font-weight: bold;
     color: var(--color-primary);
-    letter-spacing: 2px;
-    padding: 8px;
+    letter-spacing: var(--size-xs);
+    padding: var(--size-md);
     background: var(--color-primary-background);
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     text-align: center;
-    min-height: 20px;
+    min-height: var(--spacing-xl);
 }
 
 .word-definitions {
-    margin-bottom: 15px;
+    margin-bottom: var(--spacing-lg);
 }
 
 .word-definitions-title {
     font-weight: bold;
-    margin-bottom: 8px;
+    margin-bottom: var(--size-md);
     color: var(--text-primary);
 }
 
 .definitions-content {
     min-height: 60px;
-    padding: 8px;
+    padding: var(--size-md);
     background: var(--background-medium-gray);
-    border-radius: 4px;
-    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    border: var(--square-border-width) solid var(--border-light);
 }
 
 .word-search {
-    margin-bottom: 15px;
+    margin-bottom: var(--spacing-lg);
 }
 
 .word-search-title {
     font-weight: bold;
-    margin-bottom: 8px;
+    margin-bottom: var(--size-md);
     color: var(--text-primary);
 }
 
 .word-search-button {
     width: 100%;
-    padding: 8px;
+    padding: var(--size-md);
     background: var(--color-success);
     color: var(--text-white);
     border: none;
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     cursor: pointer;
     font-size: 14px;
-    transition: background-color 0.2s;
+    transition: background-color var(--transition-fast);
 }
 
 .word-search-button:hover {
@@ -759,14 +814,14 @@ body {
     color: var(--text-muted);
     font-style: italic;
     text-align: center;
-    padding: 8px;
+    padding: var(--size-md);
 }
 
 .word-stats {
-    font-size: 12px;
+    font-size: var(--size-lg);
     color: var(--text-secondary);
-    padding-top: 10px;
-    border-top: 1px solid var(--border-dark-gray);
+    padding-top: var(--spacing-md);
+    border-top: var(--square-border-width) solid var(--border-dark-gray);
 }
 
 .dictionary-modal {
@@ -779,67 +834,67 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    z-index: var(--z-modal);
 }
 
 .dictionary-modal-dialog {
     background: var(--background-white);
-    padding: 20px;
-    border-radius: 8px;
-    max-width: 400px;
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-xl);
+    max-width: var(--modal-width-sm);
     width: 90%;
     max-height: 80vh;
     overflow-y: auto;
-    box-shadow: 0 4px 16px var(--shadow-dark);
+    box-shadow: 0 var(--size-sm) var(--size-xl) var(--shadow-dark);
 }
 
 .word-display-loading {
     text-align: center;
     color: var(--text-secondary);
-    padding: 20px;
+    padding: var(--spacing-xl);
 }
 
 .word-display-loading-title {
-    margin-bottom: 8px;
+    margin-bottom: var(--size-md);
 }
 
 .word-display-loading-subtitle {
-    font-size: 12px;
+    font-size: var(--size-lg);
 }
 
 .word-display-no-word {
     text-align: center;
     color: var(--text-muted);
     font-style: italic;
-    padding: 20px;
+    padding: var(--spacing-xl);
 }
 
 .word-display-no-definitions {
     text-align: center;
     color: var(--text-muted);
-    padding: 20px;
+    padding: var(--spacing-xl);
 }
 
 .word-display-no-definitions-title {
-    margin-bottom: 8px;
+    margin-bottom: var(--size-md);
 }
 
 .word-display-no-definitions-subtitle {
-    font-size: 12px;
+    font-size: var(--size-lg);
 }
 
 .definition-source {
-    margin-bottom: 10px;
+    margin-bottom: var(--spacing-md);
     font-size: 11px;
     color: var(--text-secondary);
     text-align: right;
 }
 
 .definition-item {
-    margin-bottom: 12px;
-    padding: 8px;
-    border-left: 3px solid var(--color-primary);
-    border-radius: 0 4px 4px 0;
+    margin-bottom: var(--size-lg);
+    padding: var(--size-md);
+    border-left: var(--grid-border-width) solid var(--color-primary);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }
 
 .definition-item:nth-child(even) {
@@ -855,18 +910,18 @@ body {
     color: var(--color-primary);
     font-weight: bold;
     text-transform: uppercase;
-    margin-bottom: 4px;
+    margin-bottom: var(--size-sm);
 }
 
 .definition-text {
     font-size: 13px;
     line-height: 1.4;
     color: var(--text-primary);
-    margin-bottom: 4px;
+    margin-bottom: var(--size-sm);
 }
 
 .definition-example {
-    font-size: 12px;
+    font-size: var(--size-lg);
     color: var(--text-secondary);
     font-style: italic;
 }
@@ -874,16 +929,16 @@ body {
 .dictionary-button {
     display: block;
     width: 100%;
-    margin: 5px 0;
-    padding: 10px;
+    margin: var(--spacing-xs) 0;
+    padding: var(--spacing-md);
     background: var(--color-primary);
     color: var(--text-white);
     border: none;
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     cursor: pointer;
     text-align: left;
     text-decoration: none;
-    transition: background-color 0.2s;
+    transition: background-color var(--transition-fast);
 }
 
 .dictionary-button:hover {
@@ -892,26 +947,26 @@ body {
 
 /* Dictionary search in side panel styles */
 .dictionary-search-header {
-    margin-bottom: 20px;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 15px;
+    margin-bottom: var(--spacing-xl);
+    border-bottom: var(--square-border-width) solid var(--border-color);
+    padding-bottom: var(--spacing-lg);
 }
 
 .dictionary-search-title {
-    margin: 0 0 10px 0;
-    font-size: 16px;
+    margin: 0 0 var(--spacing-md) 0;
+    font-size: var(--size-xl);
     color: var(--text-primary);
 }
 
 .dictionary-back-button-header {
-    padding: 6px 12px;
+    padding: var(--spacing-xs) var(--size-lg);
     background: var(--background-light-gray);
     color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
+    border: var(--square-border-width) solid var(--border-color);
+    border-radius: var(--radius-md);
     cursor: pointer;
-    font-size: 12px;
-    transition: background-color 0.2s;
+    font-size: var(--size-lg);
+    transition: background-color var(--transition-fast);
 }
 
 .dictionary-back-button-header:hover {
@@ -919,22 +974,22 @@ body {
 }
 
 .dictionary-sources-container {
-    margin-bottom: 20px;
+    margin-bottom: var(--spacing-xl);
 }
 
 .dictionary-source-button {
     display: block;
     width: 100%;
-    margin: 8px 0;
-    padding: 12px 16px;
+    margin: var(--size-md) 0;
+    padding: var(--size-lg) var(--size-xl);
     background: var(--background-white);
     color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
+    border: var(--square-border-width) solid var(--border-color);
+    border-radius: var(--radius-lg);
     cursor: pointer;
     text-align: left;
     font-size: 14px;
-    transition: all 0.2s ease;
+    transition: all var(--transition-fast) ease;
 }
 
 .dictionary-source-button:hover {
@@ -942,19 +997,19 @@ body {
     color: var(--text-white);
     border-color: var(--color-primary);
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px var(--shadow-light);
+    box-shadow: 0 var(--size-xs) var(--size-sm) var(--shadow-light);
 }
 
 .dictionary-back-button-bottom {
     width: 100%;
-    padding: 10px;
+    padding: var(--spacing-md);
     background: var(--background-light-gray);
     color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
+    border: var(--square-border-width) solid var(--border-color);
+    border-radius: var(--radius-md);
     cursor: pointer;
     font-size: 14px;
-    transition: background-color 0.2s;
+    transition: background-color var(--transition-fast);
 }
 
 .dictionary-back-button-bottom:hover {
@@ -963,70 +1018,70 @@ body {
 
 /* Dictionary links displayed directly in panel */
 .dictionary-links-container {
-    margin-top: 10px;
+    margin-top: var(--spacing-md);
 }
 
 .dictionary-link-button {
     display: block;
     width: 100%;
-    margin: 8px 0;
-    padding: 12px 16px;
+    margin: var(--size-md) 0;
+    padding: var(--size-lg) var(--size-xl);
     background: linear-gradient(145deg, #f8f9fa, #e9ecef);
     color: var(--text-primary);
-    border: 1px solid var(--border-light);
-    border-radius: 6px;
+    border: var(--square-border-width) solid var(--border-light);
+    border-radius: var(--radius-lg);
     cursor: pointer;
     text-align: left;
     font-size: 13px;
     font-weight: 500;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all var(--transition-fast) ease;
+    box-shadow: 0 var(--size-xs) var(--size-sm) rgba(0,0,0,0.05);
     position: relative;
 }
 
 .dictionary-link-button::after {
     content: '→';
     position: absolute;
-    right: 12px;
+    right: var(--size-lg);
     top: 50%;
     transform: translateY(-50%);
     font-size: 14px;
     font-weight: bold;
     opacity: 0.6;
-    transition: all 0.2s ease;
+    transition: all var(--transition-fast) ease;
 }
 
 .dictionary-link-button:hover {
     background: linear-gradient(145deg, var(--color-primary), var(--color-primary-dark));
     color: var(--text-white);
     border-color: var(--color-primary);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px var(--shadow-primary);
+    transform: translateY(calc(-1 * var(--size-xs)));
+    box-shadow: 0 var(--size-sm) var(--size-lg) var(--shadow-primary);
 }
 
 .dictionary-link-button:hover::after {
     opacity: 1;
-    transform: translateY(-50%) translateX(2px);
+    transform: translateY(-50%) translateX(var(--size-xs));
 }
 
 .dictionary-link-button:active {
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px var(--shadow-primary);
+    box-shadow: 0 var(--size-xs) var(--size-md) var(--shadow-primary);
 }
 
 .search-button-container {
-    margin: 15px 0;
+    margin: var(--spacing-lg) 0;
 }
 
 .cancel-button {
     width: 100%;
-    padding: 8px;
+    padding: var(--size-md);
     background: #6c757d;
     color: var(--text-white);
     border: none;
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color var(--transition-fast);
 }
 
 .cancel-button:hover {
@@ -1035,38 +1090,24 @@ body {
 
 /* Print styles */
 @media print {
-    /* Hide everything except the crossword container and title */
-    .toolbar {
-        display: none !important;
+    /* Define a base unit that controls all print scaling */
+    :root {
+        --print-base-unit: 8mm; /* Change this single value to scale everything */
+        --print-small: calc(var(--print-base-unit) * 0.125); /* 1mm */
+        --print-medium: calc(var(--print-base-unit) * 0.25);  /* 2mm */
+        --print-large: calc(var(--print-base-unit) * 0.5);    /* 4mm */
+        --print-square-size: var(--print-base-unit);           /* 8mm */
+        --print-title-size: calc(var(--print-base-unit) * 0.75); /* 6mm */
+        --print-font-large: calc(var(--print-base-unit) * 0.5);  /* 4mm */
+        --print-font-medium: calc(var(--print-base-unit) * 0.25); /* 2mm */
+        --print-font-small: calc(var(--print-base-unit) * 0.125); /* 1mm */
     }
     
-    .title-container {
-        margin: 0 auto 20px auto !important;
-        width: fit-content !important;
-        max-width: none !important;
-        background: var(--text-white) !important;
-        box-shadow: none !important;
-        border: none !important;
-    }
-    
-    #crosswordTitle {
-        width: auto !important;
-        padding: 0 !important;
-        border: none !important;
-        border-radius: 0 !important;
-        font-size: 1.5em !important;
-        font-weight: bold !important;
-        text-align: center !important;
-        background: var(--text-white) !important;
-        box-shadow: none !important;
-        color: var(--text-black) !important;
-        display: block !important;
-    }
-    
-    /* Remove page margins and center the crossword */
+    /* Minimize page margins to maximize space */
     @page {
-        margin: 0.5in;
-        size: auto;
+        margin: var(--print-small);
+        size: 210mm 297mm; 
+        margin: 0;
         /* Hide headers and footers where supported */
         @top-left { content: ""; }
         @top-center { content: ""; }
@@ -1075,110 +1116,9 @@ body {
         @bottom-center { content: ""; }
         @bottom-right { content: ""; }
     }
-    
-    body {
-        margin: 0;
-        padding: 0;
-        background: var(--text-white) !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-        /* Additional properties to minimize headers/footers */
-        overflow: hidden;
-    }
-    
-    /* Additional root-level properties */
-    html {
-        margin: 0 !important;
-        padding: 0 !important;
-        overflow: hidden;
-    }
-    
-    #crossword-container {
-        margin: 0 auto;
-        background: var(--text-white) !important;
-        box-shadow: none !important;
-        border-radius: 0 !important;
-        padding: 20px;
-        page-break-inside: avoid;
-    }
-    
-    /* Ensure grid borders are visible */
-    .crossword-grid {
-        border: 2px solid var(--border-dark) !important;
-        background: var(--background-black) !important;
-        gap: 1px !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-    
-    /* Make square borders visible */
-    .square {
-        box-sizing: border-box !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-    
-    /* Set default white background only for squares without custom colors */
-    .square:not([style*="background-color"]) {
-        background: var(--text-white) !important;
-    }
-    
-    .square.black {
-        background: var(--background-black) !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-    
-    .square.focused {
-        border: 1px solid var(--border-dark) !important;
-        box-shadow: none !important;
-        z-index: auto !important;
-    }
-    
-    /* Style inputs for print */
-    .square input,
-    .square textarea {
-        border: none !important;
-        background: var(--background-transparent) !important;
-        color: var(--text-black) !important;
-        font-weight: bold !important;
-        text-align: center !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-    
-    /* Hide letter values when printing blank puzzle */
-    body.print-blank .square.letter input {
-        color: var(--text-transparent) !important;
-    }
-    
-    /* Show letter values when printing key */
-    body.print-with-letters .square.letter input {
-        color: var(--text-black) !important;
-    }
-    
-    /* Ensure arrows are visible in print */
-    .square .arrow {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-        color: var(--text-black) !important;
-        font-weight: bold !important;
-    }
-    
-    /* Ensure thick borders are visible in print */
-    .square.border-bottom {
-        border-bottom: 4px solid var(--border-dark) !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-    
-    .square.border-right {
-        border-right: 4px solid var(--border-dark) !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-    
-    /* Hide any modals or overlays */
+
+    /* Hide everything except the crossword container and title */
+    .toolbar,
     .puzzle-modal,
     .context-menu,
     .toast,
@@ -1194,5 +1134,57 @@ body {
     .square.word-highlighted {
         background-color: var(--text-white) !important;
         box-shadow: none !important;
+    }
+    
+    .title-container {
+        margin: 0 auto var(--print-medium) auto !important;
+        width: fit-content !important;
+        max-width: none !important;
+        background: var(--text-white) !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+    
+    #crosswordTitle {
+        width: auto !important;
+        padding: 0 !important;
+        border: none !important;
+        border-radius: 0 !important;
+        font-size: var(--print-title-size) !important;
+        font-weight: bold !important;
+        text-align: center !important;
+        background: var(--text-white) !important;
+        box-shadow: none !important;
+        color: var(--text-black) !important;
+        display: block !important;
+        margin-bottom: var(--print-medium) !important;
+    }
+    
+    body {
+        margin: 0;
+        padding: 0;
+        padding-right: 0 !important; /* Remove side panel space for print */
+        background: var(--text-white) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        /* Additional properties to minimize headers/footers */
+        overflow: hidden;
+    }
+    
+    /* Additional root-level properties */
+    html {
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden;
+    }
+    
+    /* Hide letter values when printing blank puzzle */
+    body.print-blank .square.letter input {
+        color: transparent !important;
+    }
+    
+    /* Show letter values when printing key */
+    body.print-with-letters .square.letter input {
+        color: var(--text-black) !important;
     }
 }

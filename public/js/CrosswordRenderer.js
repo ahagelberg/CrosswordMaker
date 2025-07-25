@@ -81,6 +81,14 @@ class CrosswordRenderer {
         square.className = `square ${cell.type}`;
         square.tabIndex = 0;
         
+        // Add edge classes for border management
+        if (cIdx === this.crosswordGrid.cols - 1) {
+            square.classList.add('last-column');
+        }
+        if (rIdx === this.crosswordGrid.rows - 1) {
+            square.classList.add('last-row');
+        }
+        
         // Apply thick borders for word boundaries
         if (cell.borders) {
             if (cell.borders.bottom) square.classList.add('border-bottom');
