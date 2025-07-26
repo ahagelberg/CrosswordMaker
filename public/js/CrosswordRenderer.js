@@ -1,5 +1,17 @@
 /**
- * CrosswordRenderer - Handles rendering the grid to the DOM
+    constructor(crosswordGrid, navigationManager) {
+        this.crosswordGrid = crosswordGrid;
+        this.navigationManager = navigationManager;
+        this.container = document.getElementById('crossword-container');
+        this.currentLanguage = 'sv';
+        this.highlightedWord = null;
+        this.squareObjects = []; // Array of CrosswordSquare objects
+        
+        // Give NavigationManager access to our square objects (if method exists)
+        if (this.navigationManager && typeof this.navigationManager.setRenderer === 'function') {
+            this.navigationManager.setRenderer(this);
+        }
+    }wordRenderer - Handles rendering the grid to the DOM using Square objects
  */
 class CrosswordRenderer {
     constructor(crosswordGrid, navigationManager) {
@@ -8,6 +20,7 @@ class CrosswordRenderer {
         this.container = document.getElementById('crossword-container');
         this.currentLanguage = 'sv';
         this.highlightedWord = null;
+        this.squareObjects = []; // Store square object references
     }
 
     /**
@@ -29,10 +42,9 @@ class CrosswordRenderer {
         if (word) {
             this.highlightedWord = word;
             word.squares.forEach(square => {
-                const squares = document.querySelectorAll('.square');
-                const index = square.row * this.crosswordGrid.cols + square.col;
-                if (squares[index]) {
-                    squares[index].classList.add('word-highlighted');
+                const squareObj = this.getSquareAt(square.row, square.col);
+                if (squareObj && squareObj.element) {
+                    squareObj.element.classList.add('word-highlighted');
                 }
             });
         }
@@ -42,31 +54,144 @@ class CrosswordRenderer {
      * Clears word highlighting
      */
     clearWordHighlight() {
-        const highlightedSquares = document.querySelectorAll('.word-highlighted');
-        highlightedSquares.forEach(square => {
-            square.classList.remove('word-highlighted');
+        this.squareObjects.forEach(row => {
+            row.forEach(squareObj => {
+                if (squareObj && squareObj.element) {
+                    squareObj.element.classList.remove('word-highlighted');
+                }
+            });
         });
         this.highlightedWord = null;
     }
 
     /**
-     * Renders the crossword grid in the DOM with all squares and their appropriate input elements
+     * Renders the crossword grid using Square objects
      */
     render() {
         this.container.innerHTML = '';
+        
+        // Clean up existing square objects
+        this.squareObjects.forEach(row => {
+            row.forEach(squareObj => {
+                if (squareObj) {
+                    squareObj.destroy();
+                }
+            });
+        });
+        
+        // Initialize square objects array
+        this.squareObjects = Array.from({ length: this.crosswordGrid.rows }, () =>
+            Array.from({ length: this.crosswordGrid.cols }, () => null)
+        );
+        
         const gridEl = document.createElement('div');
         gridEl.className = 'crossword-grid';
         gridEl.style.gridTemplateRows = `repeat(${this.crosswordGrid.rows}, 50px)`;
         gridEl.style.gridTemplateColumns = `repeat(${this.crosswordGrid.cols}, 50px)`;
 
+        // Create square objects for each cell
         this.crosswordGrid.grid.forEach((row, rIdx) => {
             row.forEach((cell, cIdx) => {
-                const square = this.createSquareElement(cell, rIdx, cIdx);
-                gridEl.appendChild(square);
+                // Create a new square object
+                const squareObj = new CrosswordSquare(rIdx, cIdx, this.crosswordGrid, this.navigationManager);
+                
+                // Load data from grid into square object
+                squareObj.loadFromGridData();
+                
+                // Create the DOM element
+                const element = squareObj.createElement();
+                
+                // Add edge classes for border management
+                if (cIdx === this.crosswordGrid.cols - 1) {
+                    element.classList.add('last-column');
+                }
+                if (rIdx === this.crosswordGrid.rows - 1) {
+                    element.classList.add('last-row');
+                }
+                
+                // Store square object reference
+                this.squareObjects[rIdx][cIdx] = squareObj;
+                
+                gridEl.appendChild(element);
             });
         });
         
         this.container.appendChild(gridEl);
+    }
+
+    /**
+     * Gets the square object at a specific position
+     * @param {number} row - Row index
+     * @param {number} col - Column index
+     * @returns {CrosswordSquare|null} Square object or null
+     */
+    getSquareAt(row, col) {
+        if (row >= 0 && row < this.squareObjects.length && 
+            col >= 0 && col < this.squareObjects[row].length) {
+            return this.squareObjects[row][col];
+        }
+        return null;
+    }
+
+    /**
+     * Updates the display of a specific square
+     * @param {number} row - Row index
+     * @param {number} col - Column index
+     */
+    updateSquareDisplay(row, col) {
+        const squareObj = this.getSquareAt(row, col);
+        if (squareObj) {
+            squareObj.loadFromGridData();
+            squareObj.updateDisplay();
+        }
+    }
+
+    /**
+     * Updates all square displays
+     */
+    updateAllSquares() {
+        this.squareObjects.forEach((row, rIdx) => {
+            row.forEach((squareObj, cIdx) => {
+                if (squareObj) {
+                    squareObj.loadFromGridData();
+                    squareObj.updateDisplay();
+                }
+            });
+        });
+    }
+
+    /**
+     * Gets the container element
+     * @returns {HTMLElement} Container element
+     */
+    getContainer() {
+        return this.container;
+    }
+
+    /**
+     * Creates a textarea element with common properties
+     * @param {string} value - Initial value
+     * @param {number} rows - Number of rows
+     * @param {number} maxLength - Maximum length
+     * @returns {HTMLElement} Textarea element
+     */
+    createTextarea(value, rows, maxLength) {
+        const textarea = document.createElement('textarea');
+        textarea.value = value || '';
+        textarea.rows = rows;
+        textarea.maxLength = maxLength;
+        textarea.style.resize = 'none';
+        textarea.style.border = 'none';
+        textarea.style.background = 'transparent';
+        textarea.style.outline = 'none';
+        textarea.style.fontFamily = 'inherit';
+        textarea.style.fontSize = 'inherit';
+        textarea.style.textAlign = 'center';
+        textarea.style.color = 'inherit';
+        textarea.style.width = '100%';
+        textarea.style.height = '100%';
+        textarea.setAttribute('lang', this.currentLanguage);
+        return textarea;
     }
 
     /**
@@ -345,5 +470,63 @@ class CrosswordRenderer {
      */
     getContainer() {
         return this.container;
+    }
+
+    /**
+     * Test method to verify Square objects are working
+     */
+    testSquareObjects() {
+        console.log('Testing Square objects...');
+        let totalSquares = 0;
+        let squareTypes = {};
+        let squareWithInputs = 0;
+        
+        this.squareObjects.forEach((row, rIdx) => {
+            row.forEach((squareObj, cIdx) => {
+                if (squareObj) {
+                    totalSquares++;
+                    const type = squareObj.cell.type;
+                    squareTypes[type] = (squareTypes[type] || 0) + 1;
+                    
+                    // Check if it has proper input elements
+                    const inputElement = squareObj.getInputElement();
+                    if (inputElement) {
+                        squareWithInputs++;
+                    }
+                }
+            });
+        });
+        
+        console.log(`Total Square objects: ${totalSquares}`);
+        console.log('Square types:', squareTypes);
+        console.log(`Squares with input elements: ${squareWithInputs}`);
+        
+        // Test click on a specific square
+        const testSquare = this.getSquareAt(1, 1);
+        if (testSquare) {
+            console.log('Test square at (1,1):', testSquare);
+            console.log('Test square type:', testSquare.cell.type);
+            console.log('Test square has input:', !!testSquare.getInputElement());
+        }
+        
+        // Test word highlighting
+        console.log('Testing word highlighting...');
+        const letterSquares = [];
+        this.squareObjects.forEach((row, rIdx) => {
+            row.forEach((squareObj, cIdx) => {
+                if (squareObj && squareObj.type === 'letter') {
+                    letterSquares.push({ row: rIdx, col: cIdx });
+                }
+            });
+        });
+        
+        if (letterSquares.length > 0) {
+            // Create a fake word to test highlighting
+            const testWord = {
+                squares: letterSquares.slice(0, 3) // Test with first 3 letter squares
+            };
+            this.highlightWord(testWord);
+            console.log('Word highlighting applied to', testWord.squares.length, 'squares');
+        }
     }
 }

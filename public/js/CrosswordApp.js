@@ -48,6 +48,10 @@ class CrosswordApp {
         this.contextMenu = new ContextMenu(this.grid, this.navigationManager);
         this.puzzleManager = new PuzzleManager();
         this.printManager = new PrintManager();
+
+        // Expose for debugging
+        window.crosswordApp = this;
+        window.crosswordRenderer = this.renderer;
         this.toastManager = new ToastManager();
         this.wordManager = new WordManager(this.grid);
         this.wordDisplay = new WordDisplay(() => this.currentLanguage);
