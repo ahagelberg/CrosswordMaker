@@ -5,7 +5,7 @@
         this.container = document.getElementById('crossword-container');
         this.currentLanguage = 'sv';
         this.highlightedWord = null;
-        this.squareObjects = []; // Array of CrosswordSquare objects
+        this.squareObjects = []; // Array of Square objects
         
         // Give NavigationManager access to our square objects (if method exists)
         if (this.navigationManager && typeof this.navigationManager.setRenderer === 'function') {
@@ -93,7 +93,7 @@ class CrosswordRenderer {
         this.crosswordGrid.grid.forEach((row, rIdx) => {
             row.forEach((cell, cIdx) => {
                 // Create a new square object
-                const squareObj = new CrosswordSquare(rIdx, cIdx, this.crosswordGrid, this.navigationManager);
+                const squareObj = new Square(rIdx, cIdx, this.crosswordGrid, this.navigationManager);
                 
                 // Load data from grid into square object
                 squareObj.loadFromGridData();
@@ -123,7 +123,7 @@ class CrosswordRenderer {
      * Gets the square object at a specific position
      * @param {number} row - Row index
      * @param {number} col - Column index
-     * @returns {CrosswordSquare|null} Square object or null
+     * @returns {Square|null} Square object or null
      */
     getSquareAt(row, col) {
         if (row >= 0 && row < this.squareObjects.length && 

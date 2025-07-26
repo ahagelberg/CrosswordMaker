@@ -1,7 +1,7 @@
 /**
- * CrosswordSquare - Individual square object with all functionality encapsulated
+ * Square - Individual square object with all functionality encapsulated
  */
-class CrosswordSquare {
+class Square {
     constructor(row, col, crosswordGrid, navigationManager) {
         this.row = row;
         this.col = col;
