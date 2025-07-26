@@ -39,7 +39,7 @@ class PuzzleManager {
         this.currentPuzzleName = puzzleName;
         localStorage.setItem('currentPuzzle', puzzleName);
         
-        console.log('Auto-saved crossword "' + puzzleName + '" at', new Date().toLocaleTimeString());
+        console.log('Auto-saved crossword "' + puzzleName);
     }
 
     /**

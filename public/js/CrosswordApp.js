@@ -3,11 +3,13 @@
  */
 class CrosswordApp {
     constructor() {
+        console.debug('🚀 CrosswordApp constructor starting...');
         this.initializeProperties();
         this.initializeManagers();
         this.setupEventListeners();
         this.setupWindowListeners();
         this.initialize();
+        console.debug('✅ CrosswordApp fully initialized');
     }
 
     /**
@@ -135,9 +137,19 @@ class CrosswordApp {
         });
 
         document.addEventListener('crossword:wordclick', (e) => {
+            console.debug('📡 CrosswordApp received crossword:wordclick event with detail:', e.detail);
             const { row, col } = e.detail;
-            this.wordManager.handleSquareClick(row, col);
+            console.debug('🎯 Calling WordManager.handleSquareClick with row:', row, 'col:', col);
+            const result = this.wordManager.handleSquareClick(row, col);
+            console.debug('📊 WordManager returned result:', result);
+            if (result) {
+                console.debug('✨ Word selected:', result.id, 'direction:', result.direction, 'squares:', result.squares.length);
+            } else {
+                console.debug('❌ No word selected (result is null)');
+            }
         });
+        
+        console.debug('📡 CrosswordApp event listener for crossword:wordclick is set up');
 
         document.addEventListener('crossword:clearWordSelection', () => {
             this.renderer.clearWordHighlight();

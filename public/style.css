@@ -101,6 +101,7 @@
     --z-base: 1;
     --z-tooltip: 5;
     --z-square-focus: 10;
+    --z-square-editing: 50;
     --z-panel: 100;
     --z-modal: 1000;
     --z-toast: 1001;
@@ -202,6 +203,25 @@ body {
     transition: transform var(--transition-fast) ease-in-out, box-shadow var(--transition-fast) ease-in-out;
 }
 
+/* Ensure split squares maintain proper layout when editing */
+.square.clue.split.editing {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ensure textareas in split squares are properly positioned when editing */
+.square.clue.split.editing textarea {
+    position: absolute;
+    display: block !important;
+    height: 45%;
+    line-height: 1;
+}
+
+/* Position the split line properly when editing */
+.square.clue.split.editing::after {
+    z-index: 1;
+}
+
 .square.clue {
     transition: transform var(--transition-fast) ease-in-out, box-shadow var(--transition-fast) ease-in-out;
 }
@@ -248,6 +268,83 @@ body {
     line-height: 1.1;
     font-family: Arial, sans-serif;
     text-transform: uppercase;
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
+.square.clue textarea.single {
+    height: 100%;
+}
+
+.square.clue textarea.split {
+    height: 45%;
+}
+
+.square.clue textarea.split.lower {
+    top: 50%;
+}
+
+/* Clue text content display elements */
+.clue-text-content {
+    font-family: Arial, sans-serif;
+    text-transform: uppercase;
+    text-align: center;
+    width: 90%;
+    height: 90%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.1;
+    font-size: var(--font-xs);
+}
+
+.clue-text-content.split {
+    flex-direction: column;
+    height: 100%;
+    width: 90%;
+}
+
+.clue-text-part {
+    font-family: Arial, sans-serif;
+    text-transform: uppercase;
+    text-align: center;
+    height: 45%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    line-height: 1.1;
+}
+
+/* Utility classes for showing/hiding elements */
+.hidden {
+    display: none !important;
+}
+
+.visible {
+    display: block !important;
+}
+
+.flex-visible {
+    display: flex !important;
+}
+
+/* Override for textarea visibility in editing mode */
+.square.clue.editing textarea.visible {
+    display: block !important;
+}
+
+/* Ensure text content is properly hidden when editing */
+.square.clue.editing .clue-text-content.hidden {
+    display: none !important;
 }
 .square.clue.split {
     flex-direction: column;
