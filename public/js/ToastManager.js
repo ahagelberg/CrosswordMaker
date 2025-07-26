@@ -56,7 +56,7 @@ function saveAs(blob, filename) {
             window.saveAs(blob, filename);
             return;
         } catch (e) {
-            console.log('FileSaver.js failed, using fallback');
+            // FileSaver.js failed, using fallback
         }
     }
     

@@ -1,11 +1,8 @@
 /**
  * Base Square class - Common functionality for all square types
  */
-console.debug('🔧 Loading Square.js file');
-
 class Square {
     constructor(row, col, crosswordGrid, navigationManager) {
-        console.debug('🏗️ Creating Square at', row, col);
         this.row = row;
         this.col = col;
         this.crosswordGrid = crosswordGrid;
@@ -25,7 +22,6 @@ class Square {
         this.createElement();
         this.setupEventListeners();
         this.loadFromGridData();
-        console.debug('✅ Square created at', row, col, 'type:', this.getSquareType());
     }
 
     /**
@@ -57,8 +53,6 @@ class Square {
         this.element = element;
         this.updateDisplay();
         
-        console.debug('🏗️ Element created for square at', this.row, this.col, 'type:', this.getSquareType(), 'element:', element, 'className:', element.className);
-        
         return element;
     }
 
@@ -68,27 +62,8 @@ class Square {
     setupEventListeners() {
         if (!this.element) return;
         
-        console.debug('🔧 Setting up event listeners for square at', this.row, this.col, 'type:', this.getSquareType());
-        
-        // Click handler - use capturing to catch before child elements
-        this.element.addEventListener('click', (e) => {
-            console.debug('🖱️ Square element clicked at', this.row, this.col, 'target:', e.target.tagName, 'currentTarget:', e.currentTarget.tagName);
-            this.handleClick(e);
-        }, true); // Use capturing phase
-        
-        // Also add click handler in bubbling phase as backup
-        this.element.addEventListener('click', (e) => {
-            console.debug('🖱️ Square element clicked (bubbling) at', this.row, this.col, 'target:', e.target.tagName);
-            if (e.target !== this.element) {
-                console.debug('🔄 Click was on child element, calling handleClick');
-                this.handleClick(e);
-            }
-        }, false);
-        
-        // Add a simple test click listener to verify events work
-        this.element.addEventListener('click', (e) => {
-            console.debug('🚨 TEST: Click detected on square', this.row, this.col, 'type:', this.getSquareType());
-        });
+        // Click handler
+        this.element.addEventListener('click', (e) => this.handleClick(e));
         
         // Keyboard handler
         this.element.addEventListener('keydown', (e) => this.handleKeydown(e));
@@ -99,8 +74,6 @@ class Square {
         // Focus handlers
         this.element.addEventListener('focus', () => this.handleFocus());
         this.element.addEventListener('blur', () => this.handleBlur());
-        
-        console.debug('✅ Event listeners set up for square at', this.row, this.col, 'element:', this.element);
     }
 
     /**
@@ -108,7 +81,6 @@ class Square {
      * @param {Event} e - Click event
      */
     handleClick(e) {
-        console.debug('🟦 Base Square handleClick called for row:', this.row, 'col:', this.col, 'type:', this.getSquareType());
         e.stopPropagation();
         
         // Update navigation manager's focus
@@ -333,11 +305,9 @@ class Square {
  */
 class LetterSquare extends Square {
     constructor(row, col, crosswordGrid, navigationManager) {
-        console.debug('🔤 Creating LetterSquare at', row, col);
         super(row, col, crosswordGrid, navigationManager);
         this.value = '';
         this.arrow = null;
-        console.debug('✅ LetterSquare created at', row, col);
     }
 
     getSquareType() {
@@ -345,15 +315,12 @@ class LetterSquare extends Square {
     }
 
     handleClick(e) {
-        console.debug('🔤 LetterSquare handleClick called for row:', this.row, 'col:', this.col);
         super.handleClick(e);
         this.focus();
         // Dispatch word click event for highlighting
-        console.debug('🚀 Dispatching crossword:wordclick event with detail:', {row: this.row, col: this.col});
         document.dispatchEvent(new CustomEvent('crossword:wordclick', {
             detail: { row: this.row, col: this.col }
         }));
-        console.debug('✅ crossword:wordclick event dispatched successfully');
     }
 
     handleKeydown(e) {
@@ -389,18 +356,14 @@ class LetterSquare extends Square {
         input.maxLength = 1;
         input.value = this.value || '';
         
-        console.debug('🔤 Creating input element for LetterSquare at', this.row, this.col);
-        
         // Add click handler to input to delegate to square
         input.addEventListener('click', (e) => {
-            console.debug('🖱️ Input clicked at', this.row, this.col, '- delegating to square');
             e.stopPropagation(); // Prevent double handling
             this.handleClick(e);
         });
         
         // Add context menu handler to input to delegate to square
         input.addEventListener('contextmenu', (e) => {
-            console.debug('🖱️ Input right-clicked at', this.row, this.col, '- delegating to square');
             e.stopPropagation(); // Prevent double handling
             this.handleContextMenu(e);
         });
@@ -473,9 +436,7 @@ class ClueSquare extends Square {
     }
 
     handleClick(e) {
-        console.debug('🎯 ClueSquare handleClick called for row:', this.row, 'col:', this.col);
         super.handleClick(e);
-        console.debug('🎯 ClueSquare about to enter editing mode');
         this.enterEditingMode();
     }
 
@@ -533,15 +494,12 @@ class ClueSquare extends Square {
     }
 
     enterEditingMode() {
-        console.debug('🎯 ClueSquare enterEditingMode called, isEditing:', this.isEditing);
-        
         // Always set editing state and ensure proper display
         this.isEditing = true;
         this.element.classList.add('editing');
         
         // Always ensure the display text content is hidden
         const textContent = this.element.querySelector('.clue-text-content');
-        console.debug('🎯 Found textContent:', !!textContent);
         if (textContent) {
             textContent.classList.add('hidden');
             textContent.classList.remove('flex-visible');
@@ -549,7 +507,6 @@ class ClueSquare extends Square {
         
         // Focus the appropriate input element(s)
         const textareas = this.element.querySelectorAll('textarea');
-        console.debug('🎯 Found textareas:', textareas.length);
         if (textareas.length > 0) {
             // Always ensure all textareas are visible (important for split squares)
             textareas.forEach(textarea => {
@@ -567,17 +524,13 @@ class ClueSquare extends Square {
                 textareaToFocus.focus();
                 const length = textareaToFocus.value.length;
                 textareaToFocus.setSelectionRange(length, length);
-                console.debug('🎯 Textarea focused and selection set, clicked part:', this.clickedPart);
                 // Reset clicked part for next time
                 this.clickedPart = null;
             }, 10);
-        } else {
-            console.debug('❌ No textarea found in ClueSquare element');
         }
         
         // Update navigation manager
         this.navigationManager.isEditingClue = true;
-        console.debug('🎯 Navigation manager updated, isEditingClue set to true');
     }
 
     exitEditingMode() {
@@ -649,14 +602,12 @@ class ClueSquare extends Square {
         
         // Add click handler to text content to delegate to square
         textContent.addEventListener('click', (e) => {
-            console.debug('🖱️ Clue text content clicked at', this.row, this.col, '- delegating to square');
             e.stopPropagation(); // Prevent double handling
             this.handleClick(e);
         });
         
         // Add context menu handler to text content
         textContent.addEventListener('contextmenu', (e) => {
-            console.debug('🖱️ Clue text content right-clicked at', this.row, this.col, '- delegating to square');
             e.stopPropagation();
             this.handleContextMenu(e);
         });
@@ -691,7 +642,6 @@ class ClueSquare extends Square {
         
         // Add click handler to text part 1
         textPart1.addEventListener('click', (e) => {
-            console.debug('🖱️ Clue text part 1 clicked at', this.row, this.col, '- delegating to square');
             e.stopPropagation();
             this.clickedPart = 1; // Track which part was clicked
             this.handleClick(e);
@@ -699,7 +649,6 @@ class ClueSquare extends Square {
         
         // Add context menu handler to text part 1
         textPart1.addEventListener('contextmenu', (e) => {
-            console.debug('🖱️ Clue text part 1 right-clicked at', this.row, this.col, '- delegating to square');
             e.stopPropagation();
             this.handleContextMenu(e);
         });
@@ -710,7 +659,6 @@ class ClueSquare extends Square {
         
         // Add click handler to text part 2
         textPart2.addEventListener('click', (e) => {
-            console.debug('🖱️ Clue text part 2 clicked at', this.row, this.col, '- delegating to square');
             e.stopPropagation();
             this.clickedPart = 2; // Track which part was clicked
             this.handleClick(e);
@@ -718,7 +666,6 @@ class ClueSquare extends Square {
         
         // Add context menu handler to text part 2
         textPart2.addEventListener('contextmenu', (e) => {
-            console.debug('🖱️ Clue text part 2 right-clicked at', this.row, this.col, '- delegating to square');
             e.stopPropagation();
             this.handleContextMenu(e);
         });
@@ -832,10 +779,3 @@ class BlackSquare extends Square {
         return '';
     }
 }
-
-console.debug('✅ Square.js loaded - all classes defined:', {
-    Square: typeof Square,
-    LetterSquare: typeof LetterSquare, 
-    ClueSquare: typeof ClueSquare,
-    BlackSquare: typeof BlackSquare
-});

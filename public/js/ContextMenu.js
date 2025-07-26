@@ -97,7 +97,7 @@ class ContextMenu {
         const arrowMenuItem = menu.lastChild;
         arrowMenuItem.onclick = (e) => {
             e.stopPropagation();
-            this.showArrowSubmenu(e, r, c, menu);
+            this.showArrowSubmenu(e, r, c);
         };
 
         // Remove arrow option if arrow exists
@@ -120,7 +120,7 @@ class ContextMenu {
         const borderMenuItem = menu.lastChild;
         borderMenuItem.onclick = (e) => {
             e.stopPropagation();
-            this.showBorderSubmenu(e, r, c, menu);
+            this.showBorderSubmenu(e, r, c);
         };
 
         // Remove all borders option if borders exist
@@ -143,7 +143,7 @@ class ContextMenu {
         const colorMenuItem = menu.lastChild;
         colorMenuItem.onclick = (e) => {
             e.stopPropagation();
-            this.showColorSubmenu(e, r, c, menu);
+            this.showColorSubmenu(e, r, c);
         };
 
         // Remove color option if color is set
@@ -255,9 +255,8 @@ class ContextMenu {
      * @param {MouseEvent} e - Click event
      * @param {number} r - Row index
      * @param {number} c - Column index
-     * @param {HTMLElement} parentMenu - Parent menu element
      */
-    showArrowSubmenu(e, r, c, parentMenu) {
+    showArrowSubmenu(e, r, c) {
         this.removeExistingMenus('.arrow-submenu');
         
         const submenu = document.createElement('div');
@@ -293,9 +292,8 @@ class ContextMenu {
      * @param {MouseEvent} e - Click event
      * @param {number} r - Row index
      * @param {number} c - Column index
-     * @param {HTMLElement} parentMenu - Parent menu element
      */
-    showBorderSubmenu(e, r, c, parentMenu) {
+    showBorderSubmenu(e, r, c) {
         this.removeExistingMenus('.border-submenu');
         
         const submenu = document.createElement('div');
@@ -348,9 +346,8 @@ class ContextMenu {
      * @param {MouseEvent} e - Click event
      * @param {number} r - Row index
      * @param {number} c - Column index
-     * @param {HTMLElement} parentMenu - Parent menu element
      */
-    showColorSubmenu(e, r, c, parentMenu) {
+    showColorSubmenu(e, r, c) {
         this.removeExistingMenus('.color-submenu');
         
         const submenu = document.createElement('div');

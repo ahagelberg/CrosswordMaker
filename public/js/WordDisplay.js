@@ -205,60 +205,6 @@ class WordDisplay {
     }
 
     /**
-     * Fetches definitions from multiple dictionary APIs
-     * @param {string} word - The word to look up
-     * @param {HTMLElement} container - The container to display results in
-     */
-    async fetchDefinitions(word, container) {
-        const cleanWord = word.toLowerCase().trim();
-        const sources = [
-            {
-                name: 'Free Dictionary API',
-                fetch: () => this.fetchFromFreeDictionary(cleanWord),
-                priority: 1
-            },
-            {
-                name: 'Dictionary API',
-                fetch: () => this.fetchFromDictionaryAPI(cleanWord),
-                priority: 2
-            },
-            {
-                name: 'Words API',
-                fetch: () => this.fetchFromWordsAPI(cleanWord),
-                priority: 3
-            }
-        ];
-
-        let foundDefinitions = false;
-
-        // Try each source in order
-        for (const source of sources) {
-            try {
-                const definitions = await source.fetch();
-                if (definitions && definitions.length > 0) {
-                    this.displayDefinitions(definitions, container, source.name);
-                    foundDefinitions = true;
-                    break;
-                }
-            } catch (error) {
-                console.log(`${source.name} failed:`, error.message);
-                // Continue to next source
-            }
-        }
-
-        if (!foundDefinitions) {
-            container.innerHTML = `
-                <div class="word-display-no-definitions">
-                    <div class="word-display-no-definitions-title">📚 No definitions found</div>
-                    <div class="word-display-no-definitions-subtitle">Try the external dictionary links below</div>
-                </div>
-            `;
-        }
-    }
-
-
-
-    /**
      * Displays definitions in the container
      * @param {Array} definitions - Array of definition objects
      * @param {HTMLElement} container - Container element
@@ -313,7 +259,7 @@ class WordDisplay {
                 return;
             }
         } catch (error) {
-            console.log('Free Dictionary API failed:', error.message);
+            // Free Dictionary API failed, continue to alternatives
         }
 
         // For unsupported languages, try alternative approaches
@@ -324,7 +270,7 @@ class WordDisplay {
                 return;
             }
         } catch (error) {
-            console.log('Wiktionary API failed:', error.message);
+            // Wiktionary API failed, continue to fallback message
         }
 
         // If all APIs fail, show helpful message with language-specific guidance

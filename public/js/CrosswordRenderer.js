@@ -36,27 +36,19 @@ class CrosswordRenderer {
      * @param {Object|null} word - Word object to highlight, or null to clear
      */
     highlightWord(word) {
-        console.debug('🎨 CrosswordRenderer.highlightWord called with:', word ? `${word.id} (${word.direction}, ${word.squares.length} squares)` : 'null');
-        
         // Clear previous highlighting
         this.clearWordHighlight();
         
         if (word) {
             this.highlightedWord = word;
-            console.debug('🔍 Processing squares for highlighting:', word.squares);
             word.squares.forEach((square, index) => {
                 const squareObj = this.getSquareAt(square.row, square.col);
-                console.debug(`🔍 Square ${index + 1}/${word.squares.length} at (${square.row}, ${square.col}):`, squareObj ? 'found' : 'NOT FOUND');
                 if (squareObj && squareObj.element) {
-                    console.debug(`✅ Adding word-highlighted class to square at (${square.row}, ${square.col})`);
                     squareObj.element.classList.add('word-highlighted');
                 } else {
                     console.warn(`❌ No square object or element found at: (${square.row}, ${square.col})`);
                 }
             });
-            console.debug('🎨 Word highlighting complete!');
-        } else {
-            console.debug('🧹 Clearing word highlighting (word is null)');
         }
     }
 
@@ -85,13 +77,6 @@ class CrosswordRenderer {
      * @returns {Square} Square object
      */
     createSquareByType(row, col, type) {
-        console.debug('🏭 CrosswordRenderer creating square at', row, col, 'type:', type);
-        console.debug('🔍 Available classes:', {
-            Square: typeof Square,
-            LetterSquare: typeof LetterSquare,
-            ClueSquare: typeof ClueSquare,
-            BlackSquare: typeof BlackSquare
-        });
         let square;
         switch (type) {
             case 'letter':
@@ -104,15 +89,12 @@ class CrosswordRenderer {
                 square = new BlackSquare(row, col, this.crosswordGrid, this.navigationManager);
                 break;
             default:
-                console.debug('🔄 Unknown type, defaulting to LetterSquare');
                 square = new LetterSquare(row, col, this.crosswordGrid, this.navigationManager);
         }
-        console.debug('✅ Square created:', square.getSquareType(), 'at', row, col);
         return square;
     }
 
     render() {
-        console.debug('🎨 CrosswordRenderer.render() called');
         this.container.innerHTML = '';
         
         // Clean up existing square objects
@@ -272,29 +254,5 @@ class CrosswordRenderer {
             });
         });
         this.container.innerHTML = '';
-    }
-
-    /**
-     * Test method for word highlighting
-     */
-    testWordHighlighting() {
-        // Find first few letter squares for testing
-        const letterSquares = [];
-        this.squareObjects.forEach((row, rIdx) => {
-            row.forEach((squareObj, cIdx) => {
-                if (squareObj && squareObj.getSquareType() === 'letter') {
-                    letterSquares.push({ row: rIdx, col: cIdx });
-                }
-            });
-        });
-        
-        if (letterSquares.length > 0) {
-            // Create a fake word to test highlighting
-            const testWord = {
-                squares: letterSquares.slice(0, 3) // Test with first 3 letter squares
-            };
-            this.highlightWord(testWord);
-            console.log('Word highlighting applied to', testWord.squares.length, 'squares');
-        }
     }
 }

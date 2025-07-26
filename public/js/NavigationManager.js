@@ -147,10 +147,6 @@ class NavigationManager {
             const input = square.querySelector('input');
             const textareas = square.querySelectorAll('textarea');
             
-            // Determine if this will be a clue editing focus
-            const cell = this.crosswordGrid.getCell(row, col);
-            const willEditClue = cell && cell.type === 'clue' && (textareas.length > 0);
-            
             if (input) {
                 // For letter squares, select all text so it can be overwritten
                 input.focus();

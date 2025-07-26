@@ -38,8 +38,6 @@ class PuzzleManager {
         // Track current puzzle and save it
         this.currentPuzzleName = puzzleName;
         localStorage.setItem('currentPuzzle', puzzleName);
-        
-        console.log('Auto-saved crossword "' + puzzleName);
     }
 
     /**

@@ -78,7 +78,7 @@ class PrintManager {
                     }, 100);
                 }, 500);
             } catch (error) {
-                console.log('Standard print fallback');
+                // Standard print fallback
                 window.print();
                 // Clean up after printing
                 setTimeout(() => {

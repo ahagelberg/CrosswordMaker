@@ -27,11 +27,8 @@ class WordManager {
      * @returns {Object|null} Word object or null if no valid word
      */
     findWord(row, col, direction) {
-        console.debug(`🔍 findWord(${row}, ${col}, ${direction}) starting (OLD method)...`);
-        
         // Only start from squares that have letters
         if (!this.isPotentialLetterSquare(row, col)) {
-            console.debug('❌ Starting square is not potential letter square (OLD method)');
             return null;
         }
         
@@ -62,10 +59,8 @@ class WordManager {
         
         // Check if this is a valid word (more than one letter)
         const length = direction === 'horizontal' ? (endCol - startCol + 1) : (endRow - startRow + 1);
-        console.debug(`📏 findWord length calculated: ${length} (from ${startRow},${startCol} to ${endRow},${endCol})`);
         
         if (length < 2) {
-            console.debug('❌ findWord too short (length < 2), returning null');
             return null;
         }
         
@@ -103,13 +98,6 @@ class WordManager {
             text: letters.join('')
         };
         
-        console.debug(`✅ findWord result:`, {
-            id: wordResult.id,
-            direction: wordResult.direction,
-            squares: wordResult.squares.length,
-            text: wordResult.text
-        });
-        
         return wordResult;
     }
 
@@ -122,18 +110,14 @@ class WordManager {
      * @returns {Object|null} Word object or null if no valid word
      */
     findPotentialWord(row, col, direction) {
-        console.debug(`🔍 findPotentialWord(${row}, ${col}, ${direction}) starting...`);
-        
         // Only start from potential letter squares
         if (!this.isPotentialLetterSquare(row, col)) {
-            console.debug('❌ Starting square is not potential letter square');
             return null;
         }
         
         // Starting square must have content to form a valid word
         const startCell = this.crosswordGrid.getCell(row, col);
         if (!startCell.value || startCell.value.trim() === '') {
-            console.debug('❌ Starting square is empty, no word possible');
             return null;
         }
         
@@ -142,100 +126,82 @@ class WordManager {
         
         if (direction === 'horizontal') {
             // Find start of word - move left while we have letter squares with content
-            console.debug(`🔍 Moving left from ${startRow},${startCol}...`);
             while (startCol > 0) {
                 const prevCol = startCol - 1;
                 const prevCell = this.crosswordGrid.getCell(startRow, prevCol);
                 
                 // Stop at boundaries: non-letter squares, clue squares, or empty letter squares
                 if (!prevCell || prevCell.type !== 'letter' || prevCell.imageClue) {
-                    console.debug(`🔍 Stop left at ${startRow},${prevCol}: hard boundary (type: ${prevCell?.type})`);
                     break;
                 }
                 
                 // Stop at empty letter squares (natural word boundary)
                 if (!prevCell.value || prevCell.value.trim() === '') {
-                    console.debug(`🔍 Stop left at ${startRow},${prevCol}: empty letter square boundary`);
                     break;
                 }
                 
-                console.debug(`🔍 Continue left at ${startRow},${prevCol}: has content "${prevCell.value}"`);
                 startCol--;
             }
             
             // Find end of word - move right while we have letter squares with content
-            console.debug(`🔍 Moving right from ${endRow},${endCol}...`);
             while (endCol < this.crosswordGrid.cols - 1) {
                 const nextCol = endCol + 1;
                 const nextCell = this.crosswordGrid.getCell(endRow, nextCol);
                 
                 // Stop at boundaries: non-letter squares, clue squares, or empty letter squares
                 if (!nextCell || nextCell.type !== 'letter' || nextCell.imageClue) {
-                    console.debug(`🔍 Stop right at ${endRow},${nextCol}: hard boundary (type: ${nextCell?.type})`);
                     break;
                 }
                 
                 // Stop at empty letter squares (natural word boundary)
                 if (!nextCell.value || nextCell.value.trim() === '') {
-                    console.debug(`🔍 Stop right at ${endRow},${nextCol}: empty letter square boundary`);
                     break;
                 }
                 
-                console.debug(`🔍 Continue right at ${endRow},${nextCol}: has content "${nextCell.value}"`);
                 endCol++;
             }
         } else { // vertical
             // Find start of word - move up while we have letter squares with content
-            console.debug(`🔍 Moving up from ${startRow},${startCol}...`);
             while (startRow > 0) {
                 const prevRow = startRow - 1;
                 const prevCell = this.crosswordGrid.getCell(prevRow, startCol);
                 
                 // Stop at boundaries: non-letter squares, clue squares, or empty letter squares
                 if (!prevCell || prevCell.type !== 'letter' || prevCell.imageClue) {
-                    console.debug(`🔍 Stop up at ${prevRow},${startCol}: hard boundary (type: ${prevCell?.type})`);
                     break;
                 }
                 
                 // Stop at empty letter squares (natural word boundary)
                 if (!prevCell.value || prevCell.value.trim() === '') {
-                    console.debug(`🔍 Stop up at ${prevRow},${startCol}: empty letter square boundary`);
                     break;
                 }
                 
-                console.debug(`🔍 Continue up at ${prevRow},${startCol}: has content "${prevCell.value}"`);
                 startRow--;
             }
             
             // Find end of word - move down while we have letter squares with content
-            console.debug(`🔍 Moving down from ${endRow},${endCol}...`);
             while (endRow < this.crosswordGrid.rows - 1) {
                 const nextRow = endRow + 1;
                 const nextCell = this.crosswordGrid.getCell(nextRow, endCol);
                 
                 // Stop at boundaries: non-letter squares, clue squares, or empty letter squares
                 if (!nextCell || nextCell.type !== 'letter' || nextCell.imageClue) {
-                    console.debug(`🔍 Stop down at ${nextRow},${endCol}: hard boundary (type: ${nextCell?.type})`);
                     break;
                 }
                 
                 // Stop at empty letter squares (natural word boundary)
                 if (!nextCell.value || nextCell.value.trim() === '') {
-                    console.debug(`🔍 Stop down at ${nextRow},${endCol}: empty letter square boundary`);
                     break;
                 }
                 
-                console.debug(`🔍 Continue down at ${nextRow},${endCol}: has content "${nextCell.value}"`);
                 endRow++;
             }
         }
         
         // Check if this is a valid word (at least one square with content)
         const length = direction === 'horizontal' ? (endCol - startCol + 1) : (endRow - startRow + 1);
-        console.debug(`📏 Word length calculated: ${length} (from ${startRow},${startCol} to ${endRow},${endCol})`);
         
         if (length < 1) {
-            console.debug('❌ Word too short (length < 1), returning null');
             return null;
         }
         
@@ -269,13 +235,6 @@ class WordManager {
             letters,
             text: letters.join('')
         };
-        
-        console.debug(`✅ findPotentialWord result:`, {
-            id: wordResult.id,
-            direction: wordResult.direction,
-            squares: wordResult.squares.length,
-            text: wordResult.text
-        });
         
         return wordResult;
     }
@@ -392,7 +351,6 @@ class WordManager {
             
             // Stop at empty letter squares (natural word boundary) - but allow first square to be empty
             if (squares.length > 0 && (!cell.value || cell.value.trim() === '')) {
-                console.debug(`🔍 Bent word stops at empty square at ${currentRow},${currentCol}`);
                 break;
             }
             
@@ -428,7 +386,6 @@ class WordManager {
             // Check if next position would be valid before continuing
             const nextCell = this.crosswordGrid.getCell(nextRow, nextCol);
             if (!nextCell || nextCell.type !== 'letter' || nextCell.imageClue) {
-                console.debug(`🔍 Bent word stops at boundary at ${nextRow},${nextCol}`);
                 break;
             }
             
@@ -510,14 +467,7 @@ class WordManager {
      */
     isPotentialLetterSquare(row, col) {
         const cell = this.crosswordGrid.getCell(row, col);
-        const result = cell && cell.type === 'letter' && !cell.imageClue;
-        console.debug(`🔍 isPotentialLetterSquare(${row}, ${col}):`, {
-            cell: cell ? 'exists' : 'null',
-            type: cell?.type,
-            imageClue: cell?.imageClue,
-            result: result
-        });
-        return result;
+        return cell && cell.type === 'letter' && !cell.imageClue;
     }
 
     /**
@@ -576,14 +526,10 @@ class WordManager {
      * @returns {Object|null} Selected word object
      */
     handleSquareClick(row, col) {
-        console.debug('🔍 WordManager.handleSquareClick called with row:', row, 'col:', col);
-        
         // Only handle clicks on potential letter squares (including empty ones)
         const isPotential = this.isPotentialLetterSquare(row, col);
-        console.debug('🔎 isPotentialLetterSquare check result:', isPotential);
         
         if (!isPotential) {
-            console.debug('❌ Not a potential letter square, clearing selection');
             this.setCurrentWord(null);
             return null;
         }
@@ -591,29 +537,19 @@ class WordManager {
         // Check if the clicked square has content
         const cell = this.crosswordGrid.getCell(row, col);
         const hasContent = cell && cell.value && cell.value.trim() !== '';
-        console.debug('🔎 Square has content:', hasContent, 'value:', cell?.value);
         
         if (!hasContent) {
-            console.debug('❌ Empty square clicked, clearing selection');
             this.setCurrentWord(null);
             return null;
         }
-
-        console.debug('✅ Square has content, finding words...');
         
         // Find both horizontal and vertical words at this position
         // Try bent words first, then fall back to straight words
-        console.debug('🔍 Looking for bent words...');
         const bentHorizontalWord = this.findBentWord(row, col, 'horizontal');
         const bentVerticalWord = this.findBentWord(row, col, 'vertical');
-        console.debug('🔍 Bent horizontal word:', bentHorizontalWord ? `${bentHorizontalWord.id}` : 'null');
-        console.debug('🔍 Bent vertical word:', bentVerticalWord ? `${bentVerticalWord.id}` : 'null');
         
-        console.debug('🔍 Looking for potential words...');
         const potentialHorizontalWord = this.findPotentialWord(row, col, 'horizontal');
         const potentialVerticalWord = this.findPotentialWord(row, col, 'vertical');
-        console.debug('🔍 Potential horizontal word:', potentialHorizontalWord ? `${potentialHorizontalWord.id}` : 'null');
-        console.debug('🔍 Potential vertical word:', potentialVerticalWord ? `${potentialVerticalWord.id}` : 'null');
         
         const horizontalWord = bentHorizontalWord || potentialHorizontalWord;
         const verticalWord = bentVerticalWord || potentialVerticalWord;
@@ -625,87 +561,56 @@ class WordManager {
         const validHorizontalWord = horizontalWord && horizontalWordLength > 1;
         const validVerticalWord = verticalWord && verticalWordLength > 1;
         
-        console.debug('🔤 Found horizontal word:', horizontalWord ? `${horizontalWord.id} (${horizontalWord.squares.length} squares)` : 'null');
-        console.debug('🔤 Found vertical word:', verticalWord ? `${verticalWord.id} (${verticalWord.squares.length} squares)` : 'null');
-        console.debug('🔤 Valid horizontal word (length > 1):', validHorizontalWord ? 'yes' : 'no');
-        console.debug('🔤 Valid vertical word (length > 1):', validVerticalWord ? 'yes' : 'no');
-        
         // Determine which word to select based on current state
         let selectedWord = null;
         
-        console.debug('🎯 Current word ID:', this.currentWordId);
-        
         if (this.currentWordId) {
             const currentWord = this.getCurrentWord();
-            console.debug('🎯 Current word object:', currentWord ? `${currentWord.id} (${currentWord.direction})` : 'null');
             
             // If clicking on the same square and there's both horizontal and vertical words
             if (currentWord && this.isSquareInWord(row, col, currentWord)) {
-                console.debug('🔄 Clicking on same square in current word - checking for toggle');
                 if (validHorizontalWord && validVerticalWord) {
-                    console.debug('🔄 Both valid directions available, toggling...');
                     // Toggle between horizontal and vertical
                     if (currentWord.direction === 'horizontal' && validVerticalWord) {
                         selectedWord = verticalWord;
-                        console.debug('↕️ Switching from horizontal to vertical');
                     } else if (currentWord.direction === 'vertical' && validHorizontalWord) {
                         selectedWord = horizontalWord;
-                        console.debug('↔️ Switching from vertical to horizontal');
                     } else {
                         selectedWord = null; // Clear selection on third click
-                        console.debug('🚫 Third click - clearing selection');
                     }
                 } else {
                     // Only one direction available, clear selection on second click
                     selectedWord = null;
-                    console.debug('🚫 Only one direction - clearing selection on second click');
                 }
             } else {
-                console.debug('🆕 Clicking on different square');
                 // Clicking on a different square - prefer multi-letter words over single-letter words
                 if (validHorizontalWord && validVerticalWord) {
                     selectedWord = horizontalWord;
-                    console.debug('↔️ Both valid directions available, selecting horizontal word (different square)');
                 } else if (validHorizontalWord) {
                     selectedWord = horizontalWord;
-                    console.debug('↔️ Only horizontal word valid, selecting it (different square)');
                 } else if (validVerticalWord) {
                     selectedWord = verticalWord;
-                    console.debug('↕️ Only vertical word valid, selecting it (different square)');
                 } else if (horizontalWord) {
                     selectedWord = horizontalWord;
-                    console.debug('↔️ Only single-letter horizontal word available (different square)');
                 } else if (verticalWord) {
                     selectedWord = verticalWord;
-                    console.debug('↕️ Only single-letter vertical word available (different square)');
-                } else {
-                    console.debug('❌ No words found in either direction (different square)');
                 }
             }
         } else {
-            console.debug('🆕 No current word, selecting new word');
             // No current word - prefer multi-letter words over single-letter words
             if (validHorizontalWord && validVerticalWord) {
                 selectedWord = horizontalWord;
-                console.debug('↔️ Both valid directions available, selecting horizontal word (no current)');
             } else if (validHorizontalWord) {
                 selectedWord = horizontalWord;
-                console.debug('↔️ Only horizontal word valid, selecting it (no current)');
             } else if (validVerticalWord) {
                 selectedWord = verticalWord;
-                console.debug('↕️ Only vertical word valid, selecting it (no current)');
             } else if (horizontalWord) {
                 selectedWord = horizontalWord;
-                console.debug('↔️ Only single-letter horizontal word available (no current)');
             } else if (verticalWord) {
                 selectedWord = verticalWord;
-                console.debug('↕️ Only single-letter vertical word available (no current)');
-            } else {
-                console.debug('❌ No words found in either direction');
             }
         }
         
-        console.debug('🎉 Final selected word:', selectedWord ? `${selectedWord.id} (${selectedWord.direction}, ${selectedWord.squares.length} squares)` : 'null');
         this.setCurrentWord(selectedWord);
         return selectedWord;
     }
@@ -727,17 +632,13 @@ class WordManager {
      * @param {Object|null} word - Word object or null
      */
     setCurrentWord(word) {
-        console.debug('💾 WordManager.setCurrentWord called with:', word ? `${word.id} (${word.direction})` : 'null');
         this.currentWordId = word?.id || null;
         if (word) {
             this.currentDirection = word.direction;
         }
         
         if (this.onWordChange) {
-            console.debug('📞 Calling onWordChange callback with word:', word ? `${word.id} (${word.squares.length} squares)` : 'null');
             this.onWordChange(word);
-        } else {
-            console.debug('❌ No onWordChange callback set!');
         }
     }
 
