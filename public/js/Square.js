@@ -331,14 +331,14 @@ class LetterSquare extends Square {
     }
 
     handleKeydown(e) {
-        // Handle letter input for Nordic and English letters
-        if (e.key.length === 1 && /^[A-Za-zÅÄÖÆØåäöæø]$/i.test(e.key)) {
+        // Handle letter input for Nordic and English letters, but only if no modifier keys are pressed (except Shift)
+        if (e.key.length === 1 && /^[A-Za-zÅÄÖÆØåäöæø]$/i.test(e.key) && !e.ctrlKey && !e.altKey && !e.metaKey) {
             e.preventDefault();
             const upperValue = e.key.toUpperCase();
             this.setValue(upperValue);
             // Let NavigationManager handle navigation logic
             this.navigationManager.onLetterInput(this.row, this.col, upperValue);
-        } else if (e.key === 'Backspace' || e.key === 'Delete') {
+        } else if ((e.key === 'Backspace' || e.key === 'Delete') && !e.ctrlKey && !e.altKey && !e.metaKey) {
             e.preventDefault();
             this.setValue('');
             // Let NavigationManager know about the deletion
