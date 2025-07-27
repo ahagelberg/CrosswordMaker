@@ -139,7 +139,6 @@ class ContextMenu {
                 this.crossword.setCell(r, c, { 
                     borders: { top: false, bottom: false, left: false, right: false } 
                 });
-                this.triggerGridChange();
                 this.restoreFocus(r, c, null);
             });
         }
@@ -337,7 +336,6 @@ class ContextMenu {
             item.onclick = () => {
                 const currentState = cell.borders?.[option.value] || false;
                 this.crossword.setCellBorder(r, c, option.value, !currentState);
-                this.triggerGridChange();
                 this.restoreFocus(r, c, null);
                 this.removeExistingMenus(); // Close all menus after action
             };
