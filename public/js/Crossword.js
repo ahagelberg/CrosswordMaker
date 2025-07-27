@@ -118,7 +118,14 @@ class Crossword {
         const cell = this.getCell(row, col);
         if (cell) {
             cell.arrow = arrow;
-            this.updateSquareDisplay(row, col);
+            
+            // Update the square's arrow property directly without full display update
+            const squareObj = this.getSquareAt(row, col);
+            if (squareObj && squareObj.setArrow) {
+                squareObj.arrow = arrow;
+                // Only re-render the content of this specific square
+                squareObj.renderContent();
+            }
         }
     }
     

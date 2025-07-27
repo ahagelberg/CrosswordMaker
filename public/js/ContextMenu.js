@@ -115,7 +115,6 @@ class ContextMenu {
         if (cell.arrow) {
             this.addMenuItem(menu, 'Remove Arrow', () => {
                 this.crossword.setCellArrow(r, c, null);
-                this.triggerGridChange();
                 this.restoreFocus(r, c, null);
             });
         }
@@ -287,7 +286,6 @@ class ContextMenu {
             item.textContent = option.label;
             item.onclick = () => {
                 this.crossword.setCellArrow(r, c, option.value);
-                this.triggerGridChange();
                 this.restoreFocus(r, c, null);
                 this.removeExistingMenus(); // Close all menus after action
             };
