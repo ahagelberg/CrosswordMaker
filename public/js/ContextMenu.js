@@ -332,7 +332,7 @@ class ContextMenu {
             
             // Check if this border is already active
             if (cell.borders && cell.borders[option.value]) {
-                item.style.backgroundColor = '#e3f2fd';
+                item.classList.add('active');
             }
             
             item.onclick = () => {
@@ -380,8 +380,6 @@ class ContextMenu {
         colorOptions.forEach(option => {
             const item = document.createElement('div');
             item.className = 'context-menu-item color-option';
-            item.style.display = 'flex';
-            item.style.alignItems = 'center';
             
             // Create color swatch
             const colorSwatch = this.createColorSwatch(option.color);
@@ -393,7 +391,7 @@ class ContextMenu {
             
             // Check if this color is currently active
             if (cell.color === option.value) {
-                item.style.backgroundColor = '#e3f2fd';
+                item.classList.add('active');
             }
             
             item.onclick = () => {
@@ -419,29 +417,10 @@ class ContextMenu {
         // Create modal overlay
         const modal = document.createElement('div');
         modal.className = 'image-clue-modal';
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        `;
 
         // Create modal content
         const modalContent = document.createElement('div');
         modalContent.className = 'image-clue-modal-content';
-        modalContent.style.cssText = `
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            max-width: 400px;
-            width: 90%;
-        `;
 
         const title = document.createElement('h3');
         title.textContent = 'Add Image Clue';
@@ -464,22 +443,12 @@ class ContextMenu {
 
         // Preview area
         const preview = document.createElement('img');
-        preview.style.cssText = `
-            max-width: 100%;
-            max-height: 200px;
-            margin-top: 10px;
-            display: none;
-        `;
+        preview.className = 'image-clue-preview';
         modalContent.appendChild(preview);
 
         // Buttons
         const buttonDiv = document.createElement('div');
-        buttonDiv.style.cssText = `
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        `;
+        buttonDiv.className = 'image-clue-buttons';
 
         const cancelBtn = document.createElement('button');
         cancelBtn.textContent = 'Cancel';
@@ -502,7 +471,7 @@ class ContextMenu {
                 reader.onload = (event) => {
                     imageData = event.target.result;
                     preview.src = imageData;
-                    preview.style.display = 'block';
+                    preview.classList.add('visible');
                     addBtn.disabled = false;
                 };
                 reader.readAsDataURL(file);
@@ -543,32 +512,7 @@ class ContextMenu {
      */
     createBorderVisual(side) {
         const visual = document.createElement('div');
-        visual.style.cssText = `
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 1px solid #ccc;
-            margin-right: 8px;
-            position: relative;
-            vertical-align: middle;
-        `;
-        
-        // Add thick border on the appropriate side
-        switch(side) {
-            case 'top':
-                visual.style.borderTop = '3px solid #000';
-                break;
-            case 'bottom':
-                visual.style.borderBottom = '3px solid #000';
-                break;
-            case 'left':
-                visual.style.borderLeft = '3px solid #000';
-                break;
-            case 'right':
-                visual.style.borderRight = '3px solid #000';
-                break;
-        }
-        
+        visual.className = `border-visual border-${side}`;
         return visual;
     }
 
@@ -579,14 +523,8 @@ class ContextMenu {
      */
     createColorSwatch(color) {
         const colorSwatch = document.createElement('div');
-        colorSwatch.style.cssText = `
-            width: 20px;
-            height: 20px;
-            border: 1px solid #ccc;
-            margin-right: 8px;
-            border-radius: 3px;
-            background-color: ${color};
-        `;
+        colorSwatch.className = 'color-swatch';
+        colorSwatch.style.backgroundColor = color;
         return colorSwatch;
     }
 
