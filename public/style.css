@@ -30,6 +30,15 @@
     --text-white: white;
     --text-black: #000;
     
+    /* Square Color Options */
+    --square-color-default: #ffffff;
+    --square-color-pink: #FFE4E1;
+    --square-color-blue: #E0F6FF;
+    --square-color-green: #E4F5E4;
+    --square-color-yellow: #FFF8DC;
+    --square-color-purple: #F0E6FF;
+    --square-color-orange: #FFE4CC;
+    
     /* State Colors */
     --color-success: #4CAF50;
     --color-error: #f44336;

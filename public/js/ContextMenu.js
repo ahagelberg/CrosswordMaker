@@ -160,7 +160,6 @@ class ContextMenu {
         if (cell.color) {
             this.addMenuItem(menu, 'Remove Color', () => {
                 this.crossword.setCellColor(r, c, null);
-                this.triggerGridChange();
                 this.restoreFocus(r, c, null);
             });
         }
@@ -351,6 +350,52 @@ class ContextMenu {
     }
 
     /**
+     * Gets color options from CSS custom properties
+     * @returns {Array} Array of color option objects
+     */
+    getColorOptions() {
+        const rootStyles = getComputedStyle(document.documentElement);
+        
+        return [
+            {
+                value: null,
+                name: 'Default (White)',
+                color: rootStyles.getPropertyValue('--square-color-default').trim()
+            },
+            {
+                value: rootStyles.getPropertyValue('--square-color-pink').trim(),
+                name: 'Pink',
+                color: rootStyles.getPropertyValue('--square-color-pink').trim()
+            },
+            {
+                value: rootStyles.getPropertyValue('--square-color-blue').trim(),
+                name: 'Blue',
+                color: rootStyles.getPropertyValue('--square-color-blue').trim()
+            },
+            {
+                value: rootStyles.getPropertyValue('--square-color-green').trim(),
+                name: 'Green',
+                color: rootStyles.getPropertyValue('--square-color-green').trim()
+            },
+            {
+                value: rootStyles.getPropertyValue('--square-color-yellow').trim(),
+                name: 'Yellow',
+                color: rootStyles.getPropertyValue('--square-color-yellow').trim()
+            },
+            {
+                value: rootStyles.getPropertyValue('--square-color-purple').trim(),
+                name: 'Purple',
+                color: rootStyles.getPropertyValue('--square-color-purple').trim()
+            },
+            {
+                value: rootStyles.getPropertyValue('--square-color-orange').trim(),
+                name: 'Orange',
+                color: rootStyles.getPropertyValue('--square-color-orange').trim()
+            }
+        ];
+    }
+
+    /**
      * Shows color submenu
      * @param {MouseEvent} e - Click event
      * @param {number} r - Row index
@@ -365,15 +410,7 @@ class ContextMenu {
         submenu.style.left = (e.pageX + 150) + 'px';
         submenu.style.top = e.pageY + 'px';
         
-        const colorOptions = [
-            { value: null, name: 'Default (White)', color: '#ffffff' },
-            { value: '#FFE4E1', name: 'Pink', color: '#FFE4E1' },
-            { value: '#E0F6FF', name: 'Blue', color: '#E0F6FF' },
-            { value: '#E4F5E4', name: 'Green', color: '#E4F5E4' },
-            { value: '#FFF8DC', name: 'Yellow', color: '#FFF8DC' },
-            { value: '#F0E6FF', name: 'Purple', color: '#F0E6FF' },
-            { value: '#FFE4CC', name: 'Orange', color: '#FFE4CC' }
-        ];
+        const colorOptions = this.getColorOptions();
         
         const cell = this.crossword.getCell(r, c);
         
@@ -396,7 +433,6 @@ class ContextMenu {
             
             item.onclick = () => {
                 this.crossword.setCellColor(r, c, option.value);
-                this.triggerGridChange();
                 this.restoreFocus(r, c, null);
                 this.removeExistingMenus(); // Close all menus after action
             };
