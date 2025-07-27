@@ -2,78 +2,94 @@
  * NavigationManager - Handles keyboard navigation and focus management
  */
 class NavigationManager {
-    constructor(crosswordGrid) {
-        this.crosswordGrid = crosswordGrid;
+    constructor() {
+        console.log('Creating NavigationManager');
+        this.crossword = null; // Will be set by setCrossword()
         this.focusedSquare = { row: 0, col: 0 };
-        this.focusedSubSquare = null;
         this.entryDirection = 'horizontal';
         this.lastEnteredPosition = null;
         this.lastChangedPosition = null;
-        this.isEditingClue = false; // Track if we're actively editing a clue
         
-        this.setupEventListeners();
+        //this.setupEventListeners();
+    }
+
+    /**
+     * Set the crossword instance this manager works with
+     * @param {Crossword} crossword - The crossword instance
+     */
+    setCrossword(crossword) {
+        console.log('NavigationManager setCrossword');
+        this.crossword = crossword;
     }
 
     /**
      * Sets up keyboard event listeners
      */
     setupEventListeners() {
-        document.addEventListener('keydown', (e) => this.handleKeyDown(e));
-        
-        // Handle clicks to exit clue editing mode when clicking elsewhere
-        document.addEventListener('click', (e) => {
-            // If we're editing a clue and click outside the current clue square, exit editing mode
-            if (this.isEditingClue && !e.target.closest('.square.clue.editing')) {
-                this.exitClueEditingMode();
-            }
-        });
+        // Single global keydown handler for all keyboard events
+        document.addEventListener('keydown', (e) => this.handleGlobalKeydown(e), false);
     }
 
     /**
-     * Handles keyboard events for arrow key navigation and shortcuts
+     * Main keydown event handler - routes events to appropriate sub-handlers
      * @param {KeyboardEvent} e - The keyboard event
      */
-    handleKeyDown(e) {
+    handleGlobalKeydown(e) {
+        // Handle global shortcuts first
+        if (this.handleGlobalShortcuts(e)) {
+            return; // Event was handled, stop processing
+        }
+
+        // Handle navigation events within the crossword grid
+        if (e.target.closest('.crossword-grid') && !e.target.closest('.clue-edit-overlay')) {
+            this.handleGridNavigation(e);
+        }
+    }
+
+    /**
+     * Handles global keyboard shortcuts
+     * @param {KeyboardEvent} e - The keyboard event
+     * @returns {boolean} True if event was handled
+     */
+    handleGlobalShortcuts(e) {
         // Handle Ctrl+S for saving
         if (e.ctrlKey && e.key === 's') {
             e.preventDefault();
-            // Dispatch custom event for save
             document.dispatchEvent(new CustomEvent('crossword:save'));
-            return;
+            return true;
         }
         
-        // Handle Escape key to exit clue editing mode
-        if (e.key === 'Escape' && this.isEditingClue) {
+        return false; // Event not handled
+    }
+
+    /**
+     * Handles navigation within the crossword grid
+     * @param {KeyboardEvent} e - The keyboard event
+     * @returns {boolean} True if event was handled
+     */
+    handleGridNavigation(e) {
+        // Only handle arrow keys and only if not already prevented
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && !e.defaultPrevented) {
             e.preventDefault();
-            this.exitClueEditingMode();
-            return;
-        }
-        
-        // Don't intercept arrow keys when actively editing a clue
-        if (this.isEditingClue) {
-            return;
-        }
-        
-        if (e.target.closest('.crossword-grid')) {
+            
             switch (e.key) {
                 case 'ArrowUp':
-                    e.preventDefault();
                     this.moveArrowKeys('up');
                     break;
                 case 'ArrowDown':
-                    e.preventDefault();
                     this.moveArrowKeys('down');
                     break;
                 case 'ArrowLeft':
-                    e.preventDefault();
                     this.moveArrowKeys('left');
                     break;
                 case 'ArrowRight':
-                    e.preventDefault();
                     this.moveArrowKeys('right');
                     break;
             }
+            return true; // Event was handled
         }
+        
+        return false; // Event not handled, let squares handle it
     }
 
     /**
@@ -81,92 +97,48 @@ class NavigationManager {
      * @param {string} direction - Direction to move ('up', 'down', 'left', 'right')
      */
     moveArrowKeys(direction) {
-        // Exit clue editing mode when navigating with arrow keys
-        this.exitClueEditingMode();
-        
         let newRow = this.focusedSquare.row;
         let newCol = this.focusedSquare.col;
-        let newSubSquare = this.focusedSubSquare;
         
-        // Check if we're in a split clue square
-        const currentCell = this.crosswordGrid.getCell(this.focusedSquare.row, this.focusedSquare.col);
-        const isInSplitClue = currentCell && currentCell.type === 'clue' && currentCell.split;
-        
-        if (isInSplitClue && (direction === 'up' || direction === 'down')) {
-            // Handle navigation within split clue
-            if (direction === 'up' && this.focusedSubSquare === 'second') {
-                // Move from second to first textarea
-                newSubSquare = 'first';
-                this.updateFocusedSquare(newRow, newCol, newSubSquare);
-                setTimeout(() => this.focusSquare(newRow, newCol, newSubSquare), 10);
-                return;
-            } else if (direction === 'down' && (this.focusedSubSquare === 'first' || this.focusedSubSquare === null)) {
-                // Move from first to second textarea
-                newSubSquare = 'second';
-                this.updateFocusedSquare(newRow, newCol, newSubSquare);
-                setTimeout(() => this.focusSquare(newRow, newCol, newSubSquare), 10);
-                return;
-            }
-        }
-        
-        // Normal navigation to other squares
+        // Navigate to other squares
         switch (direction) {
             case 'up':
                 newRow = Math.max(0, newRow - 1);
                 break;
             case 'down':
-                newRow = Math.min(this.crosswordGrid.rows - 1, newRow + 1);
+                newRow = Math.min(this.crossword.rows - 1, newRow + 1);
                 break;
             case 'left':
                 newCol = Math.max(0, newCol - 1);
                 break;
             case 'right':
-                newCol = Math.min(this.crosswordGrid.cols - 1, newCol + 1);
+                newCol = Math.min(this.crossword.cols - 1, newCol + 1);
                 break;
         }
         
-        // Reset sub-square when moving to a different square
-        newSubSquare = null;
-        
-        this.updateFocusedSquare(newRow, newCol, newSubSquare);
-        setTimeout(() => this.focusSquare(newRow, newCol, newSubSquare), 10);
+        this.updateFocusedSquare(newRow, newCol);
+        setTimeout(() => this.focusSquare(newRow, newCol), 10);
     }
 
     /**
-     * Focuses a specific square in the grid and handles different square types
+     * Focuses a specific square in the grid
      * @param {number} row - Row index of the square to focus
      * @param {number} col - Column index of the square to focus
-     * @param {string|null} [subSquare=null] - For split clue squares, which sub-square to focus ('first' or 'second')
      */
-    focusSquare(row, col, subSquare = null) {
+    focusSquare(row, col) {
+        console.log(`NavigationManager focusSquare(${row}, ${col})`);
+        if (!this.crossword) {
+            console.warn('NavigationManager: crossword not set');
+            return;
+        }
+        
         const squares = document.querySelectorAll('.square');
-        const index = row * this.crosswordGrid.cols + col;
+        const index = row * this.crossword.cols + col;
         const square = squares[index];
         
         if (square) {
-            const input = square.querySelector('input');
-            const textareas = square.querySelectorAll('textarea');
-            
-            if (input) {
-                // For letter squares, select all text so it can be overwritten
-                input.focus();
-                input.select();
-                // Exit clue editing since this is not a clue
-                this.exitClueEditingMode();
-            } else if (textareas.length > 1) {
-                // For split clue squares, focus the specified sub-square
-                const targetTextarea = subSquare === 'second' ? textareas[1] : textareas[0];
-                targetTextarea.focus();
-                // Move cursor to end of text
-                const length = targetTextarea.value.length;
-                targetTextarea.setSelectionRange(length, length);
-            } else if (textareas.length === 1) {
-                // For single clue squares, focus and position cursor at the end
-                textareas[0].focus();
-                // Move cursor to end of text
-                const length = textareas[0].value.length;
-                textareas[0].setSelectionRange(length, length);
-            }
+            // Let the square handle its own focus logic
+            square.focus();
         }
     }
 
@@ -174,9 +146,14 @@ class NavigationManager {
      * Updates the visual focus state of squares and tracks the currently focused square
      * @param {number} row - Row index of the square to focus
      * @param {number} col - Column index of the square to focus
-     * @param {string|null} [subSquare=null] - For split clue squares, which sub-square is focused
      */
-    updateFocusedSquare(row, col, subSquare = null) {
+    updateFocusedSquare(row, col) {
+        console.log(`NavigationManager updateFocusedSquare(${row}, ${col})`);
+        if (!this.crossword) {
+            console.warn('NavigationManager: crossword not set');
+            return;
+        }
+        
         // Remove focused class from all squares
         document.querySelectorAll('.square').forEach(square => {
             square.classList.remove('focused');
@@ -184,11 +161,10 @@ class NavigationManager {
         
         // Add focused class to the current square
         const squares = document.querySelectorAll('.square');
-        const index = row * this.crosswordGrid.cols + col;
+        const index = row * this.crossword.cols + col;
         if (squares[index]) {
             squares[index].classList.add('focused');
             this.focusedSquare = { row, col };
-            this.focusedSubSquare = subSquare;
         }
     }
 
@@ -222,32 +198,37 @@ class NavigationManager {
      * @returns {Object|null} Object with row and col properties, or null if no valid next square
      */
     moveToNextSquare(fromRow, fromCol) {
+        if (!this.crossword) {
+            console.warn('NavigationManager: crossword not set');
+            return null;
+        }
+        
         let nextRow = fromRow;
         let nextCol = fromCol;
         
         if (this.entryDirection === 'horizontal') {
             nextCol++;
-            if (nextCol >= this.crosswordGrid.cols || 
-                this.crosswordGrid.getCell(nextRow, nextCol)?.type !== 'letter' || 
-                this.crosswordGrid.getCell(nextRow, nextCol)?.value !== '') {
+            if (nextCol >= this.crossword.cols || 
+                this.crossword.getCell(nextRow, nextCol)?.type !== 'letter' || 
+                this.crossword.getCell(nextRow, nextCol)?.value !== '') {
                 // Can't move horizontally, try vertical
                 nextCol = fromCol;
                 nextRow++;
-                if (nextRow >= this.crosswordGrid.rows || 
-                    this.crosswordGrid.getCell(nextRow, nextCol)?.type !== 'letter') {
+                if (nextRow >= this.crossword.rows || 
+                    this.crossword.getCell(nextRow, nextCol)?.type !== 'letter') {
                     return null; // No valid next square
                 }
             }
         } else { // vertical
             nextRow++;
-            if (nextRow >= this.crosswordGrid.rows || 
-                this.crosswordGrid.getCell(nextRow, nextCol)?.type !== 'letter' || 
-                this.crosswordGrid.getCell(nextRow, nextCol)?.value !== '') {
+            if (nextRow >= this.crossword.rows || 
+                this.crossword.getCell(nextRow, nextCol)?.type !== 'letter' || 
+                this.crossword.getCell(nextRow, nextCol)?.value !== '') {
                 // Can't move vertically, try horizontal
                 nextRow = fromRow;
                 nextCol++;
-                if (nextCol >= this.crosswordGrid.cols || 
-                    this.crosswordGrid.getCell(nextRow, nextCol)?.type !== 'letter') {
+                if (nextCol >= this.crossword.cols || 
+                    this.crossword.getCell(nextRow, nextCol)?.type !== 'letter') {
                     return null; // No valid next square
                 }
             }
@@ -260,21 +241,11 @@ class NavigationManager {
      * Handles input focus for a square
      * @param {number} row - Row index
      * @param {number} col - Column index
-     * @param {string|null} subSquare - Sub-square identifier for split clues
      */
-    onInputFocus(row, col, subSquare = null) {
+    onInputFocus(row, col) {
         this.detectDirection(row, col);
         this.lastEnteredPosition = { row, col };
-        this.updateFocusedSquare(row, col, subSquare);
-        
-        // Check if this is a clue square and enter editing mode
-        const cell = this.crosswordGrid.getCell(row, col);
-        if (cell && cell.type === 'clue') {
-            this.enterClueEditingMode();
-        } else {
-            // Exit clue editing mode if we're on a non-clue square
-            this.exitClueEditingMode();
-        }
+        this.updateFocusedSquare(row, col);
     }
 
     /**
@@ -286,8 +257,9 @@ class NavigationManager {
      */
     onLetterInput(row, col, value) {
         const upperValue = value.toUpperCase();
-        if (/^[A-ZÅÄÖ]$/i.test(upperValue)) {
-            this.crosswordGrid.setCellValue(row, col, upperValue);
+        if (/^[A-Za-zÅÄÖÆØåäöæø]$/i.test(upperValue)) {
+            // The square has already updated its value and grid data
+            // Just handle navigation logic here
             
             // Update last changed position when letter is actually entered
             this.lastChangedPosition = { row, col };
@@ -300,7 +272,7 @@ class NavigationManager {
             this.lastEnteredPosition = { row, col };
             return true;
         } else {
-            this.crosswordGrid.setCellValue(row, col, '');
+            // Invalid input - the square should have already cleared itself
             return false;
         }
     }
@@ -310,8 +282,7 @@ class NavigationManager {
      */
     resetFocus() {
         this.focusedSquare = { row: 0, col: 0 };
-        this.focusedSubSquare = null;
-        this.updateFocusedSquare(0, 0, null);
+        this.updateFocusedSquare(0, 0);
     }
 
     /**
@@ -321,36 +292,7 @@ class NavigationManager {
     getFocusInfo() {
         return {
             row: this.focusedSquare.row,
-            col: this.focusedSquare.col,
-            subSquare: this.focusedSubSquare
+            col: this.focusedSquare.col
         };
-    }
-
-    /**
-     * Enters clue editing mode with magnified view
-     */
-    enterClueEditingMode() {
-        this.isEditingClue = true;
-        
-        // Add magnified styling to the current square
-        const squares = document.querySelectorAll('.square');
-        const index = this.focusedSquare.row * this.crosswordGrid.cols + this.focusedSquare.col;
-        const square = squares[index];
-        
-        if (square && square.classList.contains('clue')) {
-            square.classList.add('editing');
-        }
-    }
-
-    /**
-     * Exits clue editing mode and returns to normal view
-     */
-    exitClueEditingMode() {
-        this.isEditingClue = false;
-        
-        // Remove magnified styling from all squares
-        document.querySelectorAll('.square.clue.editing').forEach(square => {
-            square.classList.remove('editing');
-        });
     }
 }

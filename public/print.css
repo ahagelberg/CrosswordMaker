@@ -89,12 +89,12 @@
     }
     
     /* Hide letter values when printing blank puzzle */
-    body.print-blank .square.letter input {
+    body.print-blank .square.letter .letter-content {
         color: transparent !important;
     }
     
     /* Show letter values when printing key */
-    body.print-with-letters .square.letter input {
+    body.print-with-letters .square.letter .letter-content {
         color: var(--text-black) !important;
     }
 }

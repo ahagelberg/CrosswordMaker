@@ -2,10 +2,10 @@
  * Base Square class - Common functionality for all square types
  */
 class Square {
-    constructor(row, col, crosswordGrid, navigationManager) {
+    constructor(row, col, crossword, navigationManager) {
         this.row = row;
         this.col = col;
-        this.crosswordGrid = crosswordGrid;
+        this.crossword = crossword; // Changed from crosswordGrid to crossword
         this.navigationManager = navigationManager;
         
         // Common properties
@@ -19,9 +19,10 @@ class Square {
         this.isFocused = false;
         this.isSelected = false;
         
-        this.createElement();
-        this.setupEventListeners();
+        // Load data first, then create element
+        // DON'T set up event listeners yet - wait for explicit call after DOM insertion
         this.loadFromGridData();
+        // createElement() will be called by the Crossword class
     }
 
     /**
@@ -40,18 +41,23 @@ class Square {
     }
 
     /**
-     * Creates and returns the DOM element for this square
+     * Creates and returns the DOM element for this square - CALLED ONLY ONCE
      * @returns {HTMLElement} The square element
      */
     createElement() {
         const element = document.createElement('div');
         element.className = `square ${this.getSquareType()}`;
-        element.tabIndex = 0;
+        element.tabIndex = 0; // Make sure element can receive focus and keyboard events
         element.dataset.row = this.row;
         element.dataset.col = this.col;
         
         this.element = element;
-        this.updateDisplay();
+        
+        // Render initial content and apply visual properties
+        this.renderContent();
+        this.applyVisualProperties();
+        this.updateFocusState();
+        this.updateSelectionState();
         
         return element;
     }
@@ -61,19 +67,18 @@ class Square {
      */
     setupEventListeners() {
         if (!this.element) return;
+        // Click handler - bind to preserve 'this' context
+        this.element.addEventListener('click', this.handleClick.bind(this));
+                
+        // Keyboard handler - bind to preserve 'this' context
+        this.element.addEventListener('keydown', this.handleKeydown.bind(this));
         
-        // Click handler
-        this.element.addEventListener('click', (e) => this.handleClick(e));
+        // Context menu handler - bind to preserve 'this' context
+        this.element.addEventListener('contextmenu', this.handleContextMenu.bind(this));
         
-        // Keyboard handler
-        this.element.addEventListener('keydown', (e) => this.handleKeydown(e));
-        
-        // Context menu handler
-        this.element.addEventListener('contextmenu', (e) => this.handleContextMenu(e));
-        
-        // Focus handlers
-        this.element.addEventListener('focus', () => this.handleFocus());
-        this.element.addEventListener('blur', () => this.handleBlur());
+        // Focus handlers - bind to preserve 'this' context
+        this.element.addEventListener('focus', this.handleFocus.bind(this));
+        this.element.addEventListener('blur', this.handleBlur.bind(this));
     }
 
     /**
@@ -169,12 +174,7 @@ class Square {
      */
     focus() {
         if (this.element) {
-            const input = this.getInputElement();
-            if (input) {
-                input.focus();
-            } else {
-                this.element.focus();
-            }
+            this.element.focus();
         }
     }
 
@@ -200,13 +200,13 @@ class Square {
     updateDisplay() {
         if (!this.element) return;
         
-        // Update classes
+        // First reload data from grid to ensure we have current values
+        this.loadFromGridData();
+        
+        // Update base classes (never remove the square type class)
         this.element.className = `square ${this.getSquareType()}`;
         
-        // Clear existing content
-        this.element.innerHTML = '';
-        
-        // Render content specific to square type
+        // Re-render content without destroying the element
         this.renderContent();
         
         // Apply visual properties
@@ -270,7 +270,7 @@ class Square {
      * Updates grid data with current square state - can be extended by subclasses
      */
     updateGridData() {
-        const cell = this.crosswordGrid.getCell(this.row, this.col);
+        const cell = this.crossword.getCell(this.row, this.col);
         if (cell) {
             cell.type = this.getSquareType();
             cell.borders = { ...this.borders };
@@ -282,7 +282,7 @@ class Square {
      * Loads data from grid cell into this square - can be extended by subclasses
      */
     loadFromGridData() {
-        const cell = this.crosswordGrid.getCell(this.row, this.col);
+        const cell = this.crossword.getCell(this.row, this.col);
         if (cell) {
             this.borders = { ...cell.borders } || { top: false, bottom: false, left: false, right: false };
             this.color = cell.color || null;
@@ -301,11 +301,11 @@ class Square {
 }
 
 /**
- * LetterSquare - Square for letter input
+ * LetterSquare - Square for letter input (using div element with keyboard handling)
  */
 class LetterSquare extends Square {
-    constructor(row, col, crosswordGrid, navigationManager) {
-        super(row, col, crosswordGrid, navigationManager);
+    constructor(row, col, crossword, navigationManager) {
+        super(row, col, crossword, navigationManager);
         this.value = '';
         this.arrow = null;
     }
@@ -315,7 +315,13 @@ class LetterSquare extends Square {
     }
 
     handleClick(e) {
+        // If click came from a child element, treat it as a click on this square
+        if (e.target !== this.element) {
+            e.stopPropagation();
+        }
+        
         super.handleClick(e);
+        // Ensure the element is focused so it can receive keyboard events
         this.focus();
         // Dispatch word click event for highlighting
         document.dispatchEvent(new CustomEvent('crossword:wordclick', {
@@ -324,10 +330,17 @@ class LetterSquare extends Square {
     }
 
     handleKeydown(e) {
-        // For letter squares, let the input handle naturally but notify navigation manager
-        if (e.key.length === 1 && /^[A-Za-zÅÄÖåäö]$/i.test(e.key)) {
-            this.navigationManager.onLetterInput(this.row, this.col, e.key.toUpperCase());
+        // Handle letter input for Nordic and English letters
+        if (e.key.length === 1 && /^[A-Za-zÅÄÖÆØåäöæø]$/i.test(e.key)) {
+            e.preventDefault();
+            const upperValue = e.key.toUpperCase();
+            this.setValue(upperValue);
+            // Let NavigationManager handle navigation logic
+            this.navigationManager.onLetterInput(this.row, this.col, upperValue);
         } else if (e.key === 'Backspace' || e.key === 'Delete') {
+            e.preventDefault();
+            this.setValue('');
+            // Let NavigationManager know about the deletion
             this.navigationManager.onLetterInput(this.row, this.col, '');
         }
     }
@@ -345,41 +358,22 @@ class LetterSquare extends Square {
     }
 
     renderContent() {
+        // Clear existing content (but not the element itself)
+        this.element.innerHTML = '';
+        
         // Apply background color if set
         if (this.color) {
             this.element.style.backgroundColor = this.color;
+        } else {
+            this.element.style.backgroundColor = ''; // Clear background color
         }
         
-        // Create input element for letter squares
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.maxLength = 1;
-        input.value = this.value || '';
+        // Create content div for letter display
+        const content = document.createElement('div');
+        content.className = 'letter-content';
+        content.textContent = this.value || '';
         
-        // Add click handler to input to delegate to square
-        input.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent double handling
-            this.handleClick(e);
-        });
-        
-        // Add context menu handler to input to delegate to square
-        input.addEventListener('contextmenu', (e) => {
-            e.stopPropagation(); // Prevent double handling
-            this.handleContextMenu(e);
-        });
-        
-        // Add input event listener
-        input.addEventListener('input', (e) => {
-            this.value = e.target.value.toUpperCase();
-            input.value = this.value;
-            this.updateGridData();
-        });
-        
-        // Add focus/blur handlers
-        input.addEventListener('focus', () => this.handleFocus());
-        input.addEventListener('blur', () => this.handleBlur());
-        
-        this.element.appendChild(input);
+        this.element.appendChild(content);
         
         // Add arrow indicator if present
         if (this.arrow) {
@@ -390,12 +384,19 @@ class LetterSquare extends Square {
     }
 
     getInputElement() {
-        return this.element.querySelector('input');
+        // No longer has input element, return null
+        return null;
+    }
+
+    focus() {
+        if (this.element) {
+            this.element.focus();
+        }
     }
 
     updateGridData() {
         super.updateGridData();
-        const cell = this.crosswordGrid.getCell(this.row, this.col);
+        const cell = this.crossword.getCell(this.row, this.col);
         if (cell) {
             cell.value = this.value;
             cell.arrow = this.arrow;
@@ -404,7 +405,7 @@ class LetterSquare extends Square {
 
     loadFromGridData() {
         super.loadFromGridData();
-        const cell = this.crosswordGrid.getCell(this.row, this.col);
+        const cell = this.crossword.getCell(this.row, this.col);
         if (cell) {
             this.value = cell.value || '';
             this.arrow = cell.arrow || null;
@@ -417,11 +418,203 @@ class LetterSquare extends Square {
 }
 
 /**
- * ClueSquare - Square for clue text
+ * Global overlay manager for clue editing (without zoom)
+ */
+class ClueEditOverlay {
+    constructor() {
+        this.overlay = null;
+        this.input = null;
+        this.splitInput1 = null;
+        this.splitInput2 = null;
+        this.currentSquare = null;
+        this.isVisible = false;
+        this.createOverlay();
+        this.setupEventListeners();
+    }
+
+    createOverlay() {
+        // Create overlay container
+        this.overlay = document.createElement('div');
+        this.overlay.className = 'clue-edit-overlay hidden';
+
+        // Create input container
+        const inputContainer = document.createElement('div');
+        inputContainer.className = 'clue-input-container';
+
+        // Create single input
+        this.input = document.createElement('textarea');
+        this.input.className = 'clue-edit-input';
+
+        // Create split inputs
+        this.splitInput1 = document.createElement('textarea');
+        this.splitInput1.className = 'clue-edit-split-input';
+
+        this.splitInput2 = document.createElement('textarea');
+        this.splitInput2.className = 'clue-edit-split-input';
+
+        // Create labels for split inputs
+        const label1 = document.createElement('label');
+        label1.textContent = 'Top text:';
+        label1.className = 'clue-edit-label';
+
+        const label2 = document.createElement('label');
+        label2.textContent = 'Bottom text:';
+        label2.className = 'clue-edit-label';
+
+        // Create Done button
+        this.doneButton = document.createElement('button');
+        this.doneButton.textContent = 'Done';
+        this.doneButton.className = 'clue-edit-done-button';
+
+        // Append elements
+        inputContainer.appendChild(this.input);
+        inputContainer.appendChild(label1);
+        inputContainer.appendChild(this.splitInput1);
+        inputContainer.appendChild(label2);
+        inputContainer.appendChild(this.splitInput2);
+        inputContainer.appendChild(this.doneButton);
+        
+        this.overlay.appendChild(inputContainer);
+        document.body.appendChild(this.overlay);
+    }
+
+    setupEventListeners() {
+        // Close on overlay click
+        this.overlay.addEventListener('click', (e) => {
+            if (e.target === this.overlay) {
+                this.hide();
+            }
+        });
+
+        // Global click handler to close overlay when clicking outside
+        this.globalClickHandler = (e) => {
+            if (this.isVisible && !this.overlay.contains(e.target)) {
+                // Check if click is on a clue square that would open the overlay
+                const square = e.target.closest('.square.clue');
+                if (!square) {
+                    this.hide();
+                }
+            }
+        };
+
+        // Handle escape key
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                this.hide();
+            }
+        };
+
+        this.input.addEventListener('keydown', handleEscape);
+        this.splitInput1.addEventListener('keydown', handleEscape);
+        this.splitInput2.addEventListener('keydown', handleEscape);
+
+        // Auto-save on input
+        const handleInput = () => {
+            if (this.currentSquare) {
+                this.saveToSquare();
+            }
+        };
+
+        this.input.addEventListener('input', handleInput);
+        this.splitInput1.addEventListener('input', handleInput);
+        this.splitInput2.addEventListener('input', handleInput);
+
+        // Done button click handler
+        this.doneButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.hide();
+        });
+    }
+
+    show(square, focusOn = null) {
+        this.currentSquare = square;
+        this.isVisible = true;
+
+        // Load values from square (no positioning/zoom - just show the overlay)
+        if (square.split) {
+            // Show split mode
+            this.input.classList.remove('single-mode');
+            this.splitInput1.classList.add('split-mode');
+            this.splitInput2.classList.add('split-mode');
+            this.splitInput1.previousElementSibling.classList.add('split-mode'); // label1
+            this.splitInput2.previousElementSibling.classList.add('split-mode'); // label2
+            
+            this.splitInput1.value = square.value1 || '';
+            this.splitInput2.value = square.value2 || '';
+            
+            // Focus appropriate input
+            setTimeout(() => {
+                if (focusOn === 'second') {
+                    this.splitInput2.focus();
+                    this.splitInput2.setSelectionRange(this.splitInput2.value.length, this.splitInput2.value.length);
+                } else {
+                    this.splitInput1.focus();
+                    this.splitInput1.setSelectionRange(this.splitInput1.value.length, this.splitInput1.value.length);
+                }
+            }, 10);
+        } else {
+            // Show single mode
+            this.input.classList.add('single-mode');
+            this.splitInput1.classList.remove('split-mode');
+            this.splitInput2.classList.remove('split-mode');
+            this.splitInput1.previousElementSibling.classList.remove('split-mode'); // label1
+            this.splitInput2.previousElementSibling.classList.remove('split-mode'); // label2
+            
+            this.input.value = square.value || '';
+            
+            setTimeout(() => {
+                this.input.focus();
+                this.input.setSelectionRange(this.input.value.length, this.input.value.length);
+            }, 10);
+        }
+
+        this.overlay.classList.remove('hidden');
+        this.overlay.classList.add('visible');
+        
+        // Add global click listener when overlay is shown
+        setTimeout(() => {
+            document.addEventListener('click', this.globalClickHandler);
+        }, 10);
+    }
+
+    hide() {
+        if (!this.isVisible) return;
+        
+        this.isVisible = false;
+        this.overlay.classList.remove('visible');
+        this.overlay.classList.add('hidden');
+        
+        // Remove global click listener when overlay is hidden
+        document.removeEventListener('click', this.globalClickHandler);
+        
+        if (this.currentSquare) {
+            this.saveToSquare();
+            this.currentSquare.exitEditingMode();
+            this.currentSquare = null;
+        }
+    }
+
+    saveToSquare() {
+        if (!this.currentSquare) return;
+
+        if (this.currentSquare.split) {
+            this.currentSquare.setSplitValues(this.splitInput1.value, this.splitInput2.value);
+        } else {
+            this.currentSquare.setValue(this.input.value);
+        }
+    }
+}
+
+// Global instance
+let clueEditOverlay = null;
+
+/**
+ * ClueSquare - Square for text/clue input with overlay editing
  */
 class ClueSquare extends Square {
-    constructor(row, col, crosswordGrid, navigationManager) {
-        super(row, col, crosswordGrid, navigationManager);
+    constructor(row, col, crossword, navigationManager) {
+        super(row, col, crossword, navigationManager);
         this.value = '';
         this.value1 = ''; // For split clues
         this.value2 = ''; // For split clues
@@ -436,6 +629,18 @@ class ClueSquare extends Square {
     }
 
     handleClick(e) {
+        // Handle split clue part detection
+        if (e.target !== this.element && this.split) {
+            // Determine which part was clicked based on the target element
+            if (e.target.classList.contains('clue-display-top')) {
+                this.clickedPart = 1;
+            } else if (e.target.classList.contains('clue-display-bottom')) {
+                this.clickedPart = 2;
+            } else {
+                this.clickedPart = null;
+            }
+        }
+        
         super.handleClick(e);
         this.enterEditingMode();
     }
@@ -494,224 +699,69 @@ class ClueSquare extends Square {
     }
 
     enterEditingMode() {
-        // Always set editing state and ensure proper display
+        // Initialize overlay if not already created
+        if (!clueEditOverlay) {
+            clueEditOverlay = new ClueEditOverlay();
+        }
+        
         this.isEditing = true;
         this.element.classList.add('editing');
         
-        // Always ensure the display text content is hidden
-        const textContent = this.element.querySelector('.clue-text-content');
-        if (textContent) {
-            textContent.classList.add('hidden');
-            textContent.classList.remove('flex-visible');
-        }
-        
-        // Focus the appropriate input element(s)
-        const textareas = this.element.querySelectorAll('textarea');
-        if (textareas.length > 0) {
-            // Always ensure all textareas are visible (important for split squares)
-            textareas.forEach(textarea => {
-                textarea.classList.remove('hidden');
-                textarea.classList.add('visible');
-            });
-            
-            // For split squares, focus the appropriate textarea based on which part was clicked
-            let textareaToFocus = textareas[0]; // Default to first
-            if (this.split && this.clickedPart === 2 && textareas.length > 1) {
-                textareaToFocus = textareas[1]; // Focus second textarea if part 2 was clicked
-            }
-            
-            setTimeout(() => {
-                textareaToFocus.focus();
-                const length = textareaToFocus.value.length;
-                textareaToFocus.setSelectionRange(length, length);
-                // Reset clicked part for next time
-                this.clickedPart = null;
-            }, 10);
-        }
-        
-        // Update navigation manager
-        this.navigationManager.isEditingClue = true;
+        // Show the overlay with this square (no zoom positioning)
+        clueEditOverlay.show(this, this.clickedPart === 2 ? 'second' : 'first');
     }
 
     exitEditingMode() {
         this.isEditing = false;
         if (this.element) {
             this.element.classList.remove('editing');
-            
-            // Show the display text content again
-            const textContent = this.element.querySelector('.clue-text-content');
-            if (textContent) {
-                textContent.classList.remove('hidden');
-                textContent.classList.add('flex-visible');
-            }
-            
-            // Hide input elements
-            const textareas = this.element.querySelectorAll('textarea');
-            textareas.forEach(textarea => {
-                textarea.classList.remove('visible');
-                textarea.classList.add('hidden');
-            });
-        }
-        
-        // Update navigation manager
-        this.navigationManager.isEditingClue = false;
-    }
-
-    updateDisplay() {
-        // Remember if we were in editing mode before updating
-        const wasEditing = this.isEditing;
-        
-        super.updateDisplay();
-        
-        if (this.split) {
-            this.element.classList.add('split');
-        }
-        
-        // If we were editing before, restore the editing state
-        if (wasEditing) {
-            this.element.classList.add('editing');
-            
-            // Hide the text content and show textareas
-            const textContent = this.element.querySelector('.clue-text-content');
-            if (textContent) {
-                textContent.classList.add('hidden');
-                textContent.classList.remove('flex-visible');
-            }
-            
-            const textareas = this.element.querySelectorAll('textarea');
-            textareas.forEach(textarea => {
-                textarea.classList.remove('hidden');
-                textarea.classList.add('visible');
-            });
         }
     }
 
     renderContent() {
+        // Clear existing content (but not the element itself)
+        this.element.innerHTML = '';
+        
         if (this.split) {
             this.renderSplitClueSquare();
         } else {
             this.renderSingleClueSquare();
         }
+        
+        // Add image overlay if present
+        if (this.imageClue) {
+            const imageOverlay = document.createElement('div');
+            imageOverlay.className = 'image-overlay';
+            imageOverlay.style.backgroundImage = `url(${this.imageClue.imageData})`;
+            this.element.style.position = 'relative';
+            this.element.appendChild(imageOverlay);
+        }
     }
 
     renderSingleClueSquare() {
-        // Create text content display
-        const textContent = document.createElement('div');
-        textContent.className = 'clue-text-content';
-        textContent.textContent = this.value || '';
+        // Create display text
+        const textDisplay = document.createElement('div');
+        textDisplay.className = 'clue-display';
+        textDisplay.textContent = this.value || '';
         
-        // Add click handler to text content to delegate to square
-        textContent.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent double handling
-            this.handleClick(e);
-        });
-        
-        // Add context menu handler to text content
-        textContent.addEventListener('contextmenu', (e) => {
-            e.stopPropagation();
-            this.handleContextMenu(e);
-        });
-        
-        this.element.appendChild(textContent);
-
-        // Create hidden textarea
-        const textarea = this.createTextarea(this.value || '', 2, 100);
-        
-        // Add input event listener
-        textarea.addEventListener('input', (e) => {
-            this.value = e.target.value;
-            textContent.textContent = this.value;
-            this.updateGridData();
-        });
-        
-        textarea.addEventListener('blur', () => {
-            this.exitEditingMode();
-        });
-        
-        this.element.appendChild(textarea);
+        this.element.appendChild(textDisplay);
     }
 
     renderSplitClueSquare() {
-        // Create text content display
-        const textContent = document.createElement('div');
-        textContent.className = 'clue-text-content split';
+        this.element.classList.add('split');
         
-        const textPart1 = document.createElement('div');
-        textPart1.className = 'clue-text-part';
-        textPart1.textContent = this.value1 || '';
+        // Create top display
+        const topDisplay = document.createElement('div');
+        topDisplay.className = 'clue-display clue-display-top';
+        topDisplay.textContent = this.value1 || '';
         
-        // Add click handler to text part 1
-        textPart1.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.clickedPart = 1; // Track which part was clicked
-            this.handleClick(e);
-        });
+        // Create bottom display
+        const bottomDisplay = document.createElement('div');
+        bottomDisplay.className = 'clue-display clue-display-bottom';
+        bottomDisplay.textContent = this.value2 || '';
         
-        // Add context menu handler to text part 1
-        textPart1.addEventListener('contextmenu', (e) => {
-            e.stopPropagation();
-            this.handleContextMenu(e);
-        });
-        
-        const textPart2 = document.createElement('div');
-        textPart2.className = 'clue-text-part';
-        textPart2.textContent = this.value2 || '';
-        
-        // Add click handler to text part 2
-        textPart2.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.clickedPart = 2; // Track which part was clicked
-            this.handleClick(e);
-        });
-        
-        // Add context menu handler to text part 2
-        textPart2.addEventListener('contextmenu', (e) => {
-            e.stopPropagation();
-            this.handleContextMenu(e);
-        });
-        
-        textContent.appendChild(textPart1);
-        textContent.appendChild(textPart2);
-        this.element.appendChild(textContent);
-
-        // Create hidden textareas
-        const textarea1 = this.createTextarea(this.value1 || '', 1, 50);
-        textarea1.addEventListener('input', (e) => {
-            this.value1 = e.target.value;
-            textPart1.textContent = this.value1;
-            this.updateGridData();
-        });
-        
-        const textarea2 = this.createTextarea(this.value2 || '', 1, 50);
-        // Add the lower class for positioning in the lower half
-        textarea2.classList.add('lower');
-        textarea2.addEventListener('input', (e) => {
-            this.value2 = e.target.value;
-            textPart2.textContent = this.value2;
-            this.updateGridData();
-        });
-        
-        textarea1.addEventListener('blur', () => this.exitEditingMode());
-        textarea2.addEventListener('blur', () => this.exitEditingMode());
-        
-        this.element.appendChild(textarea1);
-        this.element.appendChild(textarea2);
-    }
-
-    createTextarea(value, rows, maxLength) {
-        const textarea = document.createElement('textarea');
-        textarea.value = value || '';
-        textarea.rows = rows;
-        textarea.maxLength = maxLength;
-        
-        // Add appropriate CSS classes based on usage
-        if (rows > 1) {
-            textarea.className = 'single';
-        } else {
-            textarea.className = 'split';
-        }
-        
-        return textarea;
+        this.element.appendChild(topDisplay);
+        this.element.appendChild(bottomDisplay);
     }
 
     getInputElement() {
@@ -724,7 +774,7 @@ class ClueSquare extends Square {
 
     updateGridData() {
         super.updateGridData();
-        const cell = this.crosswordGrid.getCell(this.row, this.col);
+        const cell = this.crossword.getCell(this.row, this.col);
         if (cell) {
             cell.value = this.value;
             cell.value1 = this.value1;
@@ -736,7 +786,7 @@ class ClueSquare extends Square {
 
     loadFromGridData() {
         super.loadFromGridData();
-        const cell = this.crosswordGrid.getCell(this.row, this.col);
+        const cell = this.crossword.getCell(this.row, this.col);
         if (cell) {
             this.value = cell.value || '';
             this.value1 = cell.value1 || '';
@@ -759,8 +809,8 @@ class ClueSquare extends Square {
  * BlackSquare - Square for black/blocked squares
  */
 class BlackSquare extends Square {
-    constructor(row, col, crosswordGrid, navigationManager) {
-        super(row, col, crosswordGrid, navigationManager);
+    constructor(row, col, crossword, navigationManager) {
+        super(row, col, crossword, navigationManager);
     }
 
     getSquareType() {
@@ -769,6 +819,10 @@ class BlackSquare extends Square {
 
     renderContent() {
         this.element.classList.add('black');
+        
+        // Add click handler to the element itself to ensure clicks work
+        // (Black squares don't have child content, but ensure the element is clickable)
+        this.element.style.cursor = 'pointer';
     }
 
     getInputElement() {

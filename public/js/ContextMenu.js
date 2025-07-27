@@ -2,10 +2,21 @@
  * ContextMenu - Manages all context menu functionality
  */
 class ContextMenu {
-    constructor(crosswordGrid, navigationManager) {
-        this.crosswordGrid = crosswordGrid;
-        this.navigationManager = navigationManager;
+    constructor() {
+        console.log('Creating ContextMenu');
+        this.crossword = null; // Will be set by setCrossword()
+        this.navigationManager = null; // Will be set by setCrossword()
         this.onGridChange = null; // Callback for when grid changes
+    }
+
+    /**
+     * Set the crossword instance this manager works with
+     * @param {Crossword} crossword - The crossword instance
+     */
+    setCrossword(crossword) {
+        console.log('ContextMenu setCrossword');
+        this.crossword = crossword;
+        this.navigationManager = crossword.navigationManager;
     }
 
     /**
@@ -34,7 +45,7 @@ class ContextMenu {
         menu.style.left = e.pageX + 'px';
         menu.style.top = e.pageY + 'px';
         
-        const cell = this.crosswordGrid.getCell(r, c);
+        const cell = this.crossword.getCell(r, c);
         
         if (cell.type === 'letter') {
             this.addLetterSquareOptions(menu, r, c, cell);
@@ -75,14 +86,14 @@ class ContextMenu {
     addLetterSquareOptions(menu, r, c, cell) {
         // Change to Clue Square
         this.addMenuItem(menu, 'Change to Clue Square', () => {
-            this.crosswordGrid.setCellType(r, c, 'clue');
+            this.crossword.setCellType(r, c, 'clue');
             this.triggerGridChange();
             this.restoreFocus(r, c, null);
         });
 
         // Change to Black Square
         this.addMenuItem(menu, 'Change to Black Square', () => {
-            this.crosswordGrid.setCellType(r, c, 'black');
+            this.crossword.setCellType(r, c, 'black');
             this.triggerGridChange();
             this.restoreFocus(r, c, null);
         });
@@ -103,7 +114,7 @@ class ContextMenu {
         // Remove arrow option if arrow exists
         if (cell.arrow) {
             this.addMenuItem(menu, 'Remove Arrow', () => {
-                this.crosswordGrid.setCellArrow(r, c, null);
+                this.crossword.setCellArrow(r, c, null);
                 this.triggerGridChange();
                 this.restoreFocus(r, c, null);
             });
@@ -126,7 +137,7 @@ class ContextMenu {
         // Remove all borders option if borders exist
         if (hasBorders) {
             this.addMenuItem(menu, 'Remove All Borders', () => {
-                this.crosswordGrid.setCell(r, c, { 
+                this.crossword.setCell(r, c, { 
                     borders: { top: false, bottom: false, left: false, right: false } 
                 });
                 this.triggerGridChange();
@@ -149,7 +160,7 @@ class ContextMenu {
         // Remove color option if color is set
         if (cell.color) {
             this.addMenuItem(menu, 'Remove Color', () => {
-                this.crosswordGrid.setCellColor(r, c, null);
+                this.crossword.setCellColor(r, c, null);
                 this.triggerGridChange();
                 this.restoreFocus(r, c, null);
             });
@@ -158,7 +169,7 @@ class ContextMenu {
         // Image clue options
         if (cell.imageClue) {
             this.addMenuItem(menu, 'Remove Image', () => {
-                this.crosswordGrid.removeImageClue(r, c);
+                this.crossword.removeImageClue(r, c);
                 this.triggerGridChange();
                 this.restoreFocus(r, c, null);
             });
@@ -179,14 +190,14 @@ class ContextMenu {
     addClueSquareOptions(menu, r, c, cell) {
         // Change to Letter Square
         this.addMenuItem(menu, 'Change to Letter Square', () => {
-            this.crosswordGrid.setCellType(r, c, 'letter');
+            this.crossword.setCellType(r, c, 'letter');
             this.triggerGridChange();
             this.restoreFocus(r, c, null);
         });
 
         // Change to Black Square
         this.addMenuItem(menu, 'Change to Black Square', () => {
-            this.crosswordGrid.setCellType(r, c, 'black');
+            this.crossword.setCellType(r, c, 'black');
             this.triggerGridChange();
             this.restoreFocus(r, c, null);
         });
@@ -194,13 +205,13 @@ class ContextMenu {
         // Split/Unsplit options
         if (!cell.split) {
             this.addMenuItem(menu, 'Split Horizontally', () => {
-                this.crosswordGrid.splitClueCell(r, c);
+                this.crossword.splitClueCell(r, c);
                 this.triggerGridChange();
                 this.restoreFocus(r, c, 'first');
             });
         } else {
             this.addMenuItem(menu, 'Remove Split', () => {
-                this.crosswordGrid.unsplitClueCell(r, c);
+                this.crossword.unsplitClueCell(r, c);
                 this.triggerGridChange();
                 this.restoreFocus(r, c, null);
             });
@@ -217,14 +228,14 @@ class ContextMenu {
     addBlackSquareOptions(menu, r, c, cell) {
         // Convert to Letter Square
         this.addMenuItem(menu, 'Convert to Letter Square', () => {
-            this.crosswordGrid.setCellType(r, c, 'letter');
+            this.crossword.setCellType(r, c, 'letter');
             this.triggerGridChange();
             this.restoreFocus(r, c, null);
         });
 
         // Convert to Clue Square
         this.addMenuItem(menu, 'Convert to Clue Square', () => {
-            this.crosswordGrid.setCellType(r, c, 'clue');
+            this.crossword.setCellType(r, c, 'clue');
             this.triggerGridChange();
             this.restoreFocus(r, c, null);
         });
@@ -275,7 +286,7 @@ class ContextMenu {
             item.className = 'context-menu-item';
             item.textContent = option.label;
             item.onclick = () => {
-                this.crosswordGrid.setCellArrow(r, c, option.value);
+                this.crossword.setCellArrow(r, c, option.value);
                 this.triggerGridChange();
                 this.restoreFocus(r, c, null);
                 this.removeExistingMenus(); // Close all menus after action
@@ -307,7 +318,7 @@ class ContextMenu {
             { value: 'right', description: 'Right border' }
         ];
         
-        const cell = this.crosswordGrid.getCell(r, c);
+        const cell = this.crossword.getCell(r, c);
         
         borderOptions.forEach(option => {
             const item = document.createElement('div');
@@ -328,7 +339,7 @@ class ContextMenu {
             
             item.onclick = () => {
                 const currentState = cell.borders?.[option.value] || false;
-                this.crosswordGrid.setCellBorder(r, c, option.value, !currentState);
+                this.crossword.setCellBorder(r, c, option.value, !currentState);
                 this.triggerGridChange();
                 this.restoreFocus(r, c, null);
                 this.removeExistingMenus(); // Close all menus after action
@@ -366,7 +377,7 @@ class ContextMenu {
             { value: '#FFE4CC', name: 'Orange', color: '#FFE4CC' }
         ];
         
-        const cell = this.crosswordGrid.getCell(r, c);
+        const cell = this.crossword.getCell(r, c);
         
         colorOptions.forEach(option => {
             const item = document.createElement('div');
@@ -388,7 +399,7 @@ class ContextMenu {
             }
             
             item.onclick = () => {
-                this.crosswordGrid.setCellColor(r, c, option.value);
+                this.crossword.setCellColor(r, c, option.value);
                 this.triggerGridChange();
                 this.restoreFocus(r, c, null);
                 this.removeExistingMenus(); // Close all menus after action
@@ -442,8 +453,8 @@ class ContextMenu {
         const selectionDiv = document.createElement('div');
         selectionDiv.innerHTML = `
             <p>Select area (from row ${r+1}, col ${c+1}):</p>
-            <label>To Row: <input type="number" id="endRow" min="${r+1}" max="${this.crosswordGrid.rows}" value="${r+1}"></label><br><br>
-            <label>To Col: <input type="number" id="endCol" min="${c+1}" max="${this.crosswordGrid.cols}" value="${c+1}"></label><br><br>
+            <label>To Row: <input type="number" id="endRow" min="${r+1}" max="${this.crossword.rows}" value="${r+1}"></label><br><br>
+            <label>To Col: <input type="number" id="endCol" min="${c+1}" max="${this.crossword.cols}" value="${c+1}"></label><br><br>
         `;
         modalContent.appendChild(selectionDiv);
 
@@ -505,13 +516,13 @@ class ContextMenu {
             const endCol = parseInt(document.getElementById('endCol').value) - 1;
 
             // Check for conflicts
-            if (this.crosswordGrid.checkImageConflict(r, c, endRow, endCol)) {
+            if (this.crossword.checkImageConflict(r, c, endRow, endCol)) {
                 alert('The selected area conflicts with existing image clues. Please choose a different area.');
                 return;
             }
 
             // Place the image clue
-            this.crosswordGrid.placeImageClue(r, c, endRow, endCol, imageData);
+            this.crossword.placeImageClue(r, c, endRow, endCol, imageData);
             this.triggerGridChange();
             modal.remove();
         };

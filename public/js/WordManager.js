@@ -2,12 +2,22 @@
  * WordManager - Manages word detection and tracking in the crossword
  */
 class WordManager {
-    constructor(crosswordGrid) {
-        this.crosswordGrid = crosswordGrid;
+    constructor() {
+        console.log('Creating WordManager');
+        this.crossword = null; // Will be set by setCrossword()
         this.words = new Map(); // Map of word IDs to word objects
         this.currentWordId = null;
         this.currentDirection = 'horizontal';
         this.onWordChange = null; // Callback for when current word changes
+    }
+
+    /**
+     * Set the crossword instance this manager works with
+     * @param {Crossword} crossword - The crossword instance
+     */
+    setCrossword(crossword) {
+        console.log('WordManager setCrossword');
+        this.crossword = crossword;
     }
 
     /**
@@ -42,7 +52,7 @@ class WordManager {
             }
             
             // Find end of word (move right while we have consecutive letters)
-            while (endCol < this.crosswordGrid.cols - 1 && this.isPotentialLetterSquare(endRow, endCol + 1)) {
+            while (endCol < this.crossword.cols - 1 && this.isPotentialLetterSquare(endRow, endCol + 1)) {
                 endCol++;
             }
         } else { // vertical
@@ -52,7 +62,7 @@ class WordManager {
             }
             
             // Find end of word (move down while we have consecutive letters)
-            while (endRow < this.crosswordGrid.rows - 1 && this.isPotentialLetterSquare(endRow + 1, endCol)) {
+            while (endRow < this.crossword.rows - 1 && this.isPotentialLetterSquare(endRow + 1, endCol)) {
                 endRow++;
             }
         }
@@ -71,13 +81,13 @@ class WordManager {
         if (direction === 'horizontal') {
             for (let c = startCol; c <= endCol; c++) {
                 squares.push({ row: startRow, col: c });
-                const cell = this.crosswordGrid.getCell(startRow, c);
+                const cell = this.crossword.getCell(startRow, c);
                 letters.push(cell?.value || '');
             }
         } else {
             for (let r = startRow; r <= endRow; r++) {
                 squares.push({ row: r, col: startCol });
-                const cell = this.crosswordGrid.getCell(r, startCol);
+                const cell = this.crossword.getCell(r, startCol);
                 letters.push(cell?.value || '');
             }
         }
@@ -116,7 +126,7 @@ class WordManager {
         }
         
         // Starting square must have content to form a valid word
-        const startCell = this.crosswordGrid.getCell(row, col);
+        const startCell = this.crossword.getCell(row, col);
         if (!startCell.value || startCell.value.trim() === '') {
             return null;
         }
@@ -128,7 +138,7 @@ class WordManager {
             // Find start of word - move left while we have letter squares with content
             while (startCol > 0) {
                 const prevCol = startCol - 1;
-                const prevCell = this.crosswordGrid.getCell(startRow, prevCol);
+                const prevCell = this.crossword.getCell(startRow, prevCol);
                 
                 // Stop at boundaries: non-letter squares, clue squares, or empty letter squares
                 if (!prevCell || prevCell.type !== 'letter' || prevCell.imageClue) {
@@ -144,9 +154,9 @@ class WordManager {
             }
             
             // Find end of word - move right while we have letter squares with content
-            while (endCol < this.crosswordGrid.cols - 1) {
+            while (endCol < this.crossword.cols - 1) {
                 const nextCol = endCol + 1;
-                const nextCell = this.crosswordGrid.getCell(endRow, nextCol);
+                const nextCell = this.crossword.getCell(endRow, nextCol);
                 
                 // Stop at boundaries: non-letter squares, clue squares, or empty letter squares
                 if (!nextCell || nextCell.type !== 'letter' || nextCell.imageClue) {
@@ -164,7 +174,7 @@ class WordManager {
             // Find start of word - move up while we have letter squares with content
             while (startRow > 0) {
                 const prevRow = startRow - 1;
-                const prevCell = this.crosswordGrid.getCell(prevRow, startCol);
+                const prevCell = this.crossword.getCell(prevRow, startCol);
                 
                 // Stop at boundaries: non-letter squares, clue squares, or empty letter squares
                 if (!prevCell || prevCell.type !== 'letter' || prevCell.imageClue) {
@@ -180,9 +190,9 @@ class WordManager {
             }
             
             // Find end of word - move down while we have letter squares with content
-            while (endRow < this.crosswordGrid.rows - 1) {
+            while (endRow < this.crossword.rows - 1) {
                 const nextRow = endRow + 1;
-                const nextCell = this.crosswordGrid.getCell(nextRow, endCol);
+                const nextCell = this.crossword.getCell(nextRow, endCol);
                 
                 // Stop at boundaries: non-letter squares, clue squares, or empty letter squares
                 if (!nextCell || nextCell.type !== 'letter' || nextCell.imageClue) {
@@ -212,13 +222,13 @@ class WordManager {
         if (direction === 'horizontal') {
             for (let c = startCol; c <= endCol; c++) {
                 squares.push({ row: startRow, col: c });
-                const cell = this.crosswordGrid.getCell(startRow, c);
+                const cell = this.crossword.getCell(startRow, c);
                 letters.push(cell?.value || '');
             }
         } else {
             for (let r = startRow; r <= endRow; r++) {
                 squares.push({ row: r, col: startCol });
-                const cell = this.crosswordGrid.getCell(r, startCol);
+                const cell = this.crossword.getCell(r, startCol);
                 letters.push(cell?.value || '');
             }
         }
@@ -301,7 +311,7 @@ class WordManager {
             }
             
             // Check if previous position is empty (natural word boundary)
-            const prevCell = this.crosswordGrid.getCell(prevRow, prevCol);
+            const prevCell = this.crossword.getCell(prevRow, prevCol);
             if (!prevCell.value || prevCell.value.trim() === '') {
                 return { row: currentRow, col: currentCol, direction: currentDirection };
             }
@@ -341,7 +351,7 @@ class WordManager {
         const visited = new Set();
         
         while (true) {
-            const cell = this.crosswordGrid.getCell(currentRow, currentCol);
+            const cell = this.crossword.getCell(currentRow, currentCol);
             
             // Stop if we've reached an invalid position, visited this cell, or it's not a potential letter square
             if (!cell || visited.has(`${currentRow}-${currentCol}`) || 
@@ -384,7 +394,7 @@ class WordManager {
             const [nextRow, nextCol] = this.getNextPosition(currentRow, currentCol, nextDirection);
             
             // Check if next position would be valid before continuing
-            const nextCell = this.crosswordGrid.getCell(nextRow, nextCol);
+            const nextCell = this.crossword.getCell(nextRow, nextCol);
             if (!nextCell || nextCell.type !== 'letter' || nextCell.imageClue) {
                 break;
             }
@@ -455,7 +465,11 @@ class WordManager {
      * @returns {boolean} True if it's a letter square with content
      */
     isLetterSquare(row, col) {
-        const cell = this.crosswordGrid.getCell(row, col);
+        if (!this.crossword) {
+            console.warn('WordManager: crossword not set');
+            return false;
+        }
+        const cell = this.crossword.getCell(row, col);
         return cell && cell.type === 'letter' && !cell.imageClue && cell.value && cell.value.trim() !== '';
     }
 
@@ -466,7 +480,11 @@ class WordManager {
      * @returns {boolean} True if it's a potential letter square
      */
     isPotentialLetterSquare(row, col) {
-        const cell = this.crosswordGrid.getCell(row, col);
+        if (!this.crossword) {
+            console.warn('WordManager: crossword not set');
+            return false;
+        }
+        const cell = this.crossword.getCell(row, col);
         return cell && cell.type === 'letter' && !cell.imageClue;
     }
 
@@ -479,8 +497,8 @@ class WordManager {
         const processedWords = new Set();
         
         // Scan for horizontal words (both straight and bent)
-        for (let row = 0; row < this.crosswordGrid.rows; row++) {
-            for (let col = 0; col < this.crosswordGrid.cols; col++) {
+        for (let row = 0; row < this.crossword.rows; row++) {
+            for (let col = 0; col < this.crossword.cols; col++) {
                 if (this.isLetterSquare(row, col)) {
                     // Try bent word first, then straight word
                     const bentWord = this.findBentWord(row, col, 'horizontal');
@@ -498,8 +516,8 @@ class WordManager {
         }
         
         // Scan for vertical words (both straight and bent) 
-        for (let row = 0; row < this.crosswordGrid.rows; row++) {
-            for (let col = 0; col < this.crosswordGrid.cols; col++) {
+        for (let row = 0; row < this.crossword.rows; row++) {
+            for (let col = 0; col < this.crossword.cols; col++) {
                 if (this.isLetterSquare(row, col)) {
                     // Try bent word first, then straight word
                     const bentWord = this.findBentWord(row, col, 'vertical');
@@ -535,7 +553,7 @@ class WordManager {
         }
 
         // Check if the clicked square has content
-        const cell = this.crosswordGrid.getCell(row, col);
+        const cell = this.crossword.getCell(row, col);
         const hasContent = cell && cell.value && cell.value.trim() !== '';
         
         if (!hasContent) {

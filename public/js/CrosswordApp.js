@@ -37,25 +37,38 @@ class CrosswordApp {
      * Initialize managers
      */
     initializeManagers() {
-        // Initialize managers
-        this.grid = new CrosswordGrid(
+        // Initialize crossword with container
+        const container = document.getElementById('crossword-container');
+        this.crossword = new Crossword(
+            container,
             parseInt(this.elements.rowsInput.value),
             parseInt(this.elements.colsInput.value)
         );
 
-        this.navigationManager = new NavigationManager(this.grid);
-        this.renderer = new CrosswordRenderer(this.grid, this.navigationManager);
-        this.contextMenu = new ContextMenu(this.grid, this.navigationManager);
+        // Initialize managers
+        this.navigationManager = new NavigationManager();
+        this.contextMenu = new ContextMenu();
         this.puzzleManager = new PuzzleManager();
         this.printManager = new PrintManager();
 
         this.toastManager = new ToastManager();
-        this.wordManager = new WordManager(this.grid);
+        this.wordManager = new WordManager();
         this.wordDisplay = new WordDisplay(() => this.currentLanguage);
+
+        // Set up crossword with all managers
+        this.crossword.setupManagers(
+            this.wordManager,
+            this.navigationManager,
+            this.puzzleManager,
+            this.contextMenu
+        );
+
+        // Set up navigation manager event listeners now
+        this.navigationManager.setupEventListeners();
 
         // Set up callbacks
         this.contextMenu.setOnGridChange(() => {
-            this.renderer.render();
+            this.crossword.render();
             this.wordManager.updateWords();
             this.puzzleManager.autoSave(this.getPuzzleData());
         });
@@ -65,7 +78,7 @@ class CrosswordApp {
         });
 
         this.wordManager.setOnWordChange((word) => {
-            this.renderer.highlightWord(word);
+            this.crossword.highlightWord(word);
             this.wordDisplay.show(word);
         });
     }
@@ -78,8 +91,8 @@ class CrosswordApp {
         this.elements.languageSelect.onchange = () => {
             this.currentLanguage = this.elements.languageSelect.value;
             document.documentElement.lang = this.currentLanguage;
-            this.renderer.setLanguage(this.currentLanguage);
-            this.renderer.render();
+            this.crossword.setLanguage(this.currentLanguage);
+            this.crossword.render();
         };
 
         // Title input
@@ -137,7 +150,7 @@ class CrosswordApp {
         });
 
         document.addEventListener('crossword:clearWordSelection', () => {
-            this.renderer.clearWordHighlight();
+            this.crossword.clearWordHighlight();
         });
     }
 
@@ -172,7 +185,7 @@ class CrosswordApp {
 
         if (!lastPuzzle) {
             // No saved puzzle, start with fresh grid
-            this.renderer.render();
+            this.crossword.render();
             this.navigationManager.resetFocus();
         }
 
@@ -185,7 +198,7 @@ class CrosswordApp {
      * @returns {Object} Puzzle data
      */
     getPuzzleData() {
-        const gridData = this.grid.export();
+        const gridData = this.crossword.exportData();
         return {
             rows: gridData.rows,
             cols: gridData.cols,
@@ -200,23 +213,23 @@ class CrosswordApp {
      * @param {Object} puzzle - Puzzle data
      */
     loadPuzzleData(puzzle) {
-        // Update grid
-        this.grid.import(puzzle);
+        // Update crossword
+        this.crossword.loadFromData(puzzle);
 
         // Update application state
         this.currentLanguage = puzzle.language || 'sv';
         this.crosswordTitle = puzzle.title || '';
 
         // Update UI controls
-        this.elements.rowsInput.value = this.grid.rows;
-        this.elements.colsInput.value = this.grid.cols;
+        this.elements.rowsInput.value = this.crossword.rows;
+        this.elements.colsInput.value = this.crossword.cols;
         this.elements.languageSelect.value = this.currentLanguage;
         this.elements.titleInput.value = this.crosswordTitle;
         document.documentElement.lang = this.currentLanguage;
 
-        // Update renderer and re-render
-        this.renderer.setLanguage(this.currentLanguage);
-        this.renderer.render();
+        // Update crossword language and re-render
+        this.crossword.setLanguage(this.currentLanguage);
+        // crossword.render() is called by loadFromData
 
         // Reset focus
         this.navigationManager.resetFocus();
@@ -233,8 +246,50 @@ class CrosswordApp {
         const newRows = parseInt(this.elements.rowsInput.value);
         const newCols = parseInt(this.elements.colsInput.value);
 
-        this.grid.resize(newRows, newCols);
-        this.renderer.render();
+        // Create new crossword with new dimensions
+        const oldData = this.crossword.exportData();
+        this.crossword.destroy();
+        
+        const container = document.getElementById('crossword-container');
+        this.crossword = new Crossword(container, newRows, newCols);
+        
+        // Set up managers again
+        this.crossword.setupManagers(
+            this.wordManager,
+            this.navigationManager,
+            this.puzzleManager,
+            this.contextMenu
+        );
+        
+        // Try to preserve old data where possible
+        if (oldData && oldData.grid) {
+            const preservedData = {
+                ...oldData,
+                rows: newRows,
+                cols: newCols,
+                grid: Array.from({ length: newRows }, (_, r) =>
+                    Array.from({ length: newCols }, (_, c) => {
+                        if (r < oldData.rows && c < oldData.cols && oldData.grid[r] && oldData.grid[r][c]) {
+                            return { ...oldData.grid[r][c] };
+                        }
+                        return {
+                            type: 'letter',
+                            value: '',
+                            borders: { top: false, bottom: false, left: false, right: false },
+                            color: null,
+                            arrow: null,
+                            value1: '',
+                            value2: '',
+                            split: false,
+                            imageClue: null
+                        };
+                    })
+                )
+            };
+            this.crossword.loadFromData(preservedData);
+        } else {
+            this.crossword.render();
+        }
 
         // Auto-save the resized puzzle
         this.puzzleManager.autoSave(this.getPuzzleData());

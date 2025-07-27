@@ -109,7 +109,6 @@
     /* Animation */
     --transition-fast: 0.2s;
     --transition-normal: 0.3s;
-    --scale-magnify: 1.5;
 }
 
 body {
@@ -190,52 +189,33 @@ body {
 
 .square.focused {
     border: var(--square-focus-border) solid var(--color-primary) !important;
-    box-shadow: 0 0 var(--size-md) var(--shadow-primary-strong);
+    box-shadow: 0 0 var(--size-md) var(--shadow-primary);
     z-index: var(--z-square-focus);
 }
 
-/* Magnified state for clue editing */
+/* Clue editing state (without zoom) */
 .square.clue.editing {
-    transform: scale(var(--scale-magnify));
-    transform-origin: center;
     z-index: var(--z-square-editing);
     box-shadow: 0 0 var(--spacing-xl) rgba(0, 0, 0, 0.5);
-    transition: transform var(--transition-fast) ease-in-out, box-shadow var(--transition-fast) ease-in-out;
+    transition: box-shadow var(--transition-fast) ease-in-out;
 }
 
-/* Ensure split squares maintain proper layout when editing */
-.square.clue.split.editing {
-    display: flex;
-    flex-direction: column;
-}
-
-/* Ensure textareas in split squares are properly positioned when editing */
-.square.clue.split.editing textarea {
-    position: absolute;
-    display: block !important;
-    height: 45%;
-    line-height: 1;
-}
-
-/* Position the split line properly when editing */
-.square.clue.split.editing::after {
-    z-index: 1;
-}
-
-.square.clue {
-    transition: transform var(--transition-fast) ease-in-out, box-shadow var(--transition-fast) ease-in-out;
-}
-.square.letter input {
+.square.letter .letter-content {
     font-family: 'Patrick Hand', 'Comic Neue', 'Kalam', cursive;
     font-size: var(--font-input-large);
     text-align: center;
-    width: 90%;
-    height: 90%;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border: none;
-    background: var(--background-transparent);
+    background: transparent;
     outline: none;
     font-weight: 400;
+    user-select: none;
 }
+
 .square.black {
     background: var(--background-black);
 }
@@ -244,7 +224,7 @@ body {
     width: 90%;
     height: 90%;
     border: none;
-    background: var(--background-transparent);
+    background: transparent;
     outline: none;
     text-align: center;
 }
@@ -253,7 +233,7 @@ body {
     width: 90%;
     height: 90%;
     border: none;
-    background: var(--background-transparent);
+    background: transparent;
     outline: none;
     text-align: center;
     resize: none;
@@ -381,7 +361,7 @@ body {
     box-shadow: 0 0 0 var(--size-xs) var(--word-highlight-border);
 }
 
-.square.word-highlighted input {
+.square.word-highlighted .letter-content {
     background-color: transparent !important;
 }
 
@@ -400,7 +380,7 @@ body {
     font-size: var(--font-icon-xl);
     font-weight: bold;
     z-index: var(--z-tooltip);
-    pointer-events: none;
+    /* pointer-events: none; */
     color: var(--text-primary);
     line-height: 1;
 }
@@ -1183,4 +1163,141 @@ body {
 
 .cancel-button:hover {
     background: #5a6268;
+}
+
+/* Clue Edit Overlay Styles */
+.clue-edit-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--shadow-overlay);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: var(--z-modal);
+    pointer-events: none;
+}
+
+.clue-edit-overlay.visible {
+    pointer-events: auto;
+}
+
+.clue-input-container {
+    background: var(--background-white);
+    border: var(--grid-border-width) solid var(--color-primary);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    min-width: var(--modal-width-sm);
+    max-width: 500px;
+    pointer-events: auto;
+    box-shadow: 0 var(--size-sm) var(--spacing-xl) var(--shadow-modal);
+}
+
+.clue-edit-input, .clue-edit-split-input {
+    width: 100%;
+    font-size: var(--font-lg);
+    border: var(--square-border-width) solid var(--border-medium);
+    border-radius: var(--radius-md);
+    padding: var(--size-md);
+    resize: vertical;
+    font-family: inherit;
+    background: var(--background-white);
+    color: var(--text-primary);
+}
+
+.clue-edit-input {
+    min-height: 100px;
+}
+
+.clue-edit-split-input {
+    min-height: 80px;
+    margin-bottom: var(--spacing-md);
+}
+
+.clue-edit-split-input:focus, .clue-edit-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 var(--size-md) var(--shadow-primary);
+}
+
+.clue-edit-label {
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    font-weight: bold;
+    color: var(--text-primary);
+    font-size: var(--font-md);
+}
+
+/* Overlay display state management */
+.clue-edit-overlay.visible .clue-edit-input.single-mode {
+    display: block;
+}
+
+.clue-edit-overlay.visible .clue-edit-split-input.split-mode,
+.clue-edit-overlay.visible .clue-edit-label.split-mode {
+    display: block;
+}
+
+.clue-edit-overlay .clue-edit-input:not(.single-mode),
+.clue-edit-overlay .clue-edit-split-input:not(.split-mode),
+.clue-edit-overlay .clue-edit-label:not(.split-mode) {
+    display: none;
+}
+
+/* Clue Display Styles */
+.clue-display {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--size-xs);
+    font-size: var(--font-xs);
+    line-height: 1.2;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    text-transform: uppercase;
+}
+
+.clue-display-top {
+    width: 100%;
+    height: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1px;
+    font-size: var(--font-xs);
+    line-height: 1.1;
+    overflow: hidden;
+    border-bottom: var(--square-border-width) solid var(--border-medium);
+}
+
+.clue-display-bottom {
+    width: 100%;
+    height: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1px;
+    font-size: var(--font-xs);
+    line-height: 1.1;
+    overflow: hidden;
+}
+
+/* Image overlay for clue squares */
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.8;
+    pointer-events: none;
 }
