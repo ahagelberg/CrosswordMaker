@@ -390,9 +390,8 @@ class WordManager {
                     this.setCurrentWord(otherWord);
                     return otherWord;
                 } else {
-                    // Only one direction available, clear selection
-                    this.setCurrentWord(null);
-                    return null;
+                    // Only one direction available, keep current selection
+                    return currentWord;
                 }
             }
         }

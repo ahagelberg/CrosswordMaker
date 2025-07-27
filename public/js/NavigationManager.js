@@ -132,6 +132,9 @@ class NavigationManager {
             return;
         }
         
+        // Update the focused square tracking first
+        this.updateFocusedSquare(row, col);
+        
         const squares = document.querySelectorAll('.square');
         const index = row * this.crossword.cols + col;
         const square = squares[index];
@@ -260,6 +263,9 @@ class NavigationManager {
         if (/^[A-Za-zÅÄÖÆØåäöæø]$/i.test(upperValue)) {
             // The square has already updated its value and grid data
             // Just handle navigation logic here
+            
+            // Detect direction based on current position relative to last position
+            this.detectDirection(row, col);
             
             // Update last changed position when letter is actually entered
             this.lastChangedPosition = { row, col };

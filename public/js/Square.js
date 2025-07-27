@@ -88,8 +88,9 @@ class Square {
     handleClick(e) {
         e.stopPropagation();
         
-        // Update navigation manager's focus
+        // Update navigation manager's focus and detect direction
         this.navigationManager.updateFocusedSquare(this.row, this.col);
+        this.navigationManager.onInputFocus(this.row, this.col);
         this.navigationManager.focusSquare(this.row, this.col);
     }
 
