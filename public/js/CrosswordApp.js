@@ -31,6 +31,10 @@ class CrosswordApp {
             printBtn: document.getElementById('printPuzzle'),
             printKeyBtn: document.getElementById('printKey')
         };
+
+        // Initialize toolbar
+        // eslint-disable-next-line no-undef
+        this.toolbar = new Toolbar(this.elements);
     }
 
     /**
@@ -87,52 +91,45 @@ class CrosswordApp {
      * Setup event listeners for UI elements
      */
     setupEventListeners() {
-        // Language selection
-        this.elements.languageSelect.onchange = () => {
-            this.currentLanguage = this.elements.languageSelect.value;
+        // Command event listeners (from Toolbar)
+        document.addEventListener('command:languageChange', (e) => {
+            this.currentLanguage = e.detail.language;
             document.documentElement.lang = this.currentLanguage;
             this.crossword.setLanguage(this.currentLanguage);
             this.crossword.render();
-        };
+        });
 
-        // Title input
-        this.elements.titleInput.oninput = () => {
-            this.crosswordTitle = this.elements.titleInput.value;
-        };
+        document.addEventListener('command:titleChange', (e) => {
+            this.crosswordTitle = e.detail.title;
+        });
 
-        // Resize button
-        this.elements.resizeBtn.onclick = () => {
+        document.addEventListener('command:resizeGrid', () => {
             this.resizeGrid();
-        };
+        });
 
-        // Save button
-        this.elements.saveBtn.onclick = () => {
+        document.addEventListener('command:savePuzzle', () => {
             this.savePuzzle();
-        };
+        });
 
-        // Load button
-        this.elements.loadBtn.onclick = () => {
+        document.addEventListener('command:loadPuzzle', () => {
             this.loadPuzzle();
-        };
+        });
 
-        // Download button
-        this.elements.downloadBtn.onclick = () => {
+        document.addEventListener('command:downloadPuzzle', () => {
             this.downloadPuzzle();
-        };
+        });
 
-        // Upload button
-        this.elements.uploadBtn.onclick = () => {
+        document.addEventListener('command:uploadPuzzle', () => {
             this.uploadPuzzle();
-        };
+        });
 
-        // Print buttons
-        this.elements.printBtn.onclick = () => {
+        document.addEventListener('command:printBlank', () => {
             this.printManager.printBlank(this.crosswordTitle);
-        };
+        });
 
-        this.elements.printKeyBtn.onclick = () => {
+        document.addEventListener('command:printKey', () => {
             this.printManager.printKey(this.crosswordTitle);
-        };
+        });
 
         // Custom events
         document.addEventListener('crossword:contextmenu', (e) => {

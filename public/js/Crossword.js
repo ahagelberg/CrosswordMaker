@@ -3,6 +3,13 @@
  * Handles grid creation, square management, rendering, and coordination of all managers
  */
 class Crossword {
+
+    /**
+     * Constructor for the Crossword class
+     * @param {HTMLElement} container - The container element to render the crossword into
+     * @param {number} rows - The number of rows in the crossword grid
+     * @param {number} cols - The number of columns in the crossword grid
+     */
     constructor(container, rows = 15, cols = 15) {
         console.log(`Creating Crossword with ${rows}x${cols} grid`);
         
@@ -10,9 +17,8 @@ class Crossword {
         this.rows = rows;
         this.cols = cols;
         
-        // Grid data storage
+        // Grid of square objects
         this.grid = [];
-        this.squareObjects = [];
         
         // Managers
         this.wordManager = null;
@@ -24,36 +30,21 @@ class Crossword {
         this.currentLanguage = 'sv';
         this.highlightedWord = null;
         
-        // Initialize grid data
+        // Initialize grid of square objects
         this.initializeGrid();
         
         console.log('Crossword created, grid initialized');
     }
     
     /**
-     * Initialize the grid data structure
+     * Initialize the grid of square objects
      */
     initializeGrid() {
-        console.log('Initializing grid data structure');
+        console.log('Initializing grid of square objects');
         this.grid = Array.from({ length: this.rows }, (_, row) =>
-            Array.from({ length: this.cols }, (_, col) => ({
-                type: 'letter',
-                value: '',
-                borders: { top: false, bottom: false, left: false, right: false },
-                color: null,
-                // Letter square properties
-                arrow: null,
-                // Clue square properties
-                value1: '',
-                value2: '',
-                split: false,
-                imageClue: null
-            }))
-        );
-        
-        // Initialize square objects array
-        this.squareObjects = Array.from({ length: this.rows }, () =>
-            Array.from({ length: this.cols }, () => null)
+            Array.from({ length: this.cols }, (_, col) =>
+                new LetterSquare(row, col, this, this.navigationManager)
+            )
         );
     }
     
@@ -66,7 +57,7 @@ class Crossword {
         this.navigationManager = navigationManager;
         this.puzzleManager = puzzleManager;
         this.contextMenu = contextMenu;
-        
+
         // Give managers access to this crossword instance
         if (this.navigationManager && typeof this.navigationManager.setCrossword === 'function') {
             this.navigationManager.setCrossword(this);
@@ -77,12 +68,19 @@ class Crossword {
         if (this.contextMenu && typeof this.contextMenu.setCrossword === 'function') {
             this.contextMenu.setCrossword(this);
         }
+
+        // Update all squares in the grid to have the correct navigationManager
+        this.grid.forEach(row => {
+            row.forEach(square => {
+                square.navigationManager = this.navigationManager;
+            });
+        });
     }
     
     /**
      * Get cell data at specified position
      */
-    getCell(row, col) {
+    getSquare(row, col) {
         if (row >= 0 && row < this.rows && col >= 0 && col < this.cols) {
             return this.grid[row][col];
         }
@@ -90,23 +88,12 @@ class Crossword {
     }
     
     /**
-     * Set cell data at specified position
-     */
-    setCell(row, col, data) {
-        if (row >= 0 && row < this.rows && col >= 0 && col < this.cols) {
-            Object.assign(this.grid[row][col], data);
-            // Update square display if it exists
-            this.updateSquareDisplay(row, col);
-        }
-    }
-    
-    /**
      * Set cell type at specified position (with square recreation)
      */
     setCellType(row, col, type) {
         console.log(`Setting cell type at (${row}, ${col}) to ${type}`);
-        const cell = this.getCell(row, col);
-        if (cell && cell.type !== type) {
+        const square = this.getSquare(row, col);
+        if (square && square.getSquareType() !== type) {
             this.setSquareType(row, col, type);
         }
     }
@@ -115,17 +102,9 @@ class Crossword {
      * Set cell arrow at specified position
      */
     setCellArrow(row, col, arrow) {
-        const cell = this.getCell(row, col);
-        if (cell) {
-            cell.arrow = arrow;
-            
-            // Update the square's arrow property directly without full display update
-            const squareObj = this.getSquareAt(row, col);
-            if (squareObj && squareObj.setArrow) {
-                squareObj.arrow = arrow;
-                // Only re-render the content of this specific square
-                squareObj.renderContent();
-            }
+        const square = this.getSquare(row, col);
+        if (square && square.setArrow) {
+            square.setArrow(arrow);
         }
     }
     
@@ -133,113 +112,38 @@ class Crossword {
      * Set cell color at specified position
      */
     setCellColor(row, col, color) {
-        const cell = this.getCell(row, col);
-        if (cell) {
-            cell.color = color;
-            this.updateSquareDisplay(row, col);
+        const square = this.getSquare(row, col);
+        if (square && square.setColor) {
+            square.setColor(color);
         }
     }
-    
-    /**
-     * Split a clue cell horizontally
-     */
-    splitClueCell(row, col) {
-        const cell = this.getCell(row, col);
-        if (cell && cell.type === 'clue') {
-            cell.split = true;
-            cell.value1 = cell.value || '';
-            cell.value2 = '';
-            this.updateSquareDisplay(row, col);
-        }
-    }
-    
-    /**
-     * Unsplit a clue cell
-     */
-    unsplitClueCell(row, col) {
-        const cell = this.getCell(row, col);
-        if (cell && cell.type === 'clue' && cell.split) {
-            const combinedValue = [cell.value1 || '', cell.value2 || '']
-                .filter(v => v.trim())
-                .join(' ');
-            cell.split = false;
-            cell.value = combinedValue;
-            cell.value1 = '';
-            cell.value2 = '';
-            this.updateSquareDisplay(row, col);
-        }
-    }
-    
-    /**
-     * Remove image clue from cell
-     */
-    removeImageClue(row, col) {
-        const cell = this.getCell(row, col);
-        if (cell) {
-            cell.imageClue = null;
-            this.updateSquareDisplay(row, col);
-        }
-    }
-    
+
     /**
      * Set border for a cell
      */
     setCellBorder(row, col, side, enabled) {
-        const cell = this.getCell(row, col);
-        if (cell) {
-            if (!cell.borders) {
-                cell.borders = { top: false, bottom: false, left: false, right: false };
-            }
-            cell.borders[side] = enabled;
-            this.updateSquareDisplay(row, col);
+        const square = this.getSquare(row, col);
+        if (square && square.setBorder) {
+            square.setBorder(side, enabled);
         }
     }
-    
-    /**
-     * Check if there's an image conflict in the specified range
-     */
-    checkImageConflict(startRow, startCol, endRow, endCol) {
-        for (let r = startRow; r <= endRow; r++) {
-            for (let c = startCol; c <= endCol; c++) {
-                const cell = this.getCell(r, c);
-                if (cell && cell.imageClue) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    
-    /**
-     * Get square object at specified position
-     */
-    getSquareAt(row, col) {
-        if (row >= 0 && row < this.rows && col >= 0 && col < this.cols) {
-            return this.squareObjects[row][col];
-        }
-        return null;
-    }
-    
+     
     /**
      * Create appropriate square object based on type
      */
     createSquareByType(row, col, type) {
-        console.log(`Creating ${type} square at (${row}, ${col})`);
-        let square;
         switch (type) {
             case 'letter':
-                square = new LetterSquare(row, col, this, this.navigationManager);
-                break;
+                return new LetterSquare(row, col, this, this.navigationManager);
             case 'clue':
-                square = new ClueSquare(row, col, this, this.navigationManager);
-                break;
+                return new ClueSquare(row, col, this, this.navigationManager);
             case 'black':
-                square = new BlackSquare(row, col, this, this.navigationManager);
-                break;
+                return new BlackSquare(row, col, this, this.navigationManager);
+            case 'split':
+                return new SplitSquare(row, col, this, this.navigationManager);
             default:
-                square = new LetterSquare(row, col, this, this.navigationManager);
+                return new LetterSquare(row, col, this, this.navigationManager);
         }
-        return square;
     }
     
     /**
@@ -247,80 +151,42 @@ class Crossword {
      */
     render() {
         console.log('Rendering crossword grid');
-        
         // Clear container
         this.container.innerHTML = '';
-        
-        // Clean up existing square objects
-        this.squareObjects.forEach(row => {
-            row.forEach(squareObj => {
-                if (squareObj) {
-                    squareObj.destroy();
-                }
-            });
-        });
-        
-        // Reset square objects array
-        this.squareObjects = Array.from({ length: this.rows }, () =>
-            Array.from({ length: this.cols }, () => null)
-        );
-        
+        // Clean up existing squares
+        this.grid.forEach(row => row.forEach(square => square.destroy && square.destroy()));
+        // Recreate grid of square objects if needed
+        if (this.grid.length !== this.rows || this.grid[0].length !== this.cols) {
+            this.initializeGrid();
+        }
         // Create grid container
         const gridEl = document.createElement('div');
         gridEl.className = 'crossword-grid';
         gridEl.style.gridTemplateRows = `repeat(${this.rows}, 50px)`;
         gridEl.style.gridTemplateColumns = `repeat(${this.cols}, 50px)`;
-        
-        // Create all square objects and their DOM elements first
-        console.log('Creating square objects and DOM elements...');
-        this.grid.forEach((row, rIdx) => {
-            row.forEach((cell, cIdx) => {
-                // Create square object
-                const squareObj = this.createSquareByType(rIdx, cIdx, cell.type || 'letter');
-                
-                // Create DOM element (but don't set up event listeners yet)
-                const element = squareObj.createElement();
-                
-                // Add edge classes for border management
-                if (cIdx === this.cols - 1) {
-                    element.classList.add('last-column');
-                }
-                if (rIdx === this.rows - 1) {
-                    element.classList.add('last-row');
-                }
-                
-                // Store square object reference
-                this.squareObjects[rIdx][cIdx] = squareObj;
-                
-                // Append to grid
-                gridEl.appendChild(element);
-            });
-        });
-        
         // Add grid to container
         this.container.appendChild(gridEl);
-        
-        // NOW set up event listeners after all elements are in the DOM
-        console.log('Setting up event listeners after DOM insertion...');
-        this.squareObjects.forEach((row, rIdx) => {
-            row.forEach((squareObj, cIdx) => {
-                if (squareObj) {
-                    squareObj.setupEventListeners();
-                }
+        // Create all square DOM elements
+        this.grid.forEach((row, rIdx) => {
+            row.forEach((square, cIdx) => {
+                const element = square.createElement();
+                if (cIdx === this.cols - 1) element.classList.add('last-column');
+                if (rIdx === this.rows - 1) element.classList.add('last-row');
+                gridEl.appendChild(element);
+                square.render();
             });
         });
-        
         console.log('Crossword render complete');
+
     }
     
     /**
      * Update display of a specific square
      */
     updateSquareDisplay(row, col) {
-        const squareObj = this.getSquareAt(row, col);
-        if (squareObj) {
-            squareObj.loadFromGridData();
-            squareObj.updateDisplay();
+        const square = this.getSquare(row, col);
+        if (square && square.updateDisplay) {
+            square.updateDisplay();
         }
     }
     
@@ -329,48 +195,31 @@ class Crossword {
      */
     setSquareType(row, col, type) {
         console.log(`Changing square type at (${row}, ${col}) to ${type}`);
-        
-        const oldSquareObj = this.squareObjects[row][col];
-        if (!oldSquareObj) return;
-        
-        // Update grid data
-        const cell = this.getCell(row, col);
-        if (cell) {
-            cell.type = type;
-        }
-        
-        // Get reference to old element for replacement
-        const oldElement = oldSquareObj.element;
-        const parentNode = oldElement.parentNode;
-        
-        // Destroy old square
-        oldSquareObj.destroy();
-        
+        const oldSquare = this.getSquare(row, col);
+        if (!oldSquare) return;
+        const oldElement = oldSquare.element;
+        const parentNode = oldElement ? oldElement.parentNode : null;
         // Create new square object
-        const newSquareObj = this.createSquareByType(row, col, type);
-        
+        const newSquare = this.createSquareByType(row, col, type);
+        this.grid[row][col] = newSquare;
         // Create new DOM element
-        const newElement = newSquareObj.createElement();
-        
-        // Add edge classes
-        if (col === this.cols - 1) {
-            newElement.classList.add('last-column');
-        }
-        if (row === this.rows - 1) {
-            newElement.classList.add('last-row');
-        }
-        
-        // Replace in DOM
-        if (parentNode) {
+        const newElement = newSquare.createElement();
+        if (col === this.cols - 1) newElement.classList.add('last-column');
+        if (row === this.rows - 1) newElement.classList.add('last-row');
+        // Replace in DOM only if oldElement is still a child of parentNode
+        if (parentNode && oldElement && parentNode.contains(oldElement)) {
             parentNode.replaceChild(newElement, oldElement);
         }
-        
-        // Store new square object
-        this.squareObjects[row][col] = newSquareObj;
-        
-        // Set up event listeners now that element is in DOM
-        newSquareObj.setupEventListeners();
-        
+        // Destroy old square after DOM replacement
+        oldSquare.destroy && oldSquare.destroy();
+        // Set up event listeners
+        newSquare.setupEventListeners && newSquare.setupEventListeners();
+        // Re-render the square to update its display
+        newSquare.render && newSquare.render();
+        // Update navigationManager reference if needed
+        if (this.navigationManager) {
+            newSquare.navigationManager = this.navigationManager;
+        }
         console.log(`Square type changed successfully at (${row}, ${col})`);
     }
     
@@ -379,16 +228,13 @@ class Crossword {
      */
     highlightWord(word) {
         console.log('Highlighting word:', word);
-        
-        // Clear previous highlighting
         this.clearWordHighlight();
-        
         if (word) {
             this.highlightedWord = word;
-            word.squares.forEach((square, index) => {
-                const squareObj = this.getSquareAt(square.row, square.col);
-                if (squareObj && squareObj.element) {
-                    squareObj.element.classList.add('word-highlighted');
+            word.squares.forEach(({row, col}) => {
+                const square = this.getSquare(row, col);
+                if (square && square.element) {
+                    square.element.classList.add('word-highlighted');
                 }
             });
         }
@@ -398,10 +244,10 @@ class Crossword {
      * Clear word highlighting
      */
     clearWordHighlight() {
-        this.squareObjects.forEach(row => {
-            row.forEach(squareObj => {
-                if (squareObj && squareObj.element) {
-                    squareObj.element.classList.remove('word-highlighted');
+        this.grid.forEach(row => {
+            row.forEach(square => {
+                if (square && square.element) {
+                    square.element.classList.remove('word-highlighted');
                 }
             });
         });
@@ -413,11 +259,10 @@ class Crossword {
      */
     updateAllSquares() {
         console.log('Updating all squares');
-        this.squareObjects.forEach((row, rIdx) => {
-            row.forEach((squareObj, cIdx) => {
-                if (squareObj) {
-                    squareObj.loadFromGridData();
-                    squareObj.updateDisplay();
+        this.grid.forEach(row => {
+            row.forEach(square => {
+                if (square && square.updateDisplay) {
+                    square.updateDisplay();
                 }
             });
         });
@@ -436,36 +281,23 @@ class Crossword {
      */
     loadFromData(data) {
         console.log('Loading crossword from data');
-        
         if (data.grid && Array.isArray(data.grid)) {
-            // Update dimensions if needed
             this.rows = data.grid.length;
             this.cols = data.grid[0] ? data.grid[0].length : this.cols;
-            
-            // Load grid data
-            this.grid = data.grid.map(row => row.map(cell => ({
-                type: cell.type || 'letter',
-                value: cell.value || '',
-                borders: cell.borders || { top: false, bottom: false, left: false, right: false },
-                color: cell.color || null,
-                arrow: cell.arrow || null,
-                value1: cell.value1 || '',
-                value2: cell.value2 || '',
-                split: cell.split || false,
-                imageClue: cell.imageClue || null
-            })));
-            
-            // Re-render with new data
+            this.grid = data.grid.map((row, rIdx) =>
+                row.map((cell, cIdx) => {
+                    const square = this.createSquareByType(rIdx, cIdx, cell.type || 'letter');
+                    // Restore properties if present
+                    if (cell.value !== undefined && square.setValue) square.setValue(cell.value);
+                    if (cell.arrow !== undefined && square.setArrow) square.setArrow(cell.arrow);
+                    if (cell.borders && square.borders) square.borders = { ...cell.borders };
+                    if (cell.color !== undefined && square.setColor) square.setColor(cell.color);
+                    if (cell.imageClue !== undefined && square.setImageClue) square.setImageClue(cell.imageClue);
+                    // Add more as needed for other square types
+                    return square;
+                })
+            );
             this.render();
-            
-            // After rendering, make sure all squares display their loaded data
-            this.squareObjects.forEach((row, rIdx) => {
-                row.forEach((squareObj, cIdx) => {
-                    if (squareObj) {
-                        squareObj.updateDisplay();
-                    }
-                });
-            });
         }
     }
     
@@ -477,7 +309,17 @@ class Crossword {
         return {
             rows: this.rows,
             cols: this.cols,
-            grid: this.grid.map(row => row.map(cell => ({ ...cell })))
+            grid: this.grid.map(row => row.map(square => {
+                // Extract properties from square objects
+                const data = { type: square.getSquareType() };
+                if (square.getValue) data.value = square.getValue();
+                if (square.arrow !== undefined) data.arrow = square.arrow;
+                if (square.borders) data.borders = { ...square.borders };
+                if (square.color !== undefined) data.color = square.color;
+                if (square.imageClue !== undefined) data.imageClue = square.imageClue;
+                // Add more as needed for other square types
+                return data;
+            }))
         };
     }
     
@@ -486,21 +328,19 @@ class Crossword {
      */
     destroy() {
         console.log('Destroying crossword');
-        
         // Clean up square objects
-        this.squareObjects.forEach(row => {
-            row.forEach(squareObj => {
-                if (squareObj) {
-                    squareObj.destroy();
-                }
+        if (this.grid) {
+            this.grid.forEach(row => {
+                row.forEach(squareObj => {
+                    if (squareObj) {
+                        squareObj.destroy();
+                    }
+                });
             });
-        });
-        
+        }
         // Clear container
         this.container.innerHTML = '';
-        
         // Clear references
-        this.squareObjects = [];
         this.grid = [];
     }
 }

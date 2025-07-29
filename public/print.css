@@ -15,9 +15,8 @@
     
     /* Minimize page margins to maximize space */
     @page {
-        margin: var(--print-small);
-        size: 210mm 297mm; 
-        margin: 0;
+        margin: 10mm 10mm 10mm 10mm;
+        size: 210mm 297mm;
         /* Hide headers and footers where supported */
         @top-left { content: ""; }
         @top-center { content: ""; }
@@ -54,7 +53,13 @@
         box-shadow: none !important;
         border: none !important;
     }
-    
+
+    #crossword-container {
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
     #crosswordTitle {
         width: auto !important;
         padding: 0 !important;

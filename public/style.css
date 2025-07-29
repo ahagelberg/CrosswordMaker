@@ -228,56 +228,9 @@ body {
 .square.black {
     background: var(--background-black);
 }
-.square.clue input {
-    font-size: var(--font-md);
-    width: 90%;
-    height: 90%;
-    border: none;
-    background: transparent;
-    outline: none;
-    text-align: center;
-}
-.square.clue textarea {
-    font-size: var(--font-xs);
-    width: 90%;
-    height: 90%;
-    border: none;
-    background: transparent;
-    outline: none;
-    text-align: center;
-    resize: none;
-    overflow: hidden;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    hyphens: auto;
-    -webkit-hyphens: auto;
-    -ms-hyphens: auto;
-    -moz-hyphens: auto;
-    hyphenate-limit-chars: 6 3 3;
-    line-height: 1.1;
-    font-family: Arial, sans-serif;
-    text-transform: uppercase;
-    display: none;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-}
 
-.square.clue textarea.single {
-    height: 100%;
-}
-
-.square.clue textarea.split {
-    height: 45%;
-}
-
-.square.clue textarea.split.lower {
-    top: 50%;
-}
-
-/* Clue text content display elements */
-.clue-text-content {
+/* Clue square content display */
+.square.clue .clue-content {
     font-family: Arial, sans-serif;
     text-transform: uppercase;
     text-align: center;
@@ -290,27 +243,7 @@ body {
     align-items: center;
     justify-content: center;
     line-height: 1.1;
-    font-size: var(--font-xs);
-}
-
-.clue-text-content.split {
-    flex-direction: column;
-    height: 100%;
-    width: 90%;
-}
-
-.clue-text-part {
-    font-family: Arial, sans-serif;
-    text-transform: uppercase;
-    text-align: center;
-    height: 45%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    hyphens: auto;
-    line-height: 1.1;
+    font-size: var(--font-xs) !important;
 }
 
 /* Utility classes for showing/hiding elements */
@@ -1345,7 +1278,7 @@ body {
     justify-content: center;
     text-align: center;
     padding: var(--size-xs);
-    font-size: var(--font-xs);
+    font-size: var(--font-xs) !important;
     line-height: 1.2;
     overflow: hidden;
     font-family: Arial, sans-serif;
@@ -1360,7 +1293,7 @@ body {
     justify-content: center;
     text-align: center;
     padding: 1px;
-    font-size: var(--font-xs);
+    font-size: var(--font-xs) !important;
     line-height: 1.1;
     overflow: hidden;
     border-bottom: var(--square-border-width) solid var(--border-medium);
@@ -1374,7 +1307,7 @@ body {
     justify-content: center;
     text-align: center;
     padding: 1px;
-    font-size: var(--font-xs);
+    font-size: var(--font-xs) !important;
     line-height: 1.1;
     overflow: hidden;
 }
@@ -1390,4 +1323,17 @@ body {
     background-position: center;
     opacity: 0.8;
     pointer-events: none;
+}
+
+.square.clue {
+    background: #f0f0f0;
+}
+
+@media print {
+    .square.clue {
+        background: none !important;
+    }
+    #crossword-container {
+        box-shadow: none !important;
+    }
 }

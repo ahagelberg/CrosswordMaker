@@ -2,15 +2,61 @@
  * NavigationManager - Handles keyboard navigation and focus management
  */
 class NavigationManager {
+    /**
+     * Sets up a global keydown event handler to forward events to the currently focused square
+     */
+    setupGlobalKeydownHandler() {
+        if (this._globalKeydownHandler) return; // Prevent multiple bindings
+        this._globalKeydownHandler = (e) => {
+            // Handle global shortcuts first
+            if (this.handleGlobalShortcuts(e)) {
+                return;
+            }
+            // Handle arrow key navigation
+            if (this.handleGridNavigation(e)) {
+                return;
+            }
+            // Forward to focused square if appropriate
+            if (this.crossword && this.focusedSquare) {
+                const { row, col } = this.focusedSquare;
+                const square = this.crossword.getSquare(row, col);
+                if (square && typeof square.handleKeydown === 'function') {
+                    square.handleKeydown(e);
+                }
+            }
+        };
+        document.addEventListener('keydown', this._globalKeydownHandler, true);
+    }
+
+    /**
+     * Removes the global keydown event handler
+     */
+    removeGlobalKeydownHandler() {
+        if (this._globalKeydownHandler) {
+            document.removeEventListener('keydown', this._globalKeydownHandler, true);
+            this._globalKeydownHandler = null;
+        }
+    }
     constructor() {
-        console.log('Creating NavigationManager');
         this.crossword = null; // Will be set by setCrossword()
         this.focusedSquare = { row: 0, col: 0 };
         this.entryDirection = 'horizontal';
         this.lastEnteredPosition = null;
         this.lastChangedPosition = null;
-        
-        //this.setupEventListeners();
+        // Listen for individual square events
+        document.addEventListener('square:set-type', (e) => {
+            const { row, col, type } = e.detail;
+            if (this.crossword) this.crossword.setSquareType(row, col, type);
+        });
+        document.addEventListener('square:set-arrow', (e) => {
+            const { row, col, arrow } = e.detail;
+            if (this.crossword) this.crossword.setCellArrow(row, col, arrow);
+        });
+        document.addEventListener('square:set-color', (e) => {
+            const { row, col, color } = e.detail;
+            if (this.crossword) this.crossword.setCellColor(row, col, color);
+        });
+        // Add more square:??? event listeners as needed
     }
 
     /**
@@ -26,25 +72,15 @@ class NavigationManager {
      * Sets up keyboard event listeners
      */
     setupEventListeners() {
-        // Single global keydown handler for all keyboard events
-        document.addEventListener('keydown', (e) => this.handleGlobalKeydown(e), false);
+        // Set up the global keydown handler for forwarding to focused square
+        this.setupGlobalKeydownHandler();
     }
 
     /**
      * Main keydown event handler - routes events to appropriate sub-handlers
      * @param {KeyboardEvent} e - The keyboard event
      */
-    handleGlobalKeydown(e) {
-        // Handle global shortcuts first
-        if (this.handleGlobalShortcuts(e)) {
-            return; // Event was handled, stop processing
-        }
-
-        // Handle navigation events within the crossword grid
-        if (e.target.closest('.crossword-grid') && !e.target.closest('.clue-edit-overlay')) {
-            this.handleGridNavigation(e);
-        }
-    }
+    // handleGlobalKeydown is now handled by the global keydown handler
 
     /**
      * Handles global keyboard shortcuts
@@ -99,7 +135,10 @@ class NavigationManager {
     moveArrowKeys(direction) {
         let newRow = this.focusedSquare.row;
         let newCol = this.focusedSquare.col;
-        
+
+        // Dispatch event to hide any open context menu when moving focus with arrow keys
+        document.dispatchEvent(new CustomEvent('contextmenu:hide'));
+
         // Navigate to other squares
         switch (direction) {
             case 'up':
@@ -115,7 +154,7 @@ class NavigationManager {
                 newCol = Math.min(this.crossword.cols - 1, newCol + 1);
                 break;
         }
-        
+
         this.updateFocusedSquare(newRow, newCol);
         setTimeout(() => this.focusSquare(newRow, newCol), 10);
     }
@@ -205,39 +244,47 @@ class NavigationManager {
             console.warn('NavigationManager: crossword not set');
             return null;
         }
-        
+
         let nextRow = fromRow;
         let nextCol = fromCol;
-        
-        if (this.entryDirection === 'horizontal') {
-            nextCol++;
-            if (nextCol >= this.crossword.cols || 
-                this.crossword.getCell(nextRow, nextCol)?.type !== 'letter' || 
-                this.crossword.getCell(nextRow, nextCol)?.value !== '') {
-                // Can't move horizontally, try vertical
-                nextCol = fromCol;
-                nextRow++;
-                if (nextRow >= this.crossword.rows || 
-                    this.crossword.getCell(nextRow, nextCol)?.type !== 'letter') {
-                    return null; // No valid next square
+
+        if (this.entryDirection === 'vertical') {
+            nextRow++;
+            if (nextRow < this.crossword.rows) {
+                const sq = this.crossword.getSquare(nextRow, nextCol);
+                if (sq && sq.getSquareType && sq.getSquareType() === 'letter') {
+                    return { row: nextRow, col: nextCol };
                 }
             }
-        } else { // vertical
+            // If not valid, try right
+            nextRow = fromRow;
+            nextCol++;
+            if (nextCol < this.crossword.cols) {
+                const sq = this.crossword.getSquare(nextRow, nextCol);
+                if (sq && sq.getSquareType && sq.getSquareType() === 'letter') {
+                    return { row: nextRow, col: nextCol };
+                }
+            }
+        } else { // horizontal (default)
+            nextCol++;
+            if (nextCol < this.crossword.cols) {
+                const sq = this.crossword.getSquare(nextRow, nextCol);
+                if (sq && sq.getSquareType && sq.getSquareType() === 'letter') {
+                    return { row: nextRow, col: nextCol };
+                }
+            }
+            // If not valid, try below
+            nextCol = fromCol;
             nextRow++;
-            if (nextRow >= this.crossword.rows || 
-                this.crossword.getCell(nextRow, nextCol)?.type !== 'letter' || 
-                this.crossword.getCell(nextRow, nextCol)?.value !== '') {
-                // Can't move vertically, try horizontal
-                nextRow = fromRow;
-                nextCol++;
-                if (nextCol >= this.crossword.cols || 
-                    this.crossword.getCell(nextRow, nextCol)?.type !== 'letter') {
-                    return null; // No valid next square
+            if (nextRow < this.crossword.rows) {
+                const sq = this.crossword.getSquare(nextRow, nextCol);
+                if (sq && sq.getSquareType && sq.getSquareType() === 'letter') {
+                    return { row: nextRow, col: nextCol };
                 }
             }
         }
-        
-        return { row: nextRow, col: nextCol };
+        // No valid next square
+        return null;
     }
 
     /**
@@ -259,28 +306,22 @@ class NavigationManager {
      * @returns {boolean} True if input was valid
      */
     onLetterInput(row, col, value) {
-        const upperValue = value.toUpperCase();
-        if (/^[A-Za-zÅÄÖÆØåäöæø]$/i.test(upperValue)) {
-            // The square has already updated its value and grid data
-            // Just handle navigation logic here
-            
-            // Detect direction based on current position relative to last position
-            this.detectDirection(row, col);
-            
-            // Update last changed position when letter is actually entered
-            this.lastChangedPosition = { row, col };
-            
-            // Move to next square
-            const next = this.moveToNextSquare(row, col);
-            if (next) {
-                setTimeout(() => this.focusSquare(next.row, next.col), 10);
+        // Detect direction based on current position relative to last position
+        this.detectDirection(row, col);
+        // Update last changed position when letter is actually entered
+        this.lastChangedPosition = { row, col };
+
+        // Move to next square
+        const next = this.moveToNextSquare(row, col);
+        if (next) {
+            // Only move if the next square is a letter square
+            const nextSquare = this.crossword.getSquare(next.row, next.col);
+            if (nextSquare && nextSquare.getSquareType && nextSquare.getSquareType() === 'letter') {
+                this.focusSquare(next.row, next.col);
             }
-            this.lastEnteredPosition = { row, col };
-            return true;
-        } else {
-            // Invalid input - the square should have already cleared itself
-            return false;
         }
+        this.lastEnteredPosition = { row, col };
+        return true;
     }
 
     /**

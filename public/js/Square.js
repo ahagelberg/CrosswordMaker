@@ -5,226 +5,69 @@ class Square {
     constructor(row, col, crossword, navigationManager) {
         this.row = row;
         this.col = col;
-        this.crossword = crossword; // Changed from crosswordGrid to crossword
+        this.crossword = crossword;
         this.navigationManager = navigationManager;
-        
-        // Common properties
         this.borders = { top: false, bottom: false, left: false, right: false };
         this.color = null;
-        
-        // DOM element reference
         this.element = null;
-        
-        // State tracking
         this.isFocused = false;
         this.isSelected = false;
-        
-        // Load data first, then create element
-        // DON'T set up event listeners yet - wait for explicit call after DOM insertion
-        this.loadFromGridData();
-        // createElement() will be called by the Crossword class
     }
 
-    /**
-     * Abstract method - must be implemented by subclasses
-     * @returns {string} The type of square
-     */
     getSquareType() {
         throw new Error('getSquareType must be implemented by subclasses');
     }
 
     /**
-     * Abstract method - must be implemented by subclasses
-     */
-    renderContent() {
-        throw new Error('renderContent must be implemented by subclasses');
-    }
-
-    /**
-     * Creates and returns the DOM element for this square - CALLED ONLY ONCE
-     * @returns {HTMLElement} The square element
+     * Creates the HTML element for this square
      */
     createElement() {
         const element = document.createElement('div');
         element.className = `square ${this.getSquareType()}`;
-        element.tabIndex = 0; // Make sure element can receive focus and keyboard events
+        //element.tabIndex = 0;
         element.dataset.row = this.row;
         element.dataset.col = this.col;
-        
         this.element = element;
-        
-        // Render initial content and apply visual properties
-        this.renderContent();
-        this.applyVisualProperties();
-        this.updateFocusState();
-        this.updateSelectionState();
-        
         return element;
     }
 
     /**
-     * Sets up event listeners for this square
+     * Sets up event listeners for the square
+     * and updates the content and visual properties.
+     * Should be called once after the element is created.
      */
-    setupEventListeners() {
+    render() {
         if (!this.element) return;
-        // Click handler - bind to preserve 'this' context
-        this.element.addEventListener('click', this.handleClick.bind(this));
-                
-        // Keyboard handler - bind to preserve 'this' context
-        this.element.addEventListener('keydown', this.handleKeydown.bind(this));
-        
-        // Context menu handler - bind to preserve 'this' context
-        this.element.addEventListener('contextmenu', this.handleContextMenu.bind(this));
-        
-        // Focus handlers - bind to preserve 'this' context
-        this.element.addEventListener('focus', this.handleFocus.bind(this));
-        this.element.addEventListener('blur', this.handleBlur.bind(this));
-    }
-
-    /**
-     * Handles click events on this square - can be overridden by subclasses
-     * @param {Event} e - Click event
-     */
-    handleClick(e) {
-        e.stopPropagation();
-        
-        // Update navigation manager's focus and detect direction
-        this.navigationManager.updateFocusedSquare(this.row, this.col);
-        this.navigationManager.onInputFocus(this.row, this.col);
-        this.navigationManager.focusSquare(this.row, this.col);
-    }
-
-    /**
-     * Handles keyboard input - can be overridden by subclasses
-     * @param {KeyboardEvent} e - Keyboard event
-     */
-    handleKeydown(e) {
-        // Default implementation - subclasses can override
-    }
-
-    /**
-     * Handles context menu events
-     * @param {Event} e - Context menu event
-     */
-    handleContextMenu(e) {
-        e.preventDefault();
-        
-        // Dispatch context menu event
-        document.dispatchEvent(new CustomEvent('crossword:contextmenu', {
-            detail: { event: e, row: this.row, col: this.col, square: this }
-        }));
-    }
-
-    /**
-     * Handles focus events
-     */
-    handleFocus() {
-        this.isFocused = true;
-        this.updateFocusState();
-    }
-
-    /**
-     * Handles blur events
-     */
-    handleBlur() {
-        this.isFocused = false;
-        this.updateFocusState();
-    }
-
-    /**
-     * Sets a border for this square
-     * @param {string} side - Border side ('top', 'bottom', 'left', 'right')
-     * @param {boolean} enabled - Whether border is enabled
-     */
-    setBorder(side, enabled) {
-        if (this.borders.hasOwnProperty(side)) {
-            this.borders[side] = enabled;
-            this.updateGridData();
-            this.updateDisplay();
-        }
-    }
-
-    /**
-     * Sets the background color
-     * @param {string|null} color - Color value or null
-     */
-    setColor(color) {
-        this.color = color;
-        this.updateGridData();
+        this.setupEventListeners();
         this.updateDisplay();
     }
 
     /**
-     * Selects this square
-     */
-    select() {
-        this.isSelected = true;
-        this.updateSelectionState();
-    }
-
-    /**
-     * Deselects this square
-     */
-    deselect() {
-        this.isSelected = false;
-        this.updateSelectionState();
-    }
-
-    /**
-     * Focuses this square
-     */
-    focus() {
-        if (this.element) {
-            this.element.focus();
-        }
-    }
-
-    /**
-     * Gets the input element for this square - can be overridden by subclasses
-     * @returns {HTMLElement|null} Input element or null
-     */
-    getInputElement() {
-        return null;
-    }
-
-    /**
-     * Gets the current value of this square - can be overridden by subclasses
-     * @returns {string} The square's value
-     */
-    getValue() {
-        return '';
-    }
-
-    /**
-     * Updates the display of this square
+     * Updates the display of the square
+     * including content, visual properties, focus, and selection state.
      */
     updateDisplay() {
         if (!this.element) return;
-        
-        // First reload data from grid to ensure we have current values
-        this.loadFromGridData();
-        
-        // Update base classes (never remove the square type class)
-        this.element.className = `square ${this.getSquareType()}`;
-        
-        // Re-render content without destroying the element
-        this.renderContent();
-        
-        // Apply visual properties
-        this.applyVisualProperties();
-        
-        // Update states
+        this.updateContentDisplay();
+        this.updateVisualProperties();
         this.updateFocusState();
         this.updateSelectionState();
     }
 
     /**
-     * Applies visual properties like borders and colors
+     * Updates the square with its current value
+     * Should be implemented by subclasses to show specific content.
      */
-    applyVisualProperties() {
+    updateContentDisplay() {
+        throw new Error('updateContentDisplay must be implemented by subclasses');
+    }
+
+    /**
+     * Updates the visual properties of the square
+     * such as borders and background color.
+     */
+    updateVisualProperties() {
         if (!this.element) return;
-        
-        // Apply borders
         Object.keys(this.borders).forEach(side => {
             if (this.borders[side]) {
                 this.element.classList.add(`border-${side}`);
@@ -232,8 +75,6 @@ class Square {
                 this.element.classList.remove(`border-${side}`);
             }
         });
-        
-        // Apply background color
         if (this.color) {
             this.element.style.backgroundColor = this.color;
         } else {
@@ -241,12 +82,8 @@ class Square {
         }
     }
 
-    /**
-     * Updates the focus state visual
-     */
     updateFocusState() {
         if (!this.element) return;
-        
         if (this.isFocused) {
             this.element.classList.add('focused');
         } else {
@@ -254,12 +91,8 @@ class Square {
         }
     }
 
-    /**
-     * Updates the selection state visual
-     */
     updateSelectionState() {
         if (!this.element) return;
-        
         if (this.isSelected) {
             this.element.classList.add('selected');
         } else {
@@ -267,32 +100,80 @@ class Square {
         }
     }
 
-    /**
-     * Updates grid data with current square state - can be extended by subclasses
-     */
-    updateGridData() {
-        const cell = this.crossword.getCell(this.row, this.col);
-        if (cell) {
-            cell.type = this.getSquareType();
-            cell.borders = { ...this.borders };
-            cell.color = this.color;
+    setupEventListeners() {
+        if (!this.element) return;
+        // Add event listeners for click, keydown, contextmenu, focus, and blur
+        this.element.addEventListener('click', this.handleClick.bind(this));
+        this.element.addEventListener('keydown', this.handleKeydown.bind(this));
+        this.element.addEventListener('contextmenu', this.handleContextMenu.bind(this));
+        this.element.addEventListener('focus', this.handleFocus.bind(this));
+        this.element.addEventListener('blur', this.handleBlur.bind(this));
+    }
+
+    handleClick(e) {
+        e.stopPropagation();
+        this.navigationManager.updateFocusedSquare(this.row, this.col);
+        this.navigationManager.onInputFocus(this.row, this.col);
+        this.navigationManager.focusSquare(this.row, this.col);
+    }
+
+    handleKeydown(e) {}
+
+    handleContextMenu(e) {
+        e.preventDefault();
+        // Dispatch a context menu event with the square instance
+        const event = new CustomEvent('crossword:contextmenu', {
+            bubbles: true,
+            detail: { event: e, row: this.row, col: this.col, square: this }
+        });
+        this.element.dispatchEvent(event);
+    }
+
+    handleFocus() {
+        this.isFocused = true;
+        this.updateFocusState();
+        // Hide any open context menu when focus moves (e.g., via arrow keys)
+        const contextMenus = document.querySelectorAll('.context-menu');
+        contextMenus.forEach(menu => menu.remove());
+    }
+
+    handleBlur() {
+        this.isFocused = false;
+        this.updateFocusState();
+    }
+
+    setBorder(side, enabled) {
+        if (this.borders.hasOwnProperty(side)) {
+            this.borders[side] = enabled;
+            this.updateVisualProperties();
         }
     }
 
-    /**
-     * Loads data from grid cell into this square - can be extended by subclasses
-     */
-    loadFromGridData() {
-        const cell = this.crossword.getCell(this.row, this.col);
-        if (cell) {
-            this.borders = { ...cell.borders } || { top: false, bottom: false, left: false, right: false };
-            this.color = cell.color || null;
+    setColor(color) {
+        this.color = color;
+        this.updateVisualProperties();
+    }
+
+    select() {
+        this.isSelected = true;
+        this.updateSelectionState();
+    }
+
+    deselect() {
+        this.isSelected = false;
+        this.updateSelectionState();
+    }
+
+    focus() {
+        if (this.element) {
+            this.element.focus();
         }
     }
 
-    /**
-     * Destroys this square and cleans up event listeners
-     */
+    getValue() {
+        return null;
+    }
+
     destroy() {
         if (this.element) {
             this.element.remove();
@@ -301,9 +182,8 @@ class Square {
     }
 }
 
-/**
- * LetterSquare - Square for letter input (using div element with keyboard handling)
- */
+
+
 class LetterSquare extends Square {
     constructor(row, col, crossword, navigationManager) {
         super(row, col, crossword, navigationManager);
@@ -311,111 +191,75 @@ class LetterSquare extends Square {
         this.arrow = null;
     }
 
-    getSquareType() {
-        return 'letter';
+    getSquareType() { return 'letter'; }
+
+    createElement() {
+        const element = super.createElement();
+        const content = document.createElement('div');
+        content.className = 'letter-content';
+        this.contentElement = content;
+        this.element.appendChild(content);
+        const arrow = document.createElement('div');
+        arrow.className = 'arrow';
+        this.arrowElement = arrow;
+        element.appendChild(arrow);
+        return element;
+    }
+
+    updateContentDisplay() {
+        if (!this.contentElement) return;
+        this.contentElement.textContent = this.value || '';
+    }
+
+    updateVisualProperties() {
+        if (!this.element) return;
+        super.updateVisualProperties();
+        if (this.arrow) {
+            this.arrowElement.style.display = 'block';
+            this.arrowElement.className = `arrow ${this.arrow}`;
+        } else {
+            this.arrowElement.style.display = 'none';
+            this.arrowElement.className = 'arrow';
+        }
     }
 
     handleClick(e) {
-        // If click came from a child element, treat it as a click on this square
-        if (e.target !== this.element) {
-            e.stopPropagation();
-        }
-        
+        if (e.target !== this.element) e.stopPropagation();
         super.handleClick(e);
-        // Ensure the element is focused so it can receive keyboard events
         this.focus();
-        // Dispatch word click event for highlighting
-        document.dispatchEvent(new CustomEvent('crossword:wordclick', {
-            detail: { row: this.row, col: this.col }
-        }));
+        // Use event-driven word click
+        const event = new CustomEvent('crossword:wordclick', {
+            bubbles: true,
+            detail: { row: this.row, col: this.col, square: this }
+        });
+        this.element.dispatchEvent(event);
     }
 
     handleKeydown(e) {
-        // Handle letter input for Nordic and English letters, but only if no modifier keys are pressed (except Shift)
         if (e.key.length === 1 && /^[A-Za-zÅÄÖÆØåäöæø]$/i.test(e.key) && !e.ctrlKey && !e.altKey && !e.metaKey) {
             e.preventDefault();
-            const upperValue = e.key.toUpperCase();
-            this.setValue(upperValue);
-            // Let NavigationManager handle navigation logic
-            this.navigationManager.onLetterInput(this.row, this.col, upperValue);
+            const value = e.key.toUpperCase();
+            this.setValue(value);
+            this.navigationManager.onLetterInput(this.row, this.col, value);
         } else if ((e.key === 'Backspace' || e.key === 'Delete') && !e.ctrlKey && !e.altKey && !e.metaKey) {
             e.preventDefault();
             this.setValue('');
-            // Let NavigationManager know about the deletion
-            this.navigationManager.onLetterInput(this.row, this.col, '');
+            this.navigationManager.onLetterInput(this.row, this.col, null);
         }
     }
 
     setValue(value) {
         this.value = value;
-        this.updateGridData();
         this.updateDisplay();
     }
 
     setArrow(arrow) {
         this.arrow = arrow;
-        this.updateGridData();
         this.updateDisplay();
     }
 
-    renderContent() {
-        // Clear existing content (but not the element itself)
-        this.element.innerHTML = '';
-        
-        // Apply background color if set
-        if (this.color) {
-            this.element.style.backgroundColor = this.color;
-        } else {
-            this.element.style.backgroundColor = ''; // Clear background color
-        }
-        
-        // Create content div for letter display
-        const content = document.createElement('div');
-        content.className = 'letter-content';
-        content.textContent = this.value || '';
-        
-        this.element.appendChild(content);
-        
-        // Add arrow indicator if present
-        if (this.arrow) {
-            const arrow = document.createElement('div');
-            arrow.className = `arrow ${this.arrow}`;
-            this.element.appendChild(arrow);
-        }
-    }
-
-    getInputElement() {
-        // No longer has input element, return null
-        return null;
-    }
-
-    focus() {
-        if (this.element) {
-            this.element.focus();
-        }
-    }
-
-    updateGridData() {
-        super.updateGridData();
-        const cell = this.crossword.getCell(this.row, this.col);
-        if (cell) {
-            cell.value = this.value;
-            cell.arrow = this.arrow;
-        }
-    }
-
-    loadFromGridData() {
-        super.loadFromGridData();
-        const cell = this.crossword.getCell(this.row, this.col);
-        if (cell) {
-            this.value = cell.value || '';
-            this.arrow = cell.arrow || null;
-        }
-    }
-
-    getValue() {
-        return this.value;
-    }
+    getInputElement() { return null; }
+    getValue() { return this.value; }
 }
 
 /**
@@ -619,10 +463,17 @@ class ClueSquare extends Square {
         this.value = '';
         this.value1 = ''; // For split clues
         this.value2 = ''; // For split clues
-        this.split = false;
-        this.imageClue = null;
         this.isEditing = false;
-        this.clickedPart = null; // Track which part of split square was clicked
+    }
+
+    createElement() {
+        const element = super.createElement();
+        element.classList.add('clue');
+        const content = document.createElement('div');
+        content.className = 'clue-content';
+        this.contentElement = content;
+        this.element.appendChild(content);
+        return element;
     }
 
     getSquareType() {
@@ -641,7 +492,6 @@ class ClueSquare extends Square {
                 this.clickedPart = null;
             }
         }
-        
         super.handleClick(e);
         this.enterEditingMode();
     }
@@ -649,54 +499,30 @@ class ClueSquare extends Square {
     handleKeydown(e) {
         // Let the textarea handle the input naturally
         if (this.isEditing) {
+            // Close the clue editor on Ctrl+Enter
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                if (typeof clueEditOverlay !== 'undefined' && clueEditOverlay && clueEditOverlay.isVisible) {
+                    clueEditOverlay.hide();
+                }
+            }
             return;
         }
-        
-        // Enter editing mode on any key press
-        if (e.key !== 'Tab' && e.key !== 'Escape') {
+        // Only enter editing mode on Enter key
+        if (e.key === 'Enter') {
+            e.preventDefault();
             this.enterEditingMode();
         }
     }
 
     setValue(value) {
         this.value = value;
-        this.updateGridData();
-        this.updateDisplay();
+        this.updateContentDisplay();
     }
 
-    setSplitValues(value1, value2) {
-        this.value1 = value1;
-        this.value2 = value2;
-        this.updateGridData();
-        this.updateDisplay();
-    }
-
-    splitHorizontally() {
-        this.split = true;
-        this.value1 = this.value || '';
-        this.value2 = '';
-        this.updateGridData();
-        this.updateDisplay();
-    }
-
-    removeSplit() {
-        if (this.split) {
-            const combinedValue = [this.value1 || '', this.value2 || '']
-                .filter(v => v.trim())
-                .join(' ');
-            this.split = false;
-            this.value = combinedValue;
-            this.value1 = '';
-            this.value2 = '';
-            this.updateGridData();
-            this.updateDisplay();
-        }
-    }
-
-    setImageClue(imageClue) {
-        this.imageClue = imageClue;
-        this.updateGridData();
-        this.updateDisplay();
+    updateContentDisplay() {
+        if (!this.contentElement) return;
+        this.contentElement.innerHTML = this.value ? this.value : '';
     }
 
     enterEditingMode() {
@@ -719,82 +545,12 @@ class ClueSquare extends Square {
         }
     }
 
-    renderContent() {
-        // Clear existing content (but not the element itself)
-        this.element.innerHTML = '';
-        
-        if (this.split) {
-            this.renderSplitClueSquare();
-        } else {
-            this.renderSingleClueSquare();
-        }
-        
-        // Add image overlay if present
-        if (this.imageClue) {
-            const imageOverlay = document.createElement('div');
-            imageOverlay.className = 'image-overlay';
-            imageOverlay.style.backgroundImage = `url(${this.imageClue.imageData})`;
-            this.element.style.position = 'relative';
-            this.element.appendChild(imageOverlay);
-        }
-    }
-
-    renderSingleClueSquare() {
-        // Create display text
-        const textDisplay = document.createElement('div');
-        textDisplay.className = 'clue-display';
-        textDisplay.textContent = this.value || '';
-        
-        this.element.appendChild(textDisplay);
-    }
-
-    renderSplitClueSquare() {
-        this.element.classList.add('split');
-        
-        // Create top display
-        const topDisplay = document.createElement('div');
-        topDisplay.className = 'clue-display clue-display-top';
-        topDisplay.textContent = this.value1 || '';
-        
-        // Create bottom display
-        const bottomDisplay = document.createElement('div');
-        bottomDisplay.className = 'clue-display clue-display-bottom';
-        bottomDisplay.textContent = this.value2 || '';
-        
-        this.element.appendChild(topDisplay);
-        this.element.appendChild(bottomDisplay);
-    }
-
     getInputElement() {
         return this.element.querySelector('textarea');
     }
 
     getTextareaElements() {
         return this.element.querySelectorAll('textarea');
-    }
-
-    updateGridData() {
-        super.updateGridData();
-        const cell = this.crossword.getCell(this.row, this.col);
-        if (cell) {
-            cell.value = this.value;
-            cell.value1 = this.value1;
-            cell.value2 = this.value2;
-            cell.split = this.split;
-            cell.imageClue = this.imageClue;
-        }
-    }
-
-    loadFromGridData() {
-        super.loadFromGridData();
-        const cell = this.crossword.getCell(this.row, this.col);
-        if (cell) {
-            this.value = cell.value || '';
-            this.value1 = cell.value1 || '';
-            this.value2 = cell.value2 || '';
-            this.split = cell.split || false;
-            this.imageClue = cell.imageClue || null;
-        }
     }
 
     getValue() {
@@ -818,19 +574,7 @@ class BlackSquare extends Square {
         return 'black';
     }
 
-    renderContent() {
-        this.element.classList.add('black');
-        
-        // Add click handler to the element itself to ensure clicks work
-        // (Black squares don't have child content, but ensure the element is clickable)
-        this.element.style.cursor = 'pointer';
-    }
-
-    getInputElement() {
-        return null;
-    }
-
-    getValue() {
-        return '';
+    updateContentDisplay() {
+        // No content to display for black squares
     }
 }

@@ -7,6 +7,10 @@ class ContextMenu {
         this.crossword = null; // Will be set by setCrossword()
         this.navigationManager = null; // Will be set by setCrossword()
         this.onGridChange = null; // Callback for when grid changes
+        // Listen for event to hide context menu
+        document.addEventListener('contextmenu:hide', () => {
+            this.removeExistingMenus();
+        });
     }
 
     /**
@@ -35,34 +39,75 @@ class ContextMenu {
      */
     show(e, r, c) {
         e.preventDefault();
-        
-        // Remove any existing context menu
         this.removeExistingMenus();
-        
         const menu = document.createElement('div');
         menu.className = 'context-menu';
         menu.style.position = 'absolute';
         menu.style.left = e.pageX + 'px';
         menu.style.top = e.pageY + 'px';
-        
-        const cell = this.crossword.getCell(r, c);
-        
-        if (cell.type === 'letter') {
-            this.addLetterSquareOptions(menu, r, c, cell);
-        } else if (cell.type === 'clue') {
-            this.addClueSquareOptions(menu, r, c, cell);
-        } else if (cell.type === 'black') {
-            this.addBlackSquareOptions(menu, r, c, cell);
+        // Get the square instance from the event detail if available
+        let square = e.detail && e.detail.square ? e.detail.square : null;
+        if (!square && this.crossword) {
+            square = this.crossword.getSquare(r, c);
         }
-        
+        if (!square) {
+            document.body.appendChild(menu);
+            return;
+        }
+
+        // Move focus to the right-clicked square
+        if (this.navigationManager) {
+            this.navigationManager.updateFocusedSquare(square.row, square.col);
+            setTimeout(() => this.navigationManager.focusSquare(square.row, square.col), 10);
+        }
+
+        // Populate menu based on square type
+        const type = square.getSquareType ? square.getSquareType() : (square.type || 'letter');
+        if (type === 'letter') {
+            this.addMenuItem(menu, 'Change to Clue Square', () => {
+                this.dispatchSquareAction(square, 'set-type', { type: 'clue' });
+            });
+            this.addMenuItem(menu, 'Change to Black Square', () => {
+                this.dispatchSquareAction(square, 'set-type', { type: 'black' });
+            });
+            this.addMenuItem(menu, 'Add Arrow', () => {
+                this.dispatchSquareAction(square, 'set-arrow', { arrow: 'top-to-right' });
+            });
+            this.addMenuItem(menu, 'Change Color', () => {
+                this.dispatchSquareAction(square, 'set-color', { color: '#ffcccc' });
+            });
+        } else if (type === 'clue') {
+            this.addMenuItem(menu, 'Change to Letter Square', () => {
+                this.dispatchSquareAction(square, 'set-type', { type: 'letter' });
+            });
+            this.addMenuItem(menu, 'Change to Black Square', () => {
+                this.dispatchSquareAction(square, 'set-type', { type: 'black' });
+            });
+        } else if (type === 'black') {
+            this.addMenuItem(menu, 'Convert to Letter Square', () => {
+                this.dispatchSquareAction(square, 'set-type', { type: 'letter' });
+            });
+            this.addMenuItem(menu, 'Convert to Clue Square', () => {
+                this.dispatchSquareAction(square, 'set-type', { type: 'clue' });
+            });
+        }
         document.body.appendChild(menu);
-        
         // Remove menu when clicking outside
-        const removeMenu = () => {
-            menu.remove();
-            document.removeEventListener('click', removeMenu);
+        // Remove any previous handler
+        if (this._removeMenuHandler) {
+            document.removeEventListener('mousedown', this._removeMenuHandler);
+            this._removeMenuHandler = null;
+        }
+        this._removeMenuHandler = (ev) => {
+            // If click is outside the menu, remove it
+            if (!menu.contains(ev.target)) {
+                this.removeExistingMenus();
+                document.removeEventListener('mousedown', this._removeMenuHandler);
+                this._removeMenuHandler = null;
+            }
         };
-        setTimeout(() => document.addEventListener('click', removeMenu), 100);
+        // Use mousedown for more responsive closing
+        setTimeout(() => document.addEventListener('mousedown', this._removeMenuHandler), 0);
     }
 
     /**
@@ -249,13 +294,45 @@ class ContextMenu {
         const item = document.createElement('div');
         item.className = 'context-menu-item';
         item.textContent = text;
-        item.onclick = () => {
+        item.onclick = (e) => {
+            e.stopPropagation();
             onClick();
-            if (closeMenus) {
-                this.removeExistingMenus();
-            }
+            if (closeMenus) this.removeExistingMenus();
         };
         menu.appendChild(item);
+    }
+
+    /**
+     * Dispatches an action event to the square or via navigationManager
+     */
+    dispatchSquareAction(square, action, detail) {
+        // Prefer dispatching a custom event from the square's element
+        if (square && square.element) {
+            let eventName = '';
+            switch (action) {
+                case 'set-type':
+                    eventName = 'square:set-type';
+                    break;
+                case 'set-arrow':
+                    eventName = 'square:set-arrow';
+                    break;
+                case 'set-color':
+                    eventName = 'square:set-color';
+                    break;
+                // Add more cases as needed
+                default:
+                    return;
+            }
+            const event = new CustomEvent(eventName, {
+                bubbles: true,
+                detail: { ...detail, row: square.row, col: square.col, square }
+            });
+            square.element.dispatchEvent(event);
+        }
+        this.removeExistingMenus();
+        if (typeof this.onGridChange === 'function') {
+            this.onGridChange();
+        }
     }
 
     /**
@@ -314,7 +391,7 @@ class ContextMenu {
             { value: 'right', description: 'Right border' }
         ];
         
-        const cell = this.crossword.getCell(r, c);
+        const cell = this.crossword.getSquare(r, c);
         
         borderOptions.forEach(option => {
             const item = document.createElement('div');
@@ -410,7 +487,7 @@ class ContextMenu {
         
         const colorOptions = this.getColorOptions();
         
-        const cell = this.crossword.getCell(r, c);
+        const cell = this.crossword.getSquare(r, c);
         
         colorOptions.forEach(option => {
             const item = document.createElement('div');
