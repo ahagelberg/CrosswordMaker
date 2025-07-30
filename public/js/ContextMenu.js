@@ -7,7 +7,12 @@ class ContextMenu {
         this.crossword = null; // Will be set by setCrossword()
         this.navigationManager = null; // Will be set by setCrossword()
         this.onGridChange = null; // Callback for when grid changes
-        // Listen for event to hide context menu
+        // Listen for event to show and hide context menu
+        document.addEventListener('contextmenu:show', (e) => {
+            // e.detail contains: event, row, col, square
+            const { event, row, col } = e.detail || {};
+            this.show(event || e, row, col);
+        });
         document.addEventListener('contextmenu:hide', () => {
             this.removeExistingMenus();
         });

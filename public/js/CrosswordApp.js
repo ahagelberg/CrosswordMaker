@@ -80,11 +80,6 @@ class CrosswordApp {
         this.puzzleManager.setOnPuzzleLoad((puzzle) => {
             this.loadPuzzleData(puzzle);
         });
-
-        this.wordManager.setOnWordChange((word) => {
-            this.crossword.highlightWord(word);
-            this.wordDisplay.show(word);
-        });
     }
 
     /**
@@ -131,23 +126,8 @@ class CrosswordApp {
             this.printManager.printKey(this.crosswordTitle);
         });
 
-        // Custom events
-        document.addEventListener('crossword:contextmenu', (e) => {
-            const { event, row, col } = e.detail;
-            this.contextMenu.show(event, row, col);
-        });
-
         document.addEventListener('crossword:save', () => {
             this.savePuzzle();
-        });
-
-        document.addEventListener('crossword:wordclick', (e) => {
-            const { row, col } = e.detail;
-            const result = this.wordManager.handleSquareClick(row, col);
-        });
-
-        document.addEventListener('crossword:clearWordSelection', () => {
-            this.crossword.clearWordHighlight();
         });
     }
 

@@ -104,17 +104,19 @@ class Square {
         if (!this.element) return;
         // Add event listeners for click, keydown, contextmenu, focus, and blur
         this.element.addEventListener('click', this.handleClick.bind(this));
-        this.element.addEventListener('keydown', this.handleKeydown.bind(this));
         this.element.addEventListener('contextmenu', this.handleContextMenu.bind(this));
-        this.element.addEventListener('focus', this.handleFocus.bind(this));
-        this.element.addEventListener('blur', this.handleBlur.bind(this));
     }
 
     handleClick(e) {
         e.stopPropagation();
-        this.navigationManager.updateFocusedSquare(this.row, this.col);
-        this.navigationManager.onInputFocus(this.row, this.col);
-        this.navigationManager.focusSquare(this.row, this.col);
+        // Dispatch a 'square:clicked' event with reference to this square
+        if (this.element) {
+            const event = new CustomEvent('square:clicked', {
+                bubbles: true,
+                detail: { row: this.row, col: this.col, square: this }
+            });
+            this.element.dispatchEvent(event);
+        }
     }
 
     handleKeydown(e) {}
@@ -122,7 +124,7 @@ class Square {
     handleContextMenu(e) {
         e.preventDefault();
         // Dispatch a context menu event with the square instance
-        const event = new CustomEvent('crossword:contextmenu', {
+        const event = new CustomEvent('contextmenu:show', {
             bubbles: true,
             detail: { event: e, row: this.row, col: this.col, square: this }
         });
@@ -132,9 +134,6 @@ class Square {
     handleFocus() {
         this.isFocused = true;
         this.updateFocusState();
-        // Hide any open context menu when focus moves (e.g., via arrow keys)
-        const contextMenus = document.querySelectorAll('.context-menu');
-        contextMenus.forEach(menu => menu.remove());
     }
 
     handleBlur() {
@@ -157,6 +156,15 @@ class Square {
     select() {
         this.isSelected = true;
         this.updateSelectionState();
+        // Dispatch a 'square:selected' event with reference to this square
+        if (this.element) {
+            console.debug('Square selected:', this);
+            const event = new CustomEvent('square:selected', {
+                bubbles: true,
+                detail: { square: this }
+            });
+            this.element.dispatchEvent(event);
+        }
     }
 
     deselect() {
@@ -180,10 +188,18 @@ class Square {
             this.element = null;
         }
     }
+
+    isEmpty() {
+        return this.getValue() === null || this.getValue() === '';
+    }
 }
 
 
 
+/**
+ * LetterSquare - Square for letter input with optional arrows
+ * and stop borders
+ */
 class LetterSquare extends Square {
     constructor(row, col, crossword, navigationManager) {
         super(row, col, crossword, navigationManager);
@@ -258,8 +274,24 @@ class LetterSquare extends Square {
         this.updateDisplay();
     }
 
+    getArrow() {
+        return this.arrow;
+    }
+
     getInputElement() { return null; }
     getValue() { return this.value; }
+
+    highlight() {
+        if (this.element) {
+            this.element.classList.add('word-highlighted');
+        }
+    }
+
+    removeHighlight() {
+        if (this.element) {
+            this.element.classList.remove('word-highlighted');
+        }
+    }
 }
 
 /**

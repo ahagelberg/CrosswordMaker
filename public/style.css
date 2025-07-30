@@ -196,7 +196,7 @@ body {
     border-bottom: none;
 }
 
-.square.focused {
+.square.selected {
     border: var(--square-focus-border) solid var(--color-primary) !important;
     box-shadow: 0 0 var(--size-md) var(--shadow-primary);
     z-index: var(--z-square-focus);
@@ -259,41 +259,6 @@ body {
     display: flex !important;
 }
 
-/* Override for textarea visibility in editing mode */
-.square.clue.editing textarea.visible {
-    display: block !important;
-}
-
-/* Ensure text content is properly hidden when editing */
-.square.clue.editing .clue-text-content.hidden {
-    display: none !important;
-}
-.square.clue.split {
-    flex-direction: column;
-    position: relative;
-}
-
-.square.clue.split::after {
-    content: '';
-    position: absolute;
-    left: 10%;
-    right: 10%;
-    top: 50%;
-    height: var(--square-border-width);
-    background: var(--text-primary);
-    transform: translateY(-50%);
-    z-index: var(--z-base);
-}
-
-.square.clue.split input {
-    font-size: var(--font-sm);
-    height: 45%;
-}
-.square.clue.split textarea {
-    font-size: var(--font-xs);
-    height: 45%;
-    line-height: 1;
-}
 .square.selected {
     box-shadow: 0 0 0 var(--size-xs) var(--selection-border);
 }
@@ -1332,8 +1297,5 @@ body {
 @media print {
     .square.clue {
         background: none !important;
-    }
-    #crossword-container {
-        box-shadow: none !important;
     }
 }

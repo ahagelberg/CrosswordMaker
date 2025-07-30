@@ -2,6 +2,43 @@
  * NavigationManager - Handles keyboard navigation and focus management
  */
 class NavigationManager {
+    constructor() {
+        this.crossword = null; // Will be set by setCrossword()
+        this.focusedSquare = { row: 0, col: 0 };
+        this.entryDirection = 'horizontal';
+        this.lastEnteredPosition = null;
+        this.lastChangedPosition = null;
+        // Listen for individual square events
+        document.addEventListener('square:set-type', (e) => {
+            const { row, col, type } = e.detail;
+            if (this.crossword) this.crossword.setSquareType(row, col, type);
+        });
+        document.addEventListener('square:set-arrow', (e) => {
+            const { row, col, arrow } = e.detail;
+            if (this.crossword) this.crossword.setCellArrow(row, col, arrow);
+        });
+        document.addEventListener('square:set-color', (e) => {
+            const { row, col, color } = e.detail;
+            if (this.crossword) this.crossword.setCellColor(row, col, color);
+        });
+        // Listen for square:clicked event to handle focus/defocus
+        document.addEventListener('square:clicked', (e) => {
+            const { row, col } = e.detail;
+            this.updateFocusedSquare(row, col);
+            this.focusSquare(row, col);
+        });
+        // Add more square:??? event listeners as needed
+    }
+
+    /**
+     * Set the crossword instance this manager works with
+     * @param {Crossword} crossword - The crossword instance
+     */
+    setCrossword(crossword) {
+        console.log('NavigationManager setCrossword');
+        this.crossword = crossword;
+    }
+
     /**
      * Sets up a global keydown event handler to forward events to the currently focused square
      */
@@ -37,36 +74,6 @@ class NavigationManager {
             this._globalKeydownHandler = null;
         }
     }
-    constructor() {
-        this.crossword = null; // Will be set by setCrossword()
-        this.focusedSquare = { row: 0, col: 0 };
-        this.entryDirection = 'horizontal';
-        this.lastEnteredPosition = null;
-        this.lastChangedPosition = null;
-        // Listen for individual square events
-        document.addEventListener('square:set-type', (e) => {
-            const { row, col, type } = e.detail;
-            if (this.crossword) this.crossword.setSquareType(row, col, type);
-        });
-        document.addEventListener('square:set-arrow', (e) => {
-            const { row, col, arrow } = e.detail;
-            if (this.crossword) this.crossword.setCellArrow(row, col, arrow);
-        });
-        document.addEventListener('square:set-color', (e) => {
-            const { row, col, color } = e.detail;
-            if (this.crossword) this.crossword.setCellColor(row, col, color);
-        });
-        // Add more square:??? event listeners as needed
-    }
-
-    /**
-     * Set the crossword instance this manager works with
-     * @param {Crossword} crossword - The crossword instance
-     */
-    setCrossword(crossword) {
-        console.log('NavigationManager setCrossword');
-        this.crossword = crossword;
-    }
 
     /**
      * Sets up keyboard event listeners
@@ -75,12 +82,6 @@ class NavigationManager {
         // Set up the global keydown handler for forwarding to focused square
         this.setupGlobalKeydownHandler();
     }
-
-    /**
-     * Main keydown event handler - routes events to appropriate sub-handlers
-     * @param {KeyboardEvent} e - The keyboard event
-     */
-    // handleGlobalKeydown is now handled by the global keydown handler
 
     /**
      * Handles global keyboard shortcuts
@@ -190,22 +191,23 @@ class NavigationManager {
      * @param {number} col - Column index of the square to focus
      */
     updateFocusedSquare(row, col) {
-        console.log(`NavigationManager updateFocusedSquare(${row}, ${col})`);
         if (!this.crossword) {
             console.warn('NavigationManager: crossword not set');
             return;
         }
-        
-        // Remove focused class from all squares
-        document.querySelectorAll('.square').forEach(square => {
-            square.classList.remove('focused');
-        });
-        
-        // Add focused class to the current square
-        const squares = document.querySelectorAll('.square');
-        const index = row * this.crossword.cols + col;
-        if (squares[index]) {
-            squares[index].classList.add('focused');
+
+        // Deselect the previously focused square
+        if (this.focusedSquare) {
+            const prev = this.crossword.getSquare(this.focusedSquare.row, this.focusedSquare.col);
+            if (prev && typeof prev.deselect === 'function') {
+                prev.deselect();
+            }
+        }
+
+        // Select the current square using its select method
+        const square = this.crossword.getSquare(row, col);
+        if (square && typeof square.select === 'function') {
+            square.select();
             this.focusedSquare = { row, col };
         }
     }
@@ -285,17 +287,6 @@ class NavigationManager {
         }
         // No valid next square
         return null;
-    }
-
-    /**
-     * Handles input focus for a square
-     * @param {number} row - Row index
-     * @param {number} col - Column index
-     */
-    onInputFocus(row, col) {
-        this.detectDirection(row, col);
-        this.lastEnteredPosition = { row, col };
-        this.updateFocusedSquare(row, col);
     }
 
     /**

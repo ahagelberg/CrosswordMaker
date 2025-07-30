@@ -7,6 +7,11 @@ class WordDisplay {
         this.panel = null;
         this.getLanguage = getLanguageCallback || (() => document.documentElement.lang || 'en-us');
         this.createPanel();
+        // Listen for word:change events
+        document.addEventListener('word:selected', (e) => {
+            const word = e.detail.word;
+            this.show(word);
+        });
     }
 
     /**
@@ -88,15 +93,15 @@ class WordDisplay {
 
         const direction = document.createElement('div');
         direction.className = 'word-info-direction';
-        direction.textContent = `${word.direction.charAt(0).toUpperCase() + word.direction.slice(1)} Word`;
+        direction.textContent = `${word.getDirection().charAt(0).toUpperCase() + word.getDirection().slice(1)} Word`;
 
         const position = document.createElement('div');
         position.className = 'word-info-details';
-        position.textContent = `Position: Row ${word.startRow + 1}, Col ${word.startCol + 1}`;
+        position.textContent = `Position: Row ${word.getStartRow() + 1}, Col ${word.getStartCol() + 1}`;
 
         const length = document.createElement('div');
         length.className = 'word-info-details';
-        length.textContent = `Length: ${word.length} letters`;
+        length.textContent = `Length: ${word.getLength()} letters`;
 
         info.appendChild(direction);
         info.appendChild(position);
@@ -112,7 +117,7 @@ class WordDisplay {
 
         const textDisplay = document.createElement('div');
         textDisplay.className = 'word-text-display';
-        textDisplay.textContent = word.text || '(incomplete)';
+        textDisplay.textContent = word.getText() || '(incomplete)';
 
         wordText.appendChild(textTitle);
         wordText.appendChild(textDisplay);
@@ -135,21 +140,21 @@ class WordDisplay {
             definitionsContent.className = 'definitions-content';
 
             // Show loading or fetch definitions
-            if (word.text && !word.text.includes('?') && word.text.length > 1) {
-                definitionsContent.innerHTML = `
-                    <div class="word-display-loading">
-                        <div class="word-display-loading-title">🔍 Looking up definitions...</div>
-                        <div class="word-display-loading-subtitle">Searching multiple dictionaries</div>
-                    </div>
-                `;
-                this.fetchDefinitions(word.text, definitionsContent);
-            } else {
-                definitionsContent.innerHTML = `
-                    <div class="word-display-no-word">
-                        Complete the word to see definitions
-                    </div>
-                `;
-            }
+        if (word.getText() && !word.getText().includes('?') && word.getText().length > 1) {
+            definitionsContent.innerHTML = `
+                <div class="word-display-loading">
+                    <div class="word-display-loading-title">🔍 Looking up definitions...</div>
+                    <div class="word-display-loading-subtitle">Searching multiple dictionaries</div>
+                </div>
+            `;
+            this.fetchDefinitions(word.getText(), definitionsContent);
+        } else {
+            definitionsContent.innerHTML = `
+                <div class="word-display-no-word">
+                    Complete the word to see definitions
+                </div>
+            `;
+        }
 
             definitionsContainer.appendChild(definitionsTitle);
             definitionsContainer.appendChild(definitionsContent);
@@ -165,10 +170,10 @@ class WordDisplay {
 
         searchContainer.appendChild(searchTitle);
 
-        if (word.text && !word.text.includes('?')) {
+        if (word.getText() && !word.getText().includes('?')) {
             // Get dictionary sources for current language
             const currentLang = this.getLanguage();
-            const sources = this.getLanguageSpecificSources(word.text, currentLang);
+            const sources = this.getLanguageSpecificSources(word.getText(), currentLang);
             
             // Create container for dictionary links
             const linksContainer = document.createElement('div');
