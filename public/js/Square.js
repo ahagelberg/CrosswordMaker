@@ -2,14 +2,13 @@
  * Base Square class - Common functionality for all square types
  */
 class Square {
-    constructor(row, col, crossword, navigationManager) {
+    constructor(row, col, navigationManager) {
         this.row = row;
         this.col = col;
-        this.crossword = crossword;
-        this.navigationManager = navigationManager;
         this.borders = { top: false, bottom: false, left: false, right: false };
         this.color = null;
         this.element = null;
+        this.navigationManager = navigationManager;
         this.isFocused = false;
         this.isSelected = false;
     }
@@ -134,7 +133,7 @@ class Square {
             bubbles: true,
             detail: { event: e, square: this }
         });
-        this.handleClick(e); // Ensure click event is also triggered
+        //this.handleClick(e); // Ensure click event is also triggered
         this.element.dispatchEvent(event);
     }
 
@@ -227,8 +226,8 @@ class Square {
  * and stop borders
  */
 class LetterSquare extends Square {
-    constructor(row, col, crossword, navigationManager) {
-        super(row, col, crossword, navigationManager);
+    constructor(row, col, navigationManager) {
+        super(row, col, navigationManager);
         this.value = '';
         this.arrow = null;
     }
@@ -454,8 +453,8 @@ let clueEditOverlay = null;
  * ClueSquare - Square for text/clue input with overlay editing
  */
 class ClueSquare extends Square {
-    constructor(row, col, crossword, navigationManager) {
-        super(row, col, crossword, navigationManager);
+    constructor(row, col, navigationManager) {
+        super(row, col, navigationManager);
         this.value = '';
         this.isEditing = false;
     }
@@ -550,10 +549,6 @@ class ClueSquare extends Square {
  * BlackSquare - Square for black/blocked squares
  */
 class BlackSquare extends Square {
-    constructor(row, col, crossword, navigationManager) {
-        super(row, col, crossword, navigationManager);
-    }
-
     getSquareType() {
         return 'black';
     }

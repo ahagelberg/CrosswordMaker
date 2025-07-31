@@ -194,19 +194,41 @@ class ContextMenu {
 
     // --- Action methods with debug output ---
     actionChangeToLetter() {
-        console.debug('ContextMenu: Change current square to Letter Square');
+        const event = new CustomEvent('square:change-type', {
+            detail: {
+                square: this.currentSquare,
+                type: 'letter'
+            }
+        });
+        document.dispatchEvent(event);
     }
+
     actionChangeToClue() {
-        console.debug('ContextMenu: Change current square to Clue Square');
+        const event = new CustomEvent('square:change-type', {
+            detail: {
+                square: this.currentSquare,
+                type: 'clue'
+            }
+        });
+        document.dispatchEvent(event);
     }
+
     actionChangeToBlack() {
-        console.debug('ContextMenu: Change current square to Black Square');
+        const event = new CustomEvent('square:change-type', {
+            detail: {
+                square: this.currentSquare,
+                type: 'black'
+            }
+        });
+        document.dispatchEvent(event);
     }
+
     actionSetArrow(arrow = 'none') {
         if (typeof this.currentSquare.setArrow === 'function') {
             this.currentSquare.setArrow(arrow);
         }
     }
+    
     actionSetBorder(border = 'none') {
         if (border === 'none' && typeof this.currentSquare.removeBorder === 'function') {
             this.currentSquare.removeBorder();
@@ -215,6 +237,7 @@ class ContextMenu {
             this.currentSquare.toggleBorder(border);
         }
     }
+
     actionSetColor(color) {
         if (typeof this.currentSquare.setColor === 'function') {
             this.currentSquare.setColor(color);

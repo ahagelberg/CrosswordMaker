@@ -34,6 +34,14 @@ class Crossword {
         this.initializeGrid();
         
         console.log('Crossword created, grid initialized');
+
+        // Listen for square:change-type events
+        document.addEventListener('square:change-type', (e) => {
+            const { square, type } = e.detail || {};
+            if (square instanceof Square && typeof type === 'string') {
+                this.changeSquareType(square, type);
+            }
+        });
     }
     
     /**
@@ -99,53 +107,57 @@ class Crossword {
     }
     
     /**
-     * Set cell arrow at specified position
-     */
-    setCellArrow(row, col, arrow) {
-        const square = this.getSquare(row, col);
-        if (square && square.setArrow) {
-            square.setArrow(arrow);
-        }
-    }
-    
-    /**
-     * Set cell color at specified position
-     */
-    setCellColor(row, col, color) {
-        const square = this.getSquare(row, col);
-        if (square && square.setColor) {
-            square.setColor(color);
-        }
-    }
-
-    /**
-     * Set border for a cell
-     */
-    setCellBorder(row, col, side, enabled) {
-        const square = this.getSquare(row, col);
-        if (square && square.setBorder) {
-            square.setBorder(side, enabled);
-        }
-    }
-
-    /**
      * Create appropriate square object based on type
      */
     createSquareByType(row, col, type) {
         switch (type) {
             case 'letter':
-                return new LetterSquare(row, col, this, this.navigationManager);
-            case 'clue':
-                return new ClueSquare(row, col, this, this.navigationManager);
-            case 'black':
-                return new BlackSquare(row, col, this, this.navigationManager);
-            case 'split':
-                return new SplitSquare(row, col, this, this.navigationManager);
             default:
-                return new LetterSquare(row, col, this, this.navigationManager);
+                return new LetterSquare(row, col, this.navigationManager);
+            case 'clue':
+                return new ClueSquare(row, col, this.navigationManager);
+            case 'black':
+                return new BlackSquare(row, col, this.navigationManager);
         }
     }
-    
+
+    changeSquareType(square, type) {
+        console.log(`Changing square type at (${square.row}, ${square.col}) to ${type}`);
+        if (!square || !this.grid[square.row] || !this.grid[square.row][square.col]) {
+            console.warn('Invalid square for type change:', square);
+            return;
+        }
+        
+        // Remove old square from grid and DOM
+        const oldSquare = this.grid[square.row][square.col];
+        const oldElement = oldSquare && oldSquare.element;
+        const parentNode = oldElement ? oldElement.parentNode : null;
+
+        // Create new square of specified type
+        const newSquare = this.createSquareByType(square.row, square.col, type);
+        this.grid[square.row][square.col] = newSquare;
+
+        // Create new DOM element
+        const newElement = newSquare.createElement();
+        if (square.col === this.cols - 1) newElement.classList.add('last-column');
+        if (square.row === this.rows - 1) newElement.classList.add('last-row');
+
+        // Replace in DOM only if oldElement is still a child of parentNode
+        if (parentNode && oldElement && parentNode.contains(oldElement)) {
+            parentNode.replaceChild(newElement, oldElement);
+        }
+
+        // Destroy old square after DOM replacement
+        oldSquare && oldSquare.destroy && oldSquare.destroy();
+
+        // Set up event listeners
+        newSquare.setupEventListeners && newSquare.setupEventListeners();
+
+        // Render the new square
+        newSquare.render && newSquare.render();
+        console.log(`Square type changed successfully at (${square.row}, ${square.col})`);
+    }
+
     /**
      * Render the entire crossword grid
      */
