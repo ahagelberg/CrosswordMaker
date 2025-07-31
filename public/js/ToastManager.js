@@ -47,35 +47,3 @@ class ToastManager {
         }, duration);
     }
 }
-
-// Utility function to save file (compatible with FileSaver.js or fallback)
-function saveAs(blob, filename) {
-    // Try to use FileSaver.js if available (it might be loaded after this script)
-    if (typeof window.saveAs === 'function' && window.saveAs !== saveAs) {
-        try {
-            window.saveAs(blob, filename);
-            return;
-        } catch (e) {
-            // FileSaver.js failed, using fallback
-        }
-    }
-    
-    // Fallback implementation
-    try {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        a.style.display = 'none';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    } catch (error) {
-        console.error('Download failed:', error);
-        // Dispatch toast event to show error
-        document.dispatchEvent(new CustomEvent('crossword:toast', {
-            detail: { message: 'Download failed. Please try again.', type: 'error' }
-        }));
-    }
-}

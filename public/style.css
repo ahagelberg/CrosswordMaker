@@ -202,13 +202,6 @@ body {
     z-index: var(--z-square-focus);
 }
 
-/* Clue editing state (without zoom) */
-.square.clue.editing {
-    z-index: var(--z-square-editing);
-    box-shadow: 0 0 var(--spacing-xl) rgba(0, 0, 0, 0.5);
-    transition: box-shadow var(--transition-fast) ease-in-out;
-}
-
 .square.letter .letter-content {
     font-family: 'Patrick Hand', 'Comic Neue', 'Kalam', cursive;
     font-size: var(--font-input-large);
@@ -225,11 +218,10 @@ body {
     user-select: none;
 }
 
-.square.black {
-    background: var(--background-black);
+.square.clue {
+    background: var(--background-light-gray);
 }
 
-/* Clue square content display */
 .square.clue .clue-content {
     font-family: Arial, sans-serif;
     text-transform: uppercase;
@@ -244,6 +236,10 @@ body {
     justify-content: center;
     line-height: 1.1;
     font-size: var(--font-xs) !important;
+}
+
+.square.black {
+    background: var(--background-black);
 }
 
 /* Utility classes for showing/hiding elements */
@@ -310,18 +306,6 @@ body {
 
 .square .arrow.left-to-down::before {
     content: '↴';
-}
-
-.square .split-btn {
-    position: absolute;
-    bottom: var(--size-xs);
-    right: var(--size-xs);
-    font-size: var(--font-sm);
-    background: var(--background-dark-gray);
-    border: none;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    padding: var(--size-xs) var(--size-sm);
 }
 
 .context-menu {
@@ -423,35 +407,8 @@ body {
     background-color: #e3f2fd;
 }
 
-/* Border visual styles */
-.border-visual {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border: 1px solid #ccc;
-    margin-right: 8px;
-    position: relative;
-    vertical-align: middle;
-}
 
-.border-visual.border-top {
-    border-top: 3px solid #000;
-}
-
-.border-visual.border-bottom {
-    border-bottom: 3px solid #000;
-}
-
-.border-visual.border-left {
-    border-left: 3px solid #000;
-}
-
-.border-visual.border-right {
-    border-right: 3px solid #000;
-}
-
-
-
+/* Square color options */
 .square-color-white { background: var(--square-color-white); }
 .square-color-red { background: var(--square-color-red); }
 .square-color-blue { background: var(--square-color-blue); }
@@ -460,20 +417,7 @@ body {
 .square-color-purple { background: var(--square-color-purple); }
 .square-color-orange { background: var(--square-color-orange); }
 
-/* Swatch size for color menu (smaller than grid square) */
-.color-menu-swatch {
-    width: 18px;
-    height: 18px;
-    min-width: 18px;
-    min-height: 18px;
-    margin-right: 8px;
-    border-radius: 3px;
-    border: 1px solid #ccc;
-    display: inline-block;
-    vertical-align: middle;
-}
-
-
+/* Toast Notifications */
 .toast {
     position: fixed;
     top: var(--spacing-xl);
@@ -763,27 +707,6 @@ body {
     z-index: var(--z-panel);
     font-family: Arial, sans-serif;
     overflow-y: auto;
-}
-
-/* Responsive behavior for smaller screens */
-@media (max-width: 1200px) {
-    body {
-        padding-right: var(--panel-width-lg); /* Smaller padding for medium screens */
-    }
-    
-    .word-display-panel {
-        width: var(--panel-width-md);
-    }
-}
-
-@media (max-width: 768px) {
-    body {
-        padding-right: var(--panel-width-md); /* Even smaller padding for mobile */
-    }
-    
-    .word-display-panel {
-        width: var(--panel-width-sm);
-    }
 }
 
 .word-display-header {
@@ -1219,7 +1142,7 @@ body {
     box-shadow: 0 var(--size-sm) var(--spacing-xl) var(--shadow-modal);
 }
 
-.clue-edit-input, .clue-edit-split-input {
+.clue-edit-input {
     width: 100%;
     font-size: var(--font-lg);
     border: var(--square-border-width) solid var(--border-medium);
@@ -1235,103 +1158,10 @@ body {
     min-height: 100px;
 }
 
-.clue-edit-split-input {
-    min-height: 80px;
-    margin-bottom: var(--spacing-md);
-}
-
-.clue-edit-split-input:focus, .clue-edit-input:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 var(--size-md) var(--shadow-primary);
-}
-
 .clue-edit-label {
     display: block;
     margin-bottom: var(--spacing-xs);
     font-weight: bold;
     color: var(--text-primary);
     font-size: var(--font-md);
-}
-
-/* Overlay display state management */
-.clue-edit-overlay.visible .clue-edit-input.single-mode {
-    display: block;
-}
-
-.clue-edit-overlay.visible .clue-edit-split-input.split-mode,
-.clue-edit-overlay.visible .clue-edit-label.split-mode {
-    display: block;
-}
-
-.clue-edit-overlay .clue-edit-input:not(.single-mode),
-.clue-edit-overlay .clue-edit-split-input:not(.split-mode),
-.clue-edit-overlay .clue-edit-label:not(.split-mode) {
-    display: none;
-}
-
-/* Clue Display Styles */
-.clue-display {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: var(--size-xs);
-    font-size: var(--font-xs) !important;
-    line-height: 1.2;
-    overflow: hidden;
-    font-family: Arial, sans-serif;
-    text-transform: uppercase;
-}
-
-.clue-display-top {
-    width: 100%;
-    height: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 1px;
-    font-size: var(--font-xs) !important;
-    line-height: 1.1;
-    overflow: hidden;
-    border-bottom: var(--square-border-width) solid var(--border-medium);
-}
-
-.clue-display-bottom {
-    width: 100%;
-    height: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 1px;
-    font-size: var(--font-xs) !important;
-    line-height: 1.1;
-    overflow: hidden;
-}
-
-/* Image overlay for clue squares */
-.image-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
-    opacity: 0.8;
-    pointer-events: none;
-}
-
-.square.clue {
-    background: #f0f0f0;
-}
-
-@media print {
-    .square.clue {
-        background: none !important;
-    }
 }

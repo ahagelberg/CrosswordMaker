@@ -44,6 +44,10 @@
         background-color: var(--text-white) !important;
         box-shadow: none !important;
     }
+
+    .square.clue {
+        background: none !important;
+    }
     
     .title-container {
         margin: 0 auto var(--print-medium) auto !important;

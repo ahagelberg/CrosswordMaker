@@ -132,7 +132,6 @@ class Square {
             bubbles: true,
             detail: { event: e, square: this }
         });
-        //this.handleClick(e); // Ensure click event is also triggered
         this.element.dispatchEvent(event);
     }
 
