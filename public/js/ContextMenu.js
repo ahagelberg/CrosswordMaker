@@ -1,5 +1,5 @@
 // Define color names once for all color menu logic
-const COLOR_NAMES = ['white', 'pink', 'blue', 'green', 'yellow', 'purple', 'orange'];
+const COLOR_NAMES = ['white', 'red', 'blue', 'green', 'yellow', 'purple', 'orange'];
 /**
  * ContextMenu - Manages all context menu functionality
  */
@@ -91,14 +91,11 @@ class ContextMenu {
         this.addMenuItem(menu, 'Change to Clue Square', () => this.actionChangeToClue());
         this.addMenuItem(menu, 'Change to Black Square', () => this.actionChangeToBlack());
         // Arrow submenu
-        this.addMenuItem(menu, 'Add/Change Arrow', null, false, () => this.showSubmenu('arrow', menu));
-        // Remove Arrow
-        this.addMenuItem(menu, 'Remove Arrow', () => this.actionRemoveArrow());
+        this.addMenuItem(menu, 'Arrows', null, false, () => this.showSubmenu('arrow', menu));
         // Border submenu
-        this.addMenuItem(menu, 'Add/Edit Borders', null, false, () => this.showSubmenu('border', menu));
-        this.addMenuItem(menu, 'Remove All Borders', () => this.actionRemoveAllBorders());
+        this.addMenuItem(menu, 'Borders', null, false, () => this.showSubmenu('border', menu));
         // Color submenu
-        this.addMenuItem(menu, 'Change Color', null, false, () => this.showSubmenu('color', menu));
+        this.addMenuItem(menu, 'Color', null, false, () => this.showSubmenu('color', menu));
     }
 
     populateClueMenu(menu) {
@@ -112,13 +109,15 @@ class ContextMenu {
     }
 
     populateArrowSubmenu(menu) {
-        this.addMenuItem(menu, '↳', () => this.actionArrowTopToRight());
-        this.addMenuItem(menu, '↴', () => this.actionArrowLeftToDown());
+        this.addMenuItem(menu, 'None', () => this.actionSetArrow('none'), true, null, null);
+        this.addMenuItem(menu, '↳', () => this.actionSetArrow('top-to-right'), true, null, null);
+        this.addMenuItem(menu, '↴', () => this.actionSetArrow('left-to-down'), true, null, null);
     }
 
     populateBorderSubmenu(menu) {
-        this.addMenuItem(menu, 'Bottom border', () => this.actionBorderBottom());
-        this.addMenuItem(menu, 'Right border', () => this.actionBorderRight());
+        this.addMenuItem(menu, 'None', () => this.actionSetBorder('none'), true, null, 'border-menu-none');
+        this.addMenuItem(menu, 'Bottom border', () => this.actionSetBorder('bottom'), true, null, 'border-menu-bottom');
+        this.addMenuItem(menu, 'Right border', () => this.actionSetBorder('right'), true, null, 'border-menu-right');
     }
 
     populateColorSubmenu(menu) {
@@ -130,7 +129,7 @@ class ContextMenu {
                 () => this.actionSetColor(color),
                 true,
                 null,
-                color // pass color name for swatch
+                'square-color-' + color // pass color name for swatch
             );
         });
     }
@@ -142,17 +141,24 @@ class ContextMenu {
         return menu;
     }
 
-    addMenuItem(menu, text, onClick, closeMenus = true, onHover = null, colorSwatch = null) {
+    addMenuItem(menu, text, onClick, closeMenus = true, onHover = null, iconClass = null) {
+        // Create menu item element
         const item = document.createElement('div');
         item.className = 'context-menu-item';
-        if (colorSwatch) {
-            const swatch = document.createElement('span');
-            swatch.className = 'square-color square-color-' + colorSwatch + ' color-menu-swatch';
-            item.appendChild(swatch);
+        // Add icon
+        if (iconClass) {
+            const icon = document.createElement('span');
+            icon.className = 'context-menu-icon';
+            icon.classList.add(iconClass);
+            item.appendChild(icon);
         }
+        // Add text label
         const labelSpan = document.createElement('span');
         labelSpan.textContent = text;
         item.appendChild(labelSpan);
+        // Append item to menu
+        menu.appendChild(item);
+        // Set click and hover handlers
         item.onclick = (e) => {
             e.stopPropagation();
             if (onClick) onClick();
@@ -164,7 +170,6 @@ class ContextMenu {
                 onHover(e);
             };
         }
-        menu.appendChild(item);
     }
 
     showSubmenu(type, parentMenu) {
@@ -185,60 +190,32 @@ class ContextMenu {
             submenu.style.top = (rect.top + window.scrollY) + 'px';
         }
         submenu.style.display = 'block';
-        // Fix: re-attach correct onclick for submenu items (in case DOM is reused)
-        Array.from(submenu.children).forEach((item, idx) => {
-            let handler = null;
-            if (type === 'arrow') {
-                handler = idx === 0 ? this.actionArrowTopToRight.bind(this) : this.actionArrowLeftToDown.bind(this);
-            } else if (type === 'border') {
-                handler = idx === 0 ? this.actionBorderBottom.bind(this) : this.actionBorderRight.bind(this);
-            } else if (type === 'color') {
-                const color = COLOR_NAMES[idx];
-                handler = () => this.actionSetColor(color);
-            }
-            if (handler) {
-                item.onclick = (e) => {
-                    e.stopPropagation();
-                    handler();
-                    this.hideAllMenus();
-                };
-            }
-        });
     }
 
     // --- Action methods with debug output ---
+    actionChangeToLetter() {
+        console.debug('ContextMenu: Change current square to Letter Square');
+    }
     actionChangeToClue() {
         console.debug('ContextMenu: Change current square to Clue Square');
     }
     actionChangeToBlack() {
         console.debug('ContextMenu: Change current square to Black Square');
     }
-    actionRemoveArrow() {
-        console.debug('ContextMenu: Remove arrow from current square');
+    actionSetArrow(arrow = 'none') {
+        if (typeof this.currentSquare.setArrow === 'function') {
+            this.currentSquare.setArrow(arrow);
+        }
     }
-    actionRemoveAllBorders() {
-        console.debug('ContextMenu: Remove all borders from current square');
-    }
-    actionRemoveColor() {
-        console.debug('ContextMenu: Remove background color from current square');
-    }
-    actionChangeToLetter() {
-        console.debug('ContextMenu: Change current square to Letter Square');
-    }
-    actionArrowTopToRight() {
-        console.debug('ContextMenu: Set arrow direction to Top-to-Right for current square');
-    }
-    actionArrowLeftToDown() {
-        console.debug('ContextMenu: Set arrow direction to Left-to-Down for current square');
-    }
-    actionBorderBottom() {
-        console.debug('ContextMenu: Toggle bottom border for current square');
-    }
-    actionBorderRight() {
-        console.debug('ContextMenu: Toggle right border for current square');
+    actionSetBorder(border = 'none') {
+        if (typeof this.currentSquare.toggleBorder === 'function') {
+            this.currentSquare.toggleBorder(border);
+        }
     }
     actionSetColor(color) {
-        console.debug('ContextMenu: Set background color to', color === null ? 'Default (White)' : color, 'for current square');
+        if (typeof this.currentSquare.setColor === 'function') {
+            this.currentSquare.setColor(color);
+        }
     }
 }
 

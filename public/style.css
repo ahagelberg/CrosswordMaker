@@ -31,8 +31,8 @@
     --text-black: #000;
     
     /* Square Color Options */
-    --square-color-default: #ffffff;
-    --square-color-pink: #FFE4E1;
+    --square-color-white: #ffffff;
+    --square-color-red: #FFE4E1;
     --square-color-blue: #E0F6FF;
     --square-color-green: #E4F5E4;
     --square-color-yellow: #FFF8DC;
@@ -383,6 +383,41 @@ body {
     background: var(--background-medium-gray) !important;
 }
 
+
+.context-menu-icon {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    min-height: 18px;
+    margin-right: 8px;
+    border: 1px solid #ccc;
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+}
+
+/* Border menu icons for context menu border submenu */
+.border-menu-bottom,
+.border-menu-right,
+.border-menu-none {
+    border: 1px solid #222;
+    background: #fff;
+}
+.border-menu-bottom {
+    height: 15px;
+    min-height: 15px;
+    border-bottom: 3px solid #222;
+}
+.border-menu-right {
+    width: 15px;
+    min-width: 15px;
+    border-right: 3px solid #222;
+}
+.border-menu-none {
+    background: repeating-linear-gradient(45deg, #eee, #eee 3px, #fff 3px, #fff 6px);
+}
+
+
 /* Active/selected state for menu items */
 .context-menu-item.active {
     background-color: #e3f2fd;
@@ -417,8 +452,8 @@ body {
 
 
 
-.square-color-white { background: var(--square-color-default); }
-.square-color-pink { background: var(--square-color-pink); }
+.square-color-white { background: var(--square-color-white); }
+.square-color-red { background: var(--square-color-red); }
 .square-color-blue { background: var(--square-color-blue); }
 .square-color-green { background: var(--square-color-green); }
 .square-color-yellow { background: var(--square-color-yellow); }
@@ -438,45 +473,6 @@ body {
     vertical-align: middle;
 }
 
-/* Image clue modal styles */
-.image-clue-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.image-clue-modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    max-width: 400px;
-    width: 90%;
-}
-
-.image-clue-preview {
-    max-width: 100%;
-    max-height: 200px;
-    margin-top: 10px;
-    display: none;
-}
-
-.image-clue-preview.visible {
-    display: block;
-}
-
-.image-clue-buttons {
-    margin-top: 20px;
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-}
 
 .toast {
     position: fixed;

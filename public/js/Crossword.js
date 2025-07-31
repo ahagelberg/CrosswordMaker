@@ -127,7 +127,7 @@ class Crossword {
             square.setBorder(side, enabled);
         }
     }
-     
+
     /**
      * Create appropriate square object based on type
      */

@@ -75,10 +75,15 @@ class Square {
                 this.element.classList.remove(`border-${side}`);
             }
         });
+        // Remove any existing color classes
+        this.element.classList.forEach(className => {
+            if (className.startsWith('square-color-')) {
+                this.element.classList.remove(className);
+            }
+        });
+        // Add color class
         if (this.color) {
-            this.element.style.backgroundColor = this.color;
-        } else {
-            this.element.style.backgroundColor = '';
+            this.element.classList.add('square-color-' + this.color);
         }
     }
 
@@ -143,9 +148,16 @@ class Square {
         this.updateFocusState();
     }
 
-    setBorder(side, enabled) {
+    setBorder(side) {
         if (this.borders.hasOwnProperty(side)) {
-            this.borders[side] = enabled;
+            this.borders[side] = true;
+            this.updateVisualProperties();
+        }
+    }
+
+    toggleBorder(side) {
+        if (this.borders.hasOwnProperty(side)) {
+            this.borders[side] = !this.borders[side];
             this.updateVisualProperties();
         }
     }
