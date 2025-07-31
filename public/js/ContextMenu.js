@@ -208,6 +208,9 @@ class ContextMenu {
         }
     }
     actionSetBorder(border = 'none') {
+        if (border === 'none' && typeof this.currentSquare.removeBorder === 'function') {
+            this.currentSquare.removeBorder();
+        }
         if (typeof this.currentSquare.toggleBorder === 'function') {
             this.currentSquare.toggleBorder(border);
         }

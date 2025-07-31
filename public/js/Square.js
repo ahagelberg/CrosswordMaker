@@ -148,9 +148,9 @@ class Square {
         this.updateFocusState();
     }
 
-    setBorder(side) {
+    setBorder(side, enabled = true) {
         if (this.borders.hasOwnProperty(side)) {
-            this.borders[side] = true;
+            this.borders[side] = enabled;
             this.updateVisualProperties();
         }
     }
@@ -160,6 +160,13 @@ class Square {
             this.borders[side] = !this.borders[side];
             this.updateVisualProperties();
         }
+    }
+
+    removeBorder() {
+        Object.keys(this.borders).forEach(side => {
+            this.borders[side] = false;
+        });
+        this.updateVisualProperties();
     }
 
     setColor(color) {
