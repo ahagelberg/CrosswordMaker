@@ -50,6 +50,39 @@ class WordManager {
             return null;
         }
 
+        // Check if the already selected word was clicked again
+        let sameWordClicked = false;
+        if (this.currentWord) {
+            const squares = this.currentWord.getSquares();
+            sameWordClicked = squares && squares.some(sq => sq === square);
+        }
+        console.debug('Same word clicked:', sameWordClicked);
+        // If the same word was clicked, toggle search direction and method
+        if (sameWordClicked) {
+            // Check if the current word is bent
+            const isBent = typeof this.currentWord.isBent === 'function' ? this.currentWord.isBent() : false;
+            if (isBent) {
+                if (this.searchBentWord) {
+                    // If bent selection mode is true, set it to false
+                    this.searchBentWord = false;
+                } else {
+                    // If already false, set to true and swap direction
+                    this.searchBentWord = true;
+                    this.currentSearchDirection = this.currentSearchDirection === 'horizontal' ? 'vertical' : 'horizontal';
+                }
+            } else {
+                // If not bent, swap direction immediately
+                this.currentSearchDirection = this.currentSearchDirection === 'horizontal' ? 'vertical' : 'horizontal';
+            }
+        }
+        else {
+            // If a new square is selected, reset bent mode and search direction
+            this.searchBentWord = true; // Reset to default bent search
+            this.currentSearchDirection = 'horizontal'; // Reset to horizontal by default
+        }
+
+        console.debug('Selecting word at square:', square.getPosition(), 'with direction:', this.currentSearchDirection, 'and bent mode:', this.searchBentWord);
+
         // If the square is valid, select the word at the square
         const word = this.findWord(square, this.currentSearchDirection, this.searchBentWord);
         this.setCurrentWord(word);

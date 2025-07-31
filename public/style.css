@@ -348,6 +348,32 @@ body {
     background: var(--background-medium-gray);
 }
 
+/* Add right-pointing triangle to submenu options in context menu */
+.context-menu-item.has-submenu {
+    position: relative;
+}
+.context-menu-item.has-submenu::after {
+    content: '\25B6'; /* Unicode black right-pointing triangle */
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px;
+    color: var(--text-muted);
+    pointer-events: none;
+    user-select: none;
+}
+/* Submenu arrow indicator for context menu */
+.submenu-arrow {
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 13px;
+    color: var(--text-muted);
+    vertical-align: middle;
+    pointer-events: none;
+    user-select: none;
+}
+
 .color-option {
     display: flex !important;
     align-items: center !important;
@@ -389,13 +415,27 @@ body {
     border-right: 3px solid #000;
 }
 
-/* Color swatch styles */
-.color-swatch {
-    width: 20px;
-    height: 20px;
-    border: 1px solid #ccc;
+
+
+.square-color-white { background: var(--square-color-default); }
+.square-color-pink { background: var(--square-color-pink); }
+.square-color-blue { background: var(--square-color-blue); }
+.square-color-green { background: var(--square-color-green); }
+.square-color-yellow { background: var(--square-color-yellow); }
+.square-color-purple { background: var(--square-color-purple); }
+.square-color-orange { background: var(--square-color-orange); }
+
+/* Swatch size for color menu (smaller than grid square) */
+.color-menu-swatch {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    min-height: 18px;
     margin-right: 8px;
     border-radius: 3px;
+    border: 1px solid #ccc;
+    display: inline-block;
+    vertical-align: middle;
 }
 
 /* Image clue modal styles */

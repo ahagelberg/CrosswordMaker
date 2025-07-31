@@ -111,9 +111,10 @@ class Square {
         e.stopPropagation();
         // Dispatch a 'square:clicked' event with reference to this square
         if (this.element) {
+            console.debug('Square clicked:', this);
             const event = new CustomEvent('square:clicked', {
                 bubbles: true,
-                detail: { row: this.row, col: this.col, square: this }
+                detail: { square: this }
             });
             this.element.dispatchEvent(event);
         }
@@ -126,8 +127,9 @@ class Square {
         // Dispatch a context menu event with the square instance
         const event = new CustomEvent('contextmenu:show', {
             bubbles: true,
-            detail: { event: e, row: this.row, col: this.col, square: this }
+            detail: { event: e, square: this }
         });
+        this.handleClick(e); // Ensure click event is also triggered
         this.element.dispatchEvent(event);
     }
 
@@ -165,6 +167,7 @@ class Square {
             });
             this.element.dispatchEvent(event);
         }
+        this.focus();
     }
 
     deselect() {
@@ -191,6 +194,10 @@ class Square {
 
     isEmpty() {
         return this.getValue() === null || this.getValue() === '';
+    }
+
+    getPosition() {
+        return { row: this.row, col: this.col };
     }
 }
 
@@ -301,8 +308,6 @@ class ClueEditOverlay {
     constructor() {
         this.overlay = null;
         this.input = null;
-        this.splitInput1 = null;
-        this.splitInput2 = null;
         this.currentSquare = null;
         this.isVisible = false;
         this.createOverlay();
@@ -318,25 +323,9 @@ class ClueEditOverlay {
         const inputContainer = document.createElement('div');
         inputContainer.className = 'clue-input-container';
 
-        // Create single input
+        // Create input element
         this.input = document.createElement('textarea');
         this.input.className = 'clue-edit-input';
-
-        // Create split inputs
-        this.splitInput1 = document.createElement('textarea');
-        this.splitInput1.className = 'clue-edit-split-input';
-
-        this.splitInput2 = document.createElement('textarea');
-        this.splitInput2.className = 'clue-edit-split-input';
-
-        // Create labels for split inputs
-        const label1 = document.createElement('label');
-        label1.textContent = 'Top text:';
-        label1.className = 'clue-edit-label';
-
-        const label2 = document.createElement('label');
-        label2.textContent = 'Bottom text:';
-        label2.className = 'clue-edit-label';
 
         // Create Done button
         this.doneButton = document.createElement('button');
@@ -345,10 +334,6 @@ class ClueEditOverlay {
 
         // Append elements
         inputContainer.appendChild(this.input);
-        inputContainer.appendChild(label1);
-        inputContainer.appendChild(this.splitInput1);
-        inputContainer.appendChild(label2);
-        inputContainer.appendChild(this.splitInput2);
         inputContainer.appendChild(this.doneButton);
         
         this.overlay.appendChild(inputContainer);
@@ -383,8 +368,6 @@ class ClueEditOverlay {
         };
 
         this.input.addEventListener('keydown', handleEscape);
-        this.splitInput1.addEventListener('keydown', handleEscape);
-        this.splitInput2.addEventListener('keydown', handleEscape);
 
         // Auto-save on input
         const handleInput = () => {
@@ -394,8 +377,6 @@ class ClueEditOverlay {
         };
 
         this.input.addEventListener('input', handleInput);
-        this.splitInput1.addEventListener('input', handleInput);
-        this.splitInput2.addEventListener('input', handleInput);
 
         // Done button click handler
         this.doneButton.addEventListener('click', (e) => {
@@ -408,43 +389,12 @@ class ClueEditOverlay {
         this.currentSquare = square;
         this.isVisible = true;
 
-        // Load values from square (no positioning/zoom - just show the overlay)
-        if (square.split) {
-            // Show split mode
-            this.input.classList.remove('single-mode');
-            this.splitInput1.classList.add('split-mode');
-            this.splitInput2.classList.add('split-mode');
-            this.splitInput1.previousElementSibling.classList.add('split-mode'); // label1
-            this.splitInput2.previousElementSibling.classList.add('split-mode'); // label2
+        this.input.value = square.value || '';
             
-            this.splitInput1.value = square.value1 || '';
-            this.splitInput2.value = square.value2 || '';
-            
-            // Focus appropriate input
-            setTimeout(() => {
-                if (focusOn === 'second') {
-                    this.splitInput2.focus();
-                    this.splitInput2.setSelectionRange(this.splitInput2.value.length, this.splitInput2.value.length);
-                } else {
-                    this.splitInput1.focus();
-                    this.splitInput1.setSelectionRange(this.splitInput1.value.length, this.splitInput1.value.length);
-                }
-            }, 10);
-        } else {
-            // Show single mode
-            this.input.classList.add('single-mode');
-            this.splitInput1.classList.remove('split-mode');
-            this.splitInput2.classList.remove('split-mode');
-            this.splitInput1.previousElementSibling.classList.remove('split-mode'); // label1
-            this.splitInput2.previousElementSibling.classList.remove('split-mode'); // label2
-            
-            this.input.value = square.value || '';
-            
-            setTimeout(() => {
-                this.input.focus();
-                this.input.setSelectionRange(this.input.value.length, this.input.value.length);
-            }, 10);
-        }
+        setTimeout(() => {
+            this.input.focus();
+            this.input.setSelectionRange(this.input.value.length, this.input.value.length);
+        }, 10);
 
         this.overlay.classList.remove('hidden');
         this.overlay.classList.add('visible');
@@ -474,12 +424,7 @@ class ClueEditOverlay {
 
     saveToSquare() {
         if (!this.currentSquare) return;
-
-        if (this.currentSquare.split) {
-            this.currentSquare.setSplitValues(this.splitInput1.value, this.splitInput2.value);
-        } else {
-            this.currentSquare.setValue(this.input.value);
-        }
+        this.currentSquare.setValue(this.input.value);
     }
 }
 
@@ -493,8 +438,6 @@ class ClueSquare extends Square {
     constructor(row, col, crossword, navigationManager) {
         super(row, col, crossword, navigationManager);
         this.value = '';
-        this.value1 = ''; // For split clues
-        this.value2 = ''; // For split clues
         this.isEditing = false;
     }
 
@@ -514,16 +457,6 @@ class ClueSquare extends Square {
 
     handleClick(e) {
         // Handle split clue part detection
-        if (e.target !== this.element && this.split) {
-            // Determine which part was clicked based on the target element
-            if (e.target.classList.contains('clue-display-top')) {
-                this.clickedPart = 1;
-            } else if (e.target.classList.contains('clue-display-bottom')) {
-                this.clickedPart = 2;
-            } else {
-                this.clickedPart = null;
-            }
-        }
         super.handleClick(e);
         this.enterEditingMode();
     }

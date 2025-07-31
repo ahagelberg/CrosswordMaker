@@ -10,24 +10,22 @@ class NavigationManager {
         this.lastChangedPosition = null;
         // Listen for individual square events
         document.addEventListener('square:set-type', (e) => {
-            const { row, col, type } = e.detail;
-            if (this.crossword) this.crossword.setSquareType(row, col, type);
+            const { square, type } = e.detail;
+            if (this.crossword) this.crossword.setSquareType(square, type);
         });
         document.addEventListener('square:set-arrow', (e) => {
-            const { row, col, arrow } = e.detail;
-            if (this.crossword) this.crossword.setCellArrow(row, col, arrow);
+            const { square, arrow } = e.detail;
+            if (this.crossword) this.crossword.setCellArrow(square, arrow);
         });
         document.addEventListener('square:set-color', (e) => {
-            const { row, col, color } = e.detail;
-            if (this.crossword) this.crossword.setCellColor(row, col, color);
+            const { square, color } = e.detail;
+            if (this.crossword) this.crossword.setCellColor(square, color);
         });
         // Listen for square:clicked event to handle focus/defocus
         document.addEventListener('square:clicked', (e) => {
-            const { row, col } = e.detail;
-            this.updateFocusedSquare(row, col);
-            this.focusSquare(row, col);
+            const square = e.detail.square;
+            this.focusSquare(square);
         });
-        // Add more square:??? event listeners as needed
     }
 
     /**
@@ -156,59 +154,33 @@ class NavigationManager {
                 break;
         }
 
-        this.updateFocusedSquare(newRow, newCol);
-        setTimeout(() => this.focusSquare(newRow, newCol), 10);
+        const square = this.crossword.getSquare(newRow, newCol);
+        this.focusSquare(square);
     }
 
     /**
      * Focuses a specific square in the grid
-     * @param {number} row - Row index of the square to focus
-     * @param {number} col - Column index of the square to focus
+     * @param {Object} square - The square object to focus
      */
-    focusSquare(row, col) {
-        console.log(`NavigationManager focusSquare(${row}, ${col})`);
-        if (!this.crossword) {
-            console.warn('NavigationManager: crossword not set');
-            return;
-        }
-        
-        // Update the focused square tracking first
-        this.updateFocusedSquare(row, col);
-        
-        const squares = document.querySelectorAll('.square');
-        const index = row * this.crossword.cols + col;
-        const square = squares[index];
-        
-        if (square) {
-            // Let the square handle its own focus logic
-            square.focus();
-        }
-    }
-
-    /**
-     * Updates the visual focus state of squares and tracks the currently focused square
-     * @param {number} row - Row index of the square to focus
-     * @param {number} col - Column index of the square to focus
-     */
-    updateFocusedSquare(row, col) {
+    focusSquare(square) {
+        console.log(`NavigationManager focusSquare(${square.row}, ${square.col})`);
         if (!this.crossword) {
             console.warn('NavigationManager: crossword not set');
             return;
         }
 
         // Deselect the previously focused square
-        if (this.focusedSquare) {
-            const prev = this.crossword.getSquare(this.focusedSquare.row, this.focusedSquare.col);
-            if (prev && typeof prev.deselect === 'function') {
-                prev.deselect();
-            }
+        console.debug('Currently focused square:', this.focusedSquare);
+        if (this.focusedSquare && typeof this.focusedSquare.deselect === 'function') {
+            console.debug('Deselecting previous square:', this.focusedSquare);
+            this.focusedSquare.deselect();
         }
 
         // Select the current square using its select method
-        const square = this.crossword.getSquare(row, col);
         if (square && typeof square.select === 'function') {
+            console.debug('Selecting new square:', square);
             square.select();
-            this.focusedSquare = { row, col };
+            this.focusedSquare = square;
         }
     }
 
@@ -319,18 +291,7 @@ class NavigationManager {
      * Resets focus to top-left square
      */
     resetFocus() {
-        this.focusedSquare = { row: 0, col: 0 };
-        this.updateFocusedSquare(0, 0);
-    }
-
-    /**
-     * Gets current focus information
-     * @returns {Object} Focus information
-     */
-    getFocusInfo() {
-        return {
-            row: this.focusedSquare.row,
-            col: this.focusedSquare.col
-        };
+        this.focusedSquare = this.crossword.getSquare(0, 0);
+        this.focusSquare(this.focusedSquare);
     }
 }

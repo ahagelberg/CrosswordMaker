@@ -71,12 +71,13 @@ class CrosswordApp {
         this.navigationManager.setupEventListeners();
 
         // Set up callbacks
+/*
         this.contextMenu.setOnGridChange(() => {
             this.crossword.render();
             this.wordManager.updateWords();
             this.puzzleManager.autoSave(this.getPuzzleData());
         });
-
+*/
         this.puzzleManager.setOnPuzzleLoad((puzzle) => {
             this.loadPuzzleData(puzzle);
         });
