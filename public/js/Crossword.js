@@ -191,17 +191,7 @@ class Crossword {
         console.log('Crossword render complete');
 
     }
-    
-    /**
-     * Update display of a specific square
-     */
-    updateSquareDisplay(row, col) {
-        const square = this.getSquare(row, col);
-        if (square && square.updateDisplay) {
-            square.updateDisplay();
-        }
-    }
-    
+
     /**
      * Change the type of a square (destroys and recreates)
      */

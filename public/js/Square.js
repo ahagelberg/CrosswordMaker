@@ -115,7 +115,6 @@ class Square {
         e.stopPropagation();
         // Dispatch a 'square:clicked' event with reference to this square
         if (this.element) {
-            console.debug('Square clicked:', this);
             const event = new CustomEvent('square:clicked', {
                 bubbles: true,
                 detail: { square: this }
@@ -178,7 +177,6 @@ class Square {
         this.updateSelectionState();
         // Dispatch a 'square:selected' event with reference to this square
         if (this.element) {
-            console.debug('Square selected:', this);
             const event = new CustomEvent('square:selected', {
                 bubbles: true,
                 detail: { square: this }

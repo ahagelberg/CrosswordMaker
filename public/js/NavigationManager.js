@@ -163,16 +163,13 @@ class NavigationManager {
      * @param {Object} square - The square object to focus
      */
     focusSquare(square) {
-        console.log(`NavigationManager focusSquare(${square.row}, ${square.col})`);
         if (!this.crossword) {
             console.warn('NavigationManager: crossword not set');
             return;
         }
 
         // Deselect the previously focused square
-        console.debug('Currently focused square:', this.focusedSquare);
         if (this.focusedSquare && typeof this.focusedSquare.deselect === 'function') {
-            console.debug('Deselecting previous square:', this.focusedSquare);
             this.focusedSquare.deselect();
         }
 
