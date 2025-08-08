@@ -7,9 +7,14 @@ class WordManager {
         this.crossword = null; // Will be set by setCrossword()
         this.words = new Map(); // Map of word IDs to word objects
         this.currentWordId = null;
-        this.currentSearchDirection = 'horizontal'; // Default search direction
-        this.searchBentWord = true;
         this.onWordChange = null; // Callback for when current word changes
+        this.searchModes = [
+            { direction: 'horizontal', bent: true },
+            { direction: 'horizontal', bent: false },
+            { direction: 'vertical', bent: true },
+            { direction: 'vertical', bent: false }
+        ]
+        this.currentSearchModeIndex = 0; // Default search mode index
         this.setupEventListeners();
     }
 
@@ -57,37 +62,37 @@ class WordManager {
             sameWordClicked = squares && squares.some(sq => sq === square);
         }
         console.debug('Same word clicked:', sameWordClicked);
-        // If the same word was clicked, toggle search direction and method
+        // If the same word was clicked, toggle search modes
+        let modeIndex;
         if (sameWordClicked) {
-            // Check if the current word is bent
-            const isBent = typeof this.currentWord.isBent === 'function' ? this.currentWord.isBent() : false;
-            if (isBent) {
-                if (this.searchBentWord) {
-                    // If bent selection mode is true, set it to false
-                    this.searchBentWord = false;
-                } else {
-                    // If already false, set to true and swap direction
-                    this.searchBentWord = true;
-                    this.currentSearchDirection = this.currentSearchDirection === 'horizontal' ? 'vertical' : 'horizontal';
-                }
-            } else {
-                // If not bent, swap direction immediately
-                this.currentSearchDirection = this.currentSearchDirection === 'horizontal' ? 'vertical' : 'horizontal';
-            }
+            modeIndex = (this.currentSearchModeIndex+ 1) % this.searchModes.length;
         }
         else {
-            // If a new square is selected, reset bent mode and search direction
-            this.searchBentWord = true; // Reset to default bent search
-            this.currentSearchDirection = 'horizontal'; // Reset to horizontal by default
+            this.currentSearchModeIndex = 0; // Reset to default search mode
+            modeIndex = 0;
         }
 
-        console.debug('Selecting word at square:', square.getPosition(), 'with direction:', this.currentSearchDirection, 'and bent mode:', this.searchBentWord);
-
-        // If the square is valid, select the word at the square
-        const word = this.findWord(square, this.currentSearchDirection, this.searchBentWord);
-        this.setCurrentWord(word);
+        let word = null;
+        for (let i = 0; i < this.searchModes.length; i++) {
+            const mode = this.searchModes[modeIndex];
+            console.debug('Selecting word at square:', square.getPosition(), 'with direction:', mode.direction, 'and bent mode:', mode.bent);
+            word = this.findWord(square, mode.direction, mode.bent);
+            if (word) {
+                this.setCurrentWord(word);
+                this.currentSearchModeIndex = modeIndex; // Update current search mode index
+                break; // Found a valid word, exit loop
+            }
+            modeIndex = (modeIndex + 1) % this.searchModes.length; // Cycle through modes
+        }
+        if (!word) {
+            // If no word found in any mode, clear current word
+            this.setCurrentWord(null);
+            this.currentSearchModeIndex = 0; // Reset to default search mode
+        }
         return word;
     }
+
+
 
 
     findWord(square, direction = 'horizontal', bentMode = true) {
