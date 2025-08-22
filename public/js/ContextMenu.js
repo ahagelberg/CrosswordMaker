@@ -27,6 +27,7 @@ class ContextMenu {
         this.menus.letter = this.createMenuDiv('context-menu');
         this.menus.clue = this.createMenuDiv('context-menu');
         this.menus.black = this.createMenuDiv('context-menu');
+        this.menus.split = this.createMenuDiv('context-menu'); // Add split cell menu
         this.menus.arrow = this.createMenuDiv('context-menu arrow-submenu');
         this.menus.border = this.createMenuDiv('context-menu border-submenu');
         this.menus.color = this.createMenuDiv('context-menu color-submenu');
@@ -38,6 +39,7 @@ class ContextMenu {
         this.populateLetterMenu(this.menus.letter);
         this.populateClueMenu(this.menus.clue);
         this.populateBlackMenu(this.menus.black);
+        this.populateSplitMenu(this.menus.split); // Add split cell menu population
         this.populateArrowSubmenu(this.menus.arrow);
         this.populateBorderSubmenu(this.menus.border);
         this.populateColorSubmenu(this.menus.color);
@@ -48,12 +50,33 @@ class ContextMenu {
         this.hideAllMenus();
         if (!square) return;
         this.currentSquare = square;
+        
         // Determine menu type
         const type = square.getSquareType ? square.getSquareType() : (square.type || 'letter');
+        
         let menu = null;
-        if (type === 'letter') menu = this.menus.letter;
-        else if (type === 'clue') menu = this.menus.clue;
-        else if (type === 'black') menu = this.menus.black;
+        let isSubcell = square.isSubcell || false;
+        
+        if (isSubcell) {
+            // For subcells, use the menu for their type but add unsplit option
+            if (type === 'letter') {
+                menu = this.menus.letter;
+                this.addUnsplitOption(menu);
+            } else if (type === 'clue') {
+                menu = this.menus.clue; 
+                this.addUnsplitOption(menu);
+            } else if (type === 'black') {
+                menu = this.menus.black;
+                this.addUnsplitOption(menu);
+            }
+        } else {
+            // Regular cells
+            if (type === 'letter') menu = this.menus.letter;
+            else if (type === 'clue') menu = this.menus.clue;
+            else if (type === 'black') menu = this.menus.black;
+            else if (type === 'split') menu = this.menus.split;
+        }
+        
         if (!menu) return;
         menu.style.left = e.pageX + 'px';
         menu.style.top = e.pageY + 'px';
@@ -82,14 +105,45 @@ class ContextMenu {
 
     hideAllMenus() {
         Object.values(this.menus).forEach(menu => {
-            menu.style.display = 'none';
+            if (menu && menu.style) {
+                menu.style.display = 'none';
+                // Remove unsplit options when hiding menus
+                this.removeUnsplitOption(menu);
+            }
         });
+    }
+
+    addUnsplitOption(menu) {
+        // Remove any existing unsplit option first
+        this.removeUnsplitOption(menu);
+        
+        // Add separator
+        const separator = document.createElement('div');
+        separator.className = 'context-menu-separator';
+        separator.dataset.unsplitItem = 'true';
+        menu.appendChild(separator);
+        
+        // Add unsplit option
+        const unsplitItem = document.createElement('div');
+        unsplitItem.className = 'context-menu-item';
+        unsplitItem.textContent = 'Unsplit Cell';
+        unsplitItem.dataset.unsplitItem = 'true';
+        unsplitItem.addEventListener('click', () => this.actionUnsplit());
+        menu.appendChild(unsplitItem);
+    }
+
+    removeUnsplitOption(menu) {
+        // Remove any existing unsplit items
+        const unsplitItems = menu.querySelectorAll('[data-unsplit-item="true"]');
+        unsplitItems.forEach(item => item.remove());
     }
 
     // --- Menu creation ---
     populateLetterMenu(menu) {
         this.addMenuItem(menu, 'Change to Clue Square', () => this.actionChangeToClue());
         this.addMenuItem(menu, 'Change to Black Square', () => this.actionChangeToBlack());
+        this.addMenuItem(menu, 'Split Cell Horizontally', () => this.actionSplitCell('horizontal'));
+        this.addMenuItem(menu, 'Split Cell Vertically', () => this.actionSplitCell('vertical'));
         // Arrow submenu
         this.addMenuItem(menu, 'Arrows', null, false, () => this.showSubmenu('arrow', menu));
         // Border submenu
@@ -101,11 +155,22 @@ class ContextMenu {
     populateClueMenu(menu) {
         this.addMenuItem(menu, 'Change to Letter Square', () => this.actionChangeToLetter());
         this.addMenuItem(menu, 'Change to Black Square', () => this.actionChangeToBlack());
+        this.addMenuItem(menu, 'Split Cell Horizontally', () => this.actionSplitCell('horizontal'));
+        this.addMenuItem(menu, 'Split Cell Vertically', () => this.actionSplitCell('vertical'));
     }
 
     populateBlackMenu(menu) {
         this.addMenuItem(menu, 'Convert to Letter Square', () => this.actionChangeToLetter());
         this.addMenuItem(menu, 'Convert to Clue Square', () => this.actionChangeToClue());
+        this.addMenuItem(menu, 'Split Cell Horizontally', () => this.actionSplitCell('horizontal'));
+        this.addMenuItem(menu, 'Split Cell Vertically', () => this.actionSplitCell('vertical'));
+    }
+
+    populateSplitMenu(menu) {
+        this.addMenuItem(menu, 'Change to Letter Square', () => this.actionChangeToLetter());
+        this.addMenuItem(menu, 'Change to Clue Square', () => this.actionChangeToClue());
+        this.addMenuItem(menu, 'Change to Black Square', () => this.actionChangeToBlack());
+        this.addMenuItem(menu, 'Toggle Orientation', () => this.actionToggleSplitOrientation());
     }
 
     populateArrowSubmenu(menu) {
@@ -194,33 +259,72 @@ class ContextMenu {
 
     // --- Action methods with debug output ---
     actionChangeToLetter() {
-        const event = new CustomEvent('square:change-type', {
-            detail: {
-                square: this.currentSquare,
-                type: 'letter'
+        if (this.currentSquare && this.currentSquare.isSubcell) {
+            // Handle subcell type change
+            const parentCell = this.currentSquare.parent;
+            const subcellIndex = this.currentSquare.subIndex;
+            if (parentCell && typeof parentCell.setSubcellType === 'function') {
+                const newSubcell = parentCell.setSubcellType(subcellIndex, 'letter');
+                if (newSubcell) {
+                    this.currentSquare = newSubcell; // Update reference to new subcell
+                }
             }
-        });
-        document.dispatchEvent(event);
+        } else {
+            // Handle regular square type change
+            const event = new CustomEvent('square:change-type', {
+                detail: {
+                    square: this.currentSquare,
+                    type: 'letter'
+                }
+            });
+            document.dispatchEvent(event);
+        }
     }
 
     actionChangeToClue() {
-        const event = new CustomEvent('square:change-type', {
-            detail: {
-                square: this.currentSquare,
-                type: 'clue'
+        if (this.currentSquare && this.currentSquare.isSubcell) {
+            // Handle subcell type change
+            const parentCell = this.currentSquare.parent;
+            const subcellIndex = this.currentSquare.subIndex;
+            if (parentCell && typeof parentCell.setSubcellType === 'function') {
+                const newSubcell = parentCell.setSubcellType(subcellIndex, 'clue');
+                if (newSubcell) {
+                    this.currentSquare = newSubcell; // Update reference to new subcell
+                }
             }
-        });
-        document.dispatchEvent(event);
+        } else {
+            // Handle regular square type change
+            const event = new CustomEvent('square:change-type', {
+                detail: {
+                    square: this.currentSquare,
+                    type: 'clue'
+                }
+            });
+            document.dispatchEvent(event);
+        }
     }
 
     actionChangeToBlack() {
-        const event = new CustomEvent('square:change-type', {
-            detail: {
-                square: this.currentSquare,
-                type: 'black'
+        if (this.currentSquare && this.currentSquare.isSubcell) {
+            // Handle subcell type change
+            const parentCell = this.currentSquare.parent;
+            const subcellIndex = this.currentSquare.subIndex;
+            if (parentCell && typeof parentCell.setSubcellType === 'function') {
+                const newSubcell = parentCell.setSubcellType(subcellIndex, 'black');
+                if (newSubcell) {
+                    this.currentSquare = newSubcell; // Update reference to new subcell
+                }
             }
-        });
-        document.dispatchEvent(event);
+        } else {
+            // Handle regular square type change
+            const event = new CustomEvent('square:change-type', {
+                detail: {
+                    square: this.currentSquare,
+                    type: 'black'
+                }
+            });
+            document.dispatchEvent(event);
+        }
     }
 
     actionSetArrow(arrow = 'none') {
@@ -242,6 +346,67 @@ class ContextMenu {
         if (typeof this.currentSquare.setColor === 'function') {
             this.currentSquare.setColor(color);
         }
+    }
+
+    // --- Split Cell Actions ---
+    actionSplitCell(orientation = 'horizontal') {
+        const event = new CustomEvent('square:change-type', {
+            detail: {
+                square: this.currentSquare,
+                type: 'split',
+                orientation: orientation
+            }
+        });
+        document.dispatchEvent(event);
+    }
+
+    actionToggleSplitOrientation() {
+        let targetSplitCell = this.currentSquare;
+        
+        // If currentSquare is a subcell, get the parent split cell
+        if (this.currentSquare && this.currentSquare.isSubcell) {
+            targetSplitCell = this.currentSquare.parent;
+        }
+        
+        if (targetSplitCell && typeof targetSplitCell.setOrientation === 'function') {
+            const currentOrientation = targetSplitCell.orientation || 'horizontal';
+            const newOrientation = currentOrientation === 'horizontal' ? 'vertical' : 'horizontal';
+            targetSplitCell.setOrientation(newOrientation);
+        }
+    }
+
+    actionUnsplit() {
+        if (!this.currentSquare || !this.currentSquare.isSubcell) return;
+        
+        const parentCell = this.currentSquare.parent;
+        const subcellType = this.currentSquare.getSquareType();
+        const subcellData = {};
+        
+        // Extract data from the clicked subcell
+        if (subcellType === 'letter') {
+            subcellData.value = this.currentSquare.getValue ? this.currentSquare.getValue() : '';
+            subcellData.arrow = this.currentSquare.getArrow ? this.currentSquare.getArrow() : null;
+        } else if (subcellType === 'clue') {
+            subcellData.text = this.currentSquare.getText ? this.currentSquare.getText() : '';
+        }
+        
+        // Copy visual properties
+        if (this.currentSquare.borders) {
+            subcellData.borders = { ...this.currentSquare.borders };
+        }
+        if (this.currentSquare.color) {
+            subcellData.color = this.currentSquare.color;
+        }
+        
+        // Dispatch event to change the parent split cell to the subcell type
+        const event = new CustomEvent('square:change-type', {
+            detail: {
+                square: parentCell,
+                type: subcellType,
+                data: subcellData
+            }
+        });
+        document.dispatchEvent(event);
     }
 }
 

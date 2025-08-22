@@ -173,11 +173,24 @@ class NavigationManager {
             this.focusedSquare.deselect();
         }
 
-        // Select the current square using its select method
+        // Only select letter squares or split cells with letter subcells
         if (square && typeof square.select === 'function') {
-            console.debug('Selecting new square:', square);
-            square.select();
-            this.focusedSquare = square;
+            const squareType = square.getSquareType ? square.getSquareType() : null;
+            
+            // Only select letter squares or split cells (which may contain letter subcells)
+            if (squareType === 'letter' || squareType === 'split') {
+                console.debug('Selecting new square:', square);
+                square.select();
+                this.focusedSquare = square;
+            } else {
+                // For clue and black squares, don't select but still track focus for navigation
+                console.debug('Focusing non-selectable square:', square);
+                this.focusedSquare = square;
+                // Give focus for keyboard navigation but don't select
+                if (square.focus) {
+                    square.focus();
+                }
+            }
         }
     }
 

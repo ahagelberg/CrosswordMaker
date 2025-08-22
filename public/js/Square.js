@@ -127,6 +127,8 @@ class Square {
 
     handleContextMenu(e) {
         e.preventDefault();
+        e.stopPropagation(); // Prevent event from bubbling up to parent
+        
         // Dispatch a context menu event with the square instance
         const event = new CustomEvent('contextmenu:show', {
             bubbles: true,
@@ -233,6 +235,7 @@ class LetterSquare extends Square {
 
     createElement() {
         const element = super.createElement();
+        element.tabIndex = 0; // Make letter squares focusable for keyboard input
         const content = document.createElement('div');
         content.className = 'letter-content';
         this.contentElement = content;
@@ -242,6 +245,15 @@ class LetterSquare extends Square {
         this.arrowElement = arrow;
         element.appendChild(arrow);
         return element;
+    }
+
+    setupEventListeners() {
+        super.setupEventListeners();
+        if (!this.element) return;
+        // Add keydown and focus listeners for letter squares
+        this.element.addEventListener('keydown', this.handleKeydown.bind(this));
+        this.element.addEventListener('focus', this.handleFocus.bind(this));
+        this.element.addEventListener('blur', this.handleBlur.bind(this));
     }
 
     updateContentDisplay() {
@@ -265,12 +277,35 @@ class LetterSquare extends Square {
         if (e.target !== this.element) e.stopPropagation();
         super.handleClick(e);
         this.focus();
+        
+        // Always trigger word selection for letter squares
+        // The word selection logic will handle whether it's valid or not
+        this.triggerWordSelection();
+    }
+
+    triggerWordSelection() {
         // Use event-driven word click
         const event = new CustomEvent('crossword:wordclick', {
             bubbles: true,
             detail: { row: this.row, col: this.col, square: this }
         });
         this.element.dispatchEvent(event);
+    }
+
+    handleFocus() {
+        this.isFocused = true;
+        this.updateFocusState();
+    }
+
+    handleBlur() {
+        this.isFocused = false;
+        this.updateFocusState();
+    }
+
+    focus() {
+        if (this.element) {
+            this.element.focus();
+        }
     }
 
     handleKeydown(e) {
@@ -552,5 +587,312 @@ class BlackSquare extends Square {
 
     updateContentDisplay() {
         // No content to display for black squares
+    }
+}
+
+/**
+ * SplitCell - Square containing two subcells that are actual Square instances
+ */
+class SplitCell extends Square {
+    constructor(row, col, navigationManager, orientation = 'horizontal') {
+        super(row, col, navigationManager);
+        this.orientation = orientation; // 'horizontal' or 'vertical'
+        this.subcells = []; // Array of actual Square instances
+        
+        // Initialize with two letter square subcells by default
+        this.subcells = [
+            new LetterSquare(row, col, navigationManager),
+            new LetterSquare(row, col, navigationManager)
+        ];
+        
+        // Set subcell metadata
+        this.subcells[0].subIndex = 0;
+        this.subcells[0].parent = this;
+        this.subcells[0].isSubcell = true;
+        this.subcells[1].subIndex = 1;
+        this.subcells[1].parent = this;
+        this.subcells[1].isSubcell = true;
+    }
+
+    getSquareType() {
+        return 'split';
+    }
+
+    /**
+     * Creates the HTML element for the split cell
+     */
+    createElement() {
+        const element = super.createElement();
+        element.classList.add('split-cell', this.orientation);
+        
+        // Create container for subcells
+        const container = document.createElement('div');
+        container.className = `split-container split-${this.orientation}`;
+        
+        // Create subcell elements using their own createElement methods
+        this.subcells.forEach((subcell, index) => {
+            const subcellElement = subcell.createElement();
+            subcellElement.classList.add('subcell', `subcell-${index}`);
+            subcellElement.dataset.subIndex = index;
+            
+            // Store reference to the subcell element
+            subcell.element = subcellElement;
+            
+            // Set up event listeners for the subcell
+            subcell.setupEventListeners();
+            
+            container.appendChild(subcellElement);
+        });
+        
+        element.appendChild(container);
+        return element;
+    }
+
+    /**
+     * Sets up event listeners and renders subcells
+     */
+    render() {
+        if (!this.element) return;
+        
+        // Render each subcell using their own render methods
+        this.subcells.forEach(subcell => {
+            if (subcell.render) {
+                subcell.render();
+            }
+        });
+        
+        this.updateDisplay();
+    }
+
+    /**
+     * Updates the display of the entire split cell
+     */
+    updateContentDisplay() {
+        // Update each subcell's display
+        this.subcells.forEach(subcell => {
+            if (subcell.updateDisplay) {
+                subcell.updateDisplay();
+            }
+        });
+    }
+
+    /**
+     * Gets a subcell by index
+     * @param {number} index - Index of the subcell (0 or 1)
+     * @returns {Square|null} The subcell Square instance or null
+     */
+    getSubcell(index) {
+        return this.subcells[index] || null;
+    }
+
+    /**
+     * Sets the type of a subcell by replacing it with a new Square instance
+     * @param {number} index - Index of the subcell
+     * @param {string} type - New type for the subcell
+     * @returns {Square} The new subcell instance
+     */
+    setSubcellType(index, type) {
+        if (index < 0 || index >= this.subcells.length) return null;
+
+        const oldSubcell = this.subcells[index];
+        let newSubcell;
+        
+        // Create new subcell of the specified type
+        switch (type) {
+            case 'letter':
+                newSubcell = new LetterSquare(this.row, this.col, this.navigationManager);
+                break;
+            case 'clue':
+                newSubcell = new ClueSquare(this.row, this.col, this.navigationManager);
+                break;
+            case 'black':
+                newSubcell = new BlackSquare(this.row, this.col, this.navigationManager);
+                break;
+            default:
+                return null; // Invalid type
+        }
+        
+        // Set subcell metadata
+        newSubcell.subIndex = index;
+        newSubcell.parent = this;
+        newSubcell.isSubcell = true;
+        
+        // Preserve some properties from old subcell
+        if (oldSubcell.borders) {
+            newSubcell.borders = { ...oldSubcell.borders };
+        }
+        if (oldSubcell.color) {
+            newSubcell.color = oldSubcell.color;
+        }
+        
+        // Replace the subcell
+        this.subcells[index] = newSubcell;
+        
+        // Update DOM only if element exists (during normal operation, not during import)
+        if (this.element) {
+            const container = this.element.querySelector('.split-container');
+            if (container && oldSubcell.element) {
+                const newElement = newSubcell.createElement();
+                newElement.classList.add('subcell', `subcell-${index}`);
+                newElement.dataset.subIndex = index;
+                
+                // Store reference and set up event listeners
+                newSubcell.element = newElement;
+                newSubcell.setupEventListeners();
+                
+                container.replaceChild(newElement, oldSubcell.element);
+                newSubcell.render();
+            }
+        }
+        
+        return newSubcell;
+    }
+
+    /**
+     * Gets the letter subcell(s) for word selection
+     * Returns the first letter subcell found, or null if none exist
+     * @returns {Square|null} The letter subcell or null
+     */
+    getLetterSubcell() {
+        // Look for letter subcells
+        const letterSubcells = this.subcells.filter(subcell => subcell.getSquareType() === 'letter');
+        
+        if (letterSubcells.length === 0) {
+            return null; // No letter subcells
+        }
+        
+        if (letterSubcells.length === 1) {
+            return letterSubcells[0]; // Return the single letter subcell
+        }
+        
+        // Multiple letter subcells - return top/left one based on orientation
+        if (this.orientation === 'horizontal') {
+            return letterSubcells[0]; // Return left (first) subcell
+        } else {
+            return letterSubcells[0]; // Return top (first) subcell
+        }
+    }
+
+    /**
+     * Sets the orientation of the split cell
+     * @param {string} orientation - 'horizontal' or 'vertical'
+     */
+    setOrientation(orientation) {
+        if (orientation !== 'horizontal' && orientation !== 'vertical') return;
+        
+        this.orientation = orientation;
+        if (this.element) {
+            this.element.classList.remove('horizontal', 'vertical');
+            this.element.classList.add(orientation);
+            
+            const container = this.element.querySelector('.split-container');
+            if (container) {
+                container.className = `split-container split-${orientation}`;
+            }
+        }
+    }
+
+    /**
+     * Checks if this split cell contains any letter subcells
+     * @returns {boolean} True if contains letter subcells
+     */
+    hasLetterSubcell() {
+        return this.subcells.some(subcell => subcell.getSquareType() === 'letter');
+    }
+
+    /**
+     * Exports split cell data for saving
+     * @returns {Object} Export data
+     */
+    exportData() {
+        return {
+            type: 'split',
+            orientation: this.orientation,
+            subcells: this.subcells.map(subcell => {
+                const data = { type: subcell.getSquareType() };
+                
+                // Export subcell data using their own methods if available
+                if (typeof subcell.exportData === 'function') {
+                    return subcell.exportData();
+                }
+                
+                // Fallback to manual property extraction
+                if (subcell.getValue) data.value = subcell.getValue();
+                if (subcell.arrow !== undefined) data.arrow = subcell.arrow;
+                if (subcell.borders) data.borders = { ...subcell.borders };
+                if (subcell.color !== undefined) data.color = subcell.color;
+                if (subcell.getText) data.text = subcell.getText();
+                
+                return data;
+            }),
+            borders: { ...this.borders },
+            color: this.color
+        };
+    }
+
+    /**
+     * Imports split cell data from saved data
+     * @param {Object} data - Import data
+     */
+    importData(data) {
+        if (data.orientation) {
+            this.setOrientation(data.orientation);
+        }
+        
+        if (data.subcells && Array.isArray(data.subcells)) {
+            data.subcells.forEach((subcellData, index) => {
+                if (index < this.subcells.length) {
+                    // Change subcell type if needed
+                    if (subcellData.type && subcellData.type !== this.subcells[index].getSquareType()) {
+                        this.setSubcellType(index, subcellData.type);
+                    }
+                    
+                    const subcell = this.subcells[index];
+                    
+                    // Import data using subcell's own import method if available
+                    if (typeof subcell.importData === 'function') {
+                        subcell.importData(subcellData);
+                    } else {
+                        // Fallback to manual property setting
+                        if (subcellData.value !== undefined && subcell.setValue) {
+                            subcell.setValue(subcellData.value);
+                        }
+                        if (subcellData.text !== undefined && subcell.setText) {
+                            subcell.setText(subcellData.text);
+                        }
+                        if (subcellData.arrow !== undefined && subcell.setArrow) {
+                            subcell.setArrow(subcellData.arrow);
+                        }
+                        if (subcellData.borders && subcell.borders) {
+                            subcell.borders = { ...subcellData.borders };
+                        }
+                        if (subcellData.color !== undefined && subcell.setColor) {
+                            subcell.setColor(subcellData.color);
+                        }
+                    }
+                }
+            });
+        }
+        
+        if (data.borders) {
+            this.borders = { ...data.borders };
+        }
+        if (data.color) {
+            this.color = data.color;
+        }
+        
+        this.updateDisplay();
+    }
+
+    /**
+     * Clean up subcells when destroying
+     */
+    destroy() {
+        this.subcells.forEach(subcell => {
+            if (subcell.destroy) {
+                subcell.destroy();
+            }
+        });
+        super.destroy && super.destroy();
     }
 }

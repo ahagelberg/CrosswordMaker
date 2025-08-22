@@ -332,6 +332,12 @@ body {
     background: var(--background-medium-gray);
 }
 
+.context-menu-separator {
+    height: 1px;
+    background: var(--border-light);
+    margin: 4px 0;
+}
+
 /* Add right-pointing triangle to submenu options in context menu */
 .context-menu-item.has-submenu {
     position: relative;
@@ -1165,3 +1171,86 @@ body {
     color: var(--text-primary);
     font-size: var(--font-md);
 }
+
+/* Split Cell Styles */
+.square.split-cell {
+    padding: 0;
+    overflow: hidden;
+}
+
+.split-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+}
+
+.split-container.split-horizontal {
+    flex-direction: row;
+}
+
+.split-container.split-vertical {
+    flex-direction: column;
+}
+
+.subcell {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    border: none; /* Remove default border */
+}
+
+/* Subcell borders - only between subcells */
+.split-horizontal .subcell:first-child {
+    border-right: 1px solid var(--border-dark);
+}
+
+.split-vertical .subcell:first-child {
+    border-bottom: 1px solid var(--border-dark);
+}
+
+/* Letter subcells should have smaller font size to fit in reduced space */
+.subcell.letter .letter-content {
+    font-size: calc(var(--font-input-large) * 0.8);
+}
+
+/* Focus and selection states for subcells */
+.subcell.focused {
+    box-shadow: inset 0 0 0 2px var(--color-primary);
+    z-index: var(--z-square-focus);
+}
+
+/* Arrow indicators in letter subcells */
+.subcell .arrow {
+    position: absolute;
+    font-size: calc(var(--font-icon) * 0.8);
+    font-weight: bold;
+    z-index: var(--z-tooltip);
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.subcell .arrow.top-to-right {
+    bottom: 1px;
+    left: 1px;
+}
+
+.subcell .arrow.left-to-down {
+    top: 1px;
+    right: 1px;
+}
+
+/* Color support for subcells */
+.subcell.square-color-white { background: var(--square-color-white) !important; }
+.subcell.square-color-red { background: var(--square-color-red) !important; }
+.subcell.square-color-blue { background: var(--square-color-blue) !important; }
+.subcell.square-color-green { background: var(--square-color-green) !important; }
+.subcell.square-color-yellow { background: var(--square-color-yellow) !important; }
+.subcell.square-color-purple { background: var(--square-color-purple) !important; }
+.subcell.square-color-orange { background: var(--square-color-orange) !important; }
+
+/* Border support for subcells */
+.subcell.border-top { border-top: var(--square-border-thick) solid var(--border-dark) !important; }
+.subcell.border-bottom { border-bottom: var(--square-border-thick) solid var(--border-dark) !important; }
+.subcell.border-left { border-left: var(--square-border-thick) solid var(--border-dark) !important; }
+.subcell.border-right { border-right: var(--square-border-thick) solid var(--border-dark) !important; }

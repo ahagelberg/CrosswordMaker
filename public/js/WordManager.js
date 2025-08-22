@@ -44,13 +44,65 @@ class WordManager {
     }
 
     /**
+     * Gets the letter square or letter subcell at the specified position
+     * This method handles split cells by returning the letter subcell if available
+     * @param {number} row - Row index
+     * @param {number} col - Column index
+     * @returns {Object|null} Letter square/subcell or null
+     */
+    getLetterSquareAt(row, col) {
+        const square = this.getSquare(row, col);
+        if (!square) return null;
+        
+        // If it's a regular letter square, return it
+        if (square.getSquareType() === 'letter') {
+            return square;
+        }
+        
+        // If it's a split cell, get the letter subcell
+        if (square.getSquareType() === 'split') {
+            return square.getLetterSubcell();
+        }
+        
+        // For other types (clue, black), return null
+        return null;
+    }
+
+    /**
      * Handles selection of a square to select words (event-driven)
-     * @param {Object} square - The square object that was selected
+     * Now supports split cells - will select the letter subcell if available
+     * @param {Object} square - The square object (or subcell) that was selected
      * @returns {Object|null} Selected word object
      */
     selectWordAtSquare(square) {
-        // Only handle selection on letter squares that are not empty
-        if (!square || square.getSquareType() !== 'letter' || square.isEmpty()) {
+        // Early exit for non-letter squares
+        if (!square || !square.getSquareType) {
+            this.setCurrentWord(null);
+            return null;
+        }
+        
+        const squareType = square.getSquareType();
+        
+        // For non-letter squares (clue, black), don't attempt word selection
+        if (squareType === 'clue' || squareType === 'black') {
+            this.setCurrentWord(null);
+            return null;
+        }
+        
+        // Handle split cells - find the letter subcell if needed
+        let targetSquare = square;
+        
+        // If this is a split cell, get the letter subcell
+        if (squareType === 'split') {
+            targetSquare = square.getLetterSubcell();
+            if (!targetSquare) {
+                this.setCurrentWord(null);
+                return null; // No letter subcell in this split cell
+            }
+        }
+        
+        // Only handle selection on letter squares (or letter subcells)
+        if (!targetSquare || targetSquare.getSquareType() !== 'letter') {
             this.setCurrentWord(null);
             return null;
         }
@@ -59,9 +111,16 @@ class WordManager {
         let sameWordClicked = false;
         if (this.currentWord) {
             const squares = this.currentWord.getSquares();
-            sameWordClicked = squares && squares.some(sq => sq === square);
+            sameWordClicked = squares && squares.some(sq => {
+                // Compare both regular squares and subcells
+                if (sq === targetSquare) return true;
+                // For split cells, compare the subcell
+                if (sq.parent && sq.parent === targetSquare.parent && sq.subIndex === targetSquare.subIndex) return true;
+                return false;
+            });
         }
         console.debug('Same word clicked:', sameWordClicked);
+        
         // If the same word was clicked, toggle search modes
         let modeIndex;
         if (sameWordClicked) {
@@ -75,8 +134,8 @@ class WordManager {
         let word = null;
         for (let i = 0; i < this.searchModes.length; i++) {
             const mode = this.searchModes[modeIndex];
-            console.debug('Selecting word at square:', square.getPosition(), 'with direction:', mode.direction, 'and bent mode:', mode.bent);
-            word = this.findWord(square, mode.direction, mode.bent);
+            console.debug('Selecting word at square:', targetSquare.getPosition(), 'with direction:', mode.direction, 'and bent mode:', mode.bent);
+            word = this.findWord(targetSquare, mode.direction, mode.bent);
             if (word) {
                 this.setCurrentWord(word);
                 this.currentSearchModeIndex = modeIndex; // Update current search mode index
@@ -125,10 +184,10 @@ class WordManager {
         }
         
         if (direction === 'horizontal') {
-            prevSquare = this.getSquare(row, col - 1);
+            prevSquare = this.getLetterSquareAt(row, col - 1);
         }
         else if (direction === 'vertical') {
-            prevSquare = this.getSquare(row - 1, col);
+            prevSquare = this.getLetterSquareAt(row - 1, col);
         }
 
         let squares = this.findWordStart(prevSquare, direction);
@@ -157,10 +216,10 @@ class WordManager {
         }
         
         if (direction === 'horizontal') {
-            nextSquare = this.getSquare(row, col + 1);
+            nextSquare = this.getLetterSquareAt(row, col + 1);
         }
         else if (direction === 'vertical') {
-            nextSquare = this.getSquare(row + 1, col);
+            nextSquare = this.getLetterSquareAt(row + 1, col);
         }
 
         let squares = this.findWordEnd(nextSquare, direction);
